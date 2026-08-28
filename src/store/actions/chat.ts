@@ -14,7 +14,7 @@ export function createChatActions(set: SetState, get: GetState) {
         id,
         venueId,
         performerId,
-        lastText: '대화를 시작했습니다.',
+        lastText: '아직 나눈 대화가 없어요',
         lastAt: get().demoNowIso,
         unread: 0,
       }

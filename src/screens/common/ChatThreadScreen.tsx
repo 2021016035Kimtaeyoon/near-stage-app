@@ -51,6 +51,13 @@ export function ChatThreadScreen() {
     <Screen>
       <ScreenHeader title={counterpart} subtitle={role === 'owner' ? performer.genre : venue.category} back onBack={() => navigate(-1)} />
       <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-4">
+        {messages.length === 0 && (
+          <EmptyState
+            art="chat"
+            title="아직 나눈 대화가 없어요"
+            description={`${counterpart}에게 먼저 메시지를 보내보세요.`}
+          />
+        )}
         {messages.map((m) => {
           const mine = m.from === role
           return (

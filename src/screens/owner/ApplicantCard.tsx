@@ -1,10 +1,12 @@
-import { CheckCircle2, Clapperboard, FileText, TriangleAlert, XCircle } from 'lucide-react'
+import { CheckCircle2, Clapperboard, FileText, MessageCircle, TriangleAlert, XCircle } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { GenreTag, Tag } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { PosterArt, Rating } from '@/components/ui/PosterArt'
 import { relativeFromNow } from '@/lib/datetime'
 import { matchNeeds } from '@/lib/match'
+import { useAppStore } from '@/store/useAppStore'
 import type { Application, Performer, Venue } from '@/types'
 import { ContractPreviewModal } from './ContractPreviewModal'
 
@@ -28,9 +30,16 @@ export function ApplicantCard({
   onAccept,
   onReject,
 }: Props) {
+  const navigate = useNavigate()
+  const ensureThread = useAppStore((s) => s.ensureThread)
   const [contractOpen, setContractOpen] = useState(false)
   const match = matchNeeds(performer, venue)
   const decided = application.status !== '대기'
+
+  const openChat = () => {
+    const threadId = ensureThread(venue.id, performer.id)
+    navigate(`/chat/${threadId}`)
+  }
 
   return (
     <div className="card p-3.5">
@@ -84,19 +93,24 @@ export function ApplicantCard({
         </div>
       </div>
 
-      {!decided && (
-        <div className="mt-3 flex gap-2">
-          <Button variant="outline" size="sm" leading={<FileText size={13} />} onClick={() => setContractOpen(true)}>
-            계약서
-          </Button>
-          <Button variant="danger" size="sm" leading={<XCircle size={13} />} onClick={onReject} className="flex-1">
-            거절
-          </Button>
-          <Button variant="brand" size="sm" leading={<CheckCircle2 size={13} />} onClick={onAccept} className="flex-1">
-            수락
-          </Button>
-        </div>
-      )}
+      <div className="mt-3 flex gap-2">
+        <Button variant="outline" size="sm" leading={<MessageCircle size={13} />} onClick={openChat}>
+          채팅
+        </Button>
+        {!decided && (
+          <>
+            <Button variant="outline" size="sm" leading={<FileText size={13} />} onClick={() => setContractOpen(true)}>
+              계약서
+            </Button>
+            <Button variant="danger" size="sm" leading={<XCircle size={13} />} onClick={onReject} className="flex-1">
+              거절
+            </Button>
+            <Button variant="brand" size="sm" leading={<CheckCircle2 size={13} />} onClick={onAccept} className="flex-1">
+              수락
+            </Button>
+          </>
+        )}
+      </div>
 
       <ContractPreviewModal
         open={contractOpen}
