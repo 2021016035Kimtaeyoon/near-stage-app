@@ -32,7 +32,7 @@ export function ScreenHeader({
         'relative z-40 flex shrink-0 items-center gap-2 px-4 pb-3 pt-12',
         transparent
           ? 'bg-transparent'
-          : 'border-b border-border bg-[#0E0E14]/90 backdrop-blur-xl',
+          : 'border-b border-border bg-white/90 backdrop-blur-xl',
         className,
       )}
     >

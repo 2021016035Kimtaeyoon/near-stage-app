@@ -178,7 +178,7 @@ export function DevPanel() {
                 </section>
 
                 {showJson && (
-                  <pre className="max-h-64 overflow-auto rounded-xl border border-border bg-[#0E0E14] p-3 text-[10px] leading-relaxed text-ink-2">
+                  <pre className="max-h-64 overflow-auto rounded-xl border border-border bg-surface-2 p-3 text-[10px] leading-relaxed text-ink-2">
                     {json}
                   </pre>
                 )}

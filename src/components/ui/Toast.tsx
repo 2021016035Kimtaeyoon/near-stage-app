@@ -35,8 +35,8 @@ export function ToastHost() {
               exit={{ opacity: 0, y: -12, scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 420, damping: 32 }}
               onClick={() => remove(t.id)}
-              className="pointer-events-auto flex w-full max-w-[340px] items-start gap-2.5 rounded-2xl border border-border bg-[#1A1A22]/95 px-3.5 py-3 text-left backdrop-blur-md"
-              style={{ boxShadow: '0 16px 40px rgba(0,0,0,.55)' }}
+              className="pointer-events-auto flex w-full max-w-[340px] items-start gap-2.5 rounded-2xl border border-border bg-white/97 px-3.5 py-3 text-left backdrop-blur-md"
+              style={{ boxShadow: '0 16px 40px rgba(23,23,28,.16)' }}
             >
               <Icon size={17} className={`mt-0.5 shrink-0 ${COLORS[t.tone]}`} />
               <span className="min-w-0">

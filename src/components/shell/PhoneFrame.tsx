@@ -27,7 +27,7 @@ export function PhoneFrame({ children, side }: Props) {
   }
 
   return (
-    <div className="relative flex min-h-[100dvh] w-full items-center justify-center gap-10 overflow-hidden bg-[#08080C] px-8 py-10">
+    <div className="relative flex min-h-[100dvh] w-full items-center justify-center gap-10 overflow-hidden bg-[#F3F3F6] px-8 py-10">
       <AmbientBackdrop />
 
       <div className="relative z-10 hidden w-[320px] shrink-0 flex-col gap-6 lg:flex">
@@ -52,7 +52,7 @@ export function PhoneFrame({ children, side }: Props) {
           {/* 다이나믹 아일랜드 */}
           <div className="pointer-events-none absolute left-1/2 top-[10px] z-[60] h-[26px] w-[104px] -translate-x-1/2 rounded-full bg-black" />
           {/* 홈 인디케이터 */}
-          <div className="pointer-events-none absolute bottom-[7px] left-1/2 z-[60] h-[4px] w-[124px] -translate-x-1/2 rounded-full bg-white/25" />
+          <div className="pointer-events-none absolute bottom-[7px] left-1/2 z-[60] h-[4px] w-[124px] -translate-x-1/2 rounded-full bg-black/20" />
         </div>
       </div>
     </div>

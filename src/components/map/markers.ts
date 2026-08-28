@@ -35,7 +35,7 @@ export function showMarkerIcon({ genre, source, selected, popped = false }: Opti
     : ''
 
   // 장르 색 점 — 색상만으로 정보를 전달하지 않도록 툴팁(title)도 함께 넣습니다
-  const dot = `<span style="position:absolute;right:-1px;top:-1px;width:9px;height:9px;border-radius:9999px;background:${genreColor};border:1.5px solid #0B0B0F"></span>`
+  const dot = `<span style="position:absolute;right:-1px;top:-1px;width:9px;height:9px;border-radius:9999px;background:${genreColor};border:1.5px solid #FFFFFF"></span>`
 
   const html = `
     <div title="${genre} · ${own ? '우리 무대' : '등록 공연'}" style="position:relative;width:${size}px;height:${size}px" class="${popped ? 'animate-pin-pop' : ''}">
@@ -60,7 +60,7 @@ export function userMarkerIcon(): L.DivIcon {
   const html = `
     <div style="position:relative;width:22px;height:22px">
       <span style="position:absolute;inset:0;border-radius:9999px;background:${alpha('#4AA8FF', 0.28)}"></span>
-      <span style="position:absolute;inset:5px;border-radius:9999px;background:#4AA8FF;border:2px solid #0B0B0F"></span>
+      <span style="position:absolute;inset:5px;border-radius:9999px;background:#4AA8FF;border:2px solid #FFFFFF"></span>
     </div>`
   return L.divIcon({ html, className: 'omd-marker', iconSize: [22, 22], iconAnchor: [11, 11] })
 }

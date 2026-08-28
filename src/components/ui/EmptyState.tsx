@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 export type EmptyArt = 'stage' | 'search' | 'ticket' | 'chat' | 'chart'
 
 function Art({ kind }: { kind: EmptyArt }) {
-  const common = { fill: 'none', stroke: '#3A3A46', strokeWidth: 1.6, strokeLinecap: 'round' as const }
+  const common = { fill: 'none', stroke: '#C7C7D1', strokeWidth: 1.6, strokeLinecap: 'round' as const }
   switch (kind) {
     case 'stage':
       return (
@@ -22,7 +22,7 @@ function Art({ kind }: { kind: EmptyArt }) {
         <svg viewBox="0 0 120 88" className="h-[88px] w-[120px]">
           <circle cx="54" cy="40" r="22" {...common} />
           <path d="M70 56l16 16" {...common} strokeWidth="2.2" />
-          <path d="M44 40h20M54 30v20" stroke="#3A3A46" strokeWidth="1.4" strokeDasharray="3 4" />
+          <path d="M44 40h20M54 30v20" stroke="#C7C7D1" strokeWidth="1.4" strokeDasharray="3 4" />
           <circle cx="54" cy="40" r="6" stroke="#FF6B4A" strokeWidth="1.8" fill="none" />
         </svg>
       )
@@ -33,7 +33,7 @@ function Art({ kind }: { kind: EmptyArt }) {
             d="M26 28h68v14a6 6 0 0 0 0 12v14H26V54a6 6 0 0 0 0-12V28Z"
             {...common}
           />
-          <path d="M60 30v6M60 42v6M60 54v6M60 66v-4" stroke="#3A3A46" strokeWidth="1.4" strokeDasharray="3 4" />
+          <path d="M60 30v6M60 42v6M60 54v6M60 66v-4" stroke="#C7C7D1" strokeWidth="1.4" strokeDasharray="3 4" />
           <path d="M36 44h14M36 52h10" stroke="#FF6B4A" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
       )

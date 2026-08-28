@@ -4,18 +4,20 @@ export default {
   theme: {
     extend: {
       colors: {
-        bg: '#0B0B0F',
-        surface: '#16161D',
-        'surface-2': '#1D1D26',
-        border: '#26262F',
-        'border-strong': '#34343F',
-        ink: '#F5F5F7',
-        'ink-2': '#9A9AA5',
-        'ink-3': '#6B6B77',
+        // 화이트 테마 — 흰 바탕 기본. 화면 코드는 색상 리터럴 대신
+        // 이 시맨틱 토큰만 참조하므로, 팔레트를 바꾸려면 여기만 고치면 됩니다.
+        bg: '#FFFFFF',
+        surface: '#FFFFFF',
+        'surface-2': '#F2F2F5',
+        border: '#E5E5EA',
+        'border-strong': '#D1D1D9',
+        ink: '#17171C',
+        'ink-2': '#5B5B66',
+        'ink-3': '#8B8B96',
         brand: { from: '#FF6B4A', to: '#FF3D77', DEFAULT: '#FF5560' },
-        ok: '#4ED4A0',
-        warn: '#FFC24A',
-        danger: '#FF5A5A',
+        ok: '#1EA672',
+        warn: '#D98A00',
+        danger: '#E0403E',
       },
       fontFamily: {
         sans: [
