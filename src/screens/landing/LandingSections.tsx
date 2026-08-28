@@ -1,28 +1,37 @@
+import { motion } from 'framer-motion'
 import { CalendarClock, Flame, MapPinned, Sparkles, Star, TrendingUp, Users2 } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { SourceBadge } from '@/components/ui/Badge'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { SERVICE_NAME, SERVICE_TAGLINE } from '@/config/brand'
+import { staggerItem } from './motionVariants'
+import { ScrollReveal, StaggerGroup } from './ScrollReveal'
+
+/** 카드에 공통으로 쓰는 "떠오르는" 호버 — 그림자가 깊어지고 살짝 들립니다 */
+const liftHover = {
+  whileHover: { y: -8, boxShadow: '0 24px 48px -12px rgba(23,23,28,.18)' },
+  transition: { type: 'spring' as const, stiffness: 300, damping: 22 },
+}
 
 export function DifferentiationSection() {
   return (
     <section id="differentiation" className="mx-auto max-w-5xl px-6 py-24">
-      <p className="text-center text-xs font-bold uppercase tracking-widest text-[#FF5560]">
-        핵심 차별점
-      </p>
-      <h2 className="mt-3 text-center text-3xl font-extrabold tracking-tight md:text-4xl">
-        정식 공연장만 보여주던 지도에,
-        <br />
-        동네 무대를 더했습니다
-      </h2>
-      <p className="mx-auto mt-4 max-w-xl text-center text-[15px] leading-relaxed text-ink-2">
-        기존 공연 정보 서비스는 KOPIS에 등록된 정식 공연장만 보여줍니다. NEAR:STAGE는
-        등록되지 않은 동네 카페·바 무대를 직접 만들고, 등록 공연과 함께 지도에서
-        유통합니다.
-      </p>
+      <ScrollReveal className="text-center">
+        <p className="text-xs font-bold uppercase tracking-widest text-[#FF5560]">핵심 차별점</p>
+        <h2 className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">
+          정식 공연장만 보여주던 지도에,
+          <br />
+          동네 무대를 더했습니다
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-ink-2">
+          기존 공연 정보 서비스는 KOPIS에 등록된 정식 공연장만 보여줍니다. NEAR:STAGE는
+          등록되지 않은 동네 카페·바 무대를 직접 만들고, 등록 공연과 함께 지도에서
+          유통합니다.
+        </p>
+      </ScrollReveal>
 
-      <div className="mt-12 grid gap-5 md:grid-cols-2">
-        <div className="card p-7">
+      <StaggerGroup className="mt-12 grid gap-5 md:grid-cols-2" stagger={0.14}>
+        <motion.div variants={staggerItem} {...liftHover} className="card p-7">
           <SourceBadge source="own" />
           <h3 className="mt-4 text-xl font-extrabold">우리 무대</h3>
           <p className="mt-2 text-sm leading-relaxed text-ink-2">
@@ -34,8 +43,8 @@ export function DifferentiationSection() {
             <li>· 공간·공연 리뷰를 각각 남길 수 있음</li>
             <li>· 무료~1만 원대 부담 없는 가격</li>
           </ul>
-        </div>
-        <div className="card p-7">
+        </motion.div>
+        <motion.div variants={staggerItem} {...liftHover} className="card p-7">
           <SourceBadge source="kopis" />
           <h3 className="mt-4 text-xl font-extrabold">등록 공연</h3>
           <p className="mt-2 text-sm leading-relaxed text-ink-2">
@@ -47,8 +56,8 @@ export function DifferentiationSection() {
             <li>· 출연진 정보 중심으로 표시</li>
             <li>· 3만 원대 이상 정식 티켓 가격</li>
           </ul>
-        </div>
-      </div>
+        </motion.div>
+      </StaggerGroup>
     </section>
   )
 }
@@ -75,20 +84,25 @@ export function RolesSection() {
   return (
     <section id="roles" className="border-y border-border bg-surface-2/60 py-24">
       <div className="mx-auto max-w-5xl px-6">
-        <h2 className="text-center text-3xl font-extrabold tracking-tight md:text-4xl">
-          세 사람이 만나 하나의 무대가 됩니다
-        </h2>
-        <div className="mt-12 grid gap-5 md:grid-cols-3">
+        <ScrollReveal className="text-center">
+          <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">
+            세 사람이 만나 하나의 무대가 됩니다
+          </h2>
+        </ScrollReveal>
+        <StaggerGroup className="mt-12 grid gap-5 md:grid-cols-3">
           {ROLES.map((r) => (
-            <div key={r.title} className="card p-7">
-              <span className="brand-gradient flex h-11 w-11 items-center justify-center rounded-xl text-white">
+            <motion.div key={r.title} variants={staggerItem} {...liftHover} className="card p-7">
+              <motion.span
+                whileHover={{ rotate: -8, scale: 1.08 }}
+                className="brand-gradient flex h-11 w-11 items-center justify-center rounded-xl text-white"
+              >
                 <r.icon size={20} />
-              </span>
+              </motion.span>
               <h3 className="mt-4 text-lg font-extrabold">{r.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-ink-2">{r.desc}</p>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </StaggerGroup>
       </div>
     </section>
   )
@@ -120,12 +134,19 @@ const FEATURES = [
 export function FeaturesSection() {
   return (
     <section className="mx-auto max-w-5xl px-6 py-24">
-      <h2 className="text-center text-3xl font-extrabold tracking-tight md:text-4xl">
-        숫자와 매칭이 실제로 작동합니다
-      </h2>
-      <div className="mt-12 grid gap-5 sm:grid-cols-2">
+      <ScrollReveal className="text-center">
+        <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">
+          숫자와 매칭이 실제로 작동합니다
+        </h2>
+      </ScrollReveal>
+      <StaggerGroup className="mt-12 grid gap-5 sm:grid-cols-2">
         {FEATURES.map((f) => (
-          <div key={f.title} className="flex gap-4 rounded-2xl border border-border p-6">
+          <motion.div
+            key={f.title}
+            variants={staggerItem}
+            {...liftHover}
+            className="flex gap-4 rounded-2xl border border-border p-6"
+          >
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-2 text-ink-2">
               <f.icon size={18} />
             </span>
@@ -133,9 +154,9 @@ export function FeaturesSection() {
               <h3 className="font-bold">{f.title}</h3>
               <p className="mt-1 text-sm leading-relaxed text-ink-2">{f.desc}</p>
             </div>
-          </div>
+          </motion.div>
         ))}
-      </div>
+      </StaggerGroup>
     </section>
   )
 }
@@ -144,19 +165,21 @@ export function ClosingSection() {
   const navigate = useNavigate()
   return (
     <section className="border-t border-border bg-[#0F0F14] py-20 text-white">
-      <div className="mx-auto max-w-3xl px-6 text-center">
+      <ScrollReveal className="mx-auto max-w-3xl px-6 text-center">
         <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">
           오늘 밤, 우리 동네 무대를 열어보세요
         </h2>
         <p className="mt-3 text-white/70">회원가입 없이 지금 바로 둘러볼 수 있어요.</p>
-        <button
+        <motion.button
+          whileHover={{ y: -4, boxShadow: '0 24px 56px rgba(255,61,119,.45)' }}
+          whileTap={{ scale: 0.97 }}
           onClick={() => navigate('/desktop')}
           className="brand-gradient mt-8 rounded-full px-8 py-4 text-[15px] font-bold text-white"
           style={{ boxShadow: '0 16px 40px rgba(255,61,119,.35)' }}
         >
           웹으로 둘러보기 →
-        </button>
-      </div>
+        </motion.button>
+      </ScrollReveal>
 
       <footer className="mx-auto mt-16 max-w-5xl border-t border-white/10 px-6 pt-8">
         <LogoMark className="w-[104px] opacity-90" />
