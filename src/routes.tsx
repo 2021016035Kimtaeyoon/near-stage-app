@@ -11,12 +11,19 @@ import { MyPage } from '@/screens/audience/MyPage'
 import { ReviewCompose } from '@/screens/audience/ReviewCompose'
 import { ShowDetail } from '@/screens/audience/ShowDetail'
 import { TicketScreen } from '@/screens/audience/TicketScreen'
+import { ChatListScreen } from '@/screens/common/ChatListScreen'
+import { ChatThreadScreen } from '@/screens/common/ChatThreadScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
 import { Placeholder } from '@/screens/common/Placeholder'
 import { OwnerApplicantsScreen } from '@/screens/owner/OwnerApplicantsScreen'
 import { OwnerDashboard } from '@/screens/owner/OwnerDashboard'
 import { OwnerRecruitScreen } from '@/screens/owner/OwnerRecruitScreen'
 import { OwnerVenueScreen } from '@/screens/owner/OwnerVenueScreen'
+import { PerformerActivity } from '@/screens/performer/PerformerActivity'
+import { PerformerPostsScreen } from '@/screens/performer/PerformerPostsScreen'
+import { PerformerProfile } from '@/screens/performer/PerformerProfile'
+import { PerformerVenueDetail } from '@/screens/performer/PerformerVenueDetail'
+import { VenueExploreScreen } from '@/screens/performer/VenueExploreScreen'
 
 function RoleRedirect() {
   const role = useAppStore((s) => s.role)
@@ -135,7 +142,7 @@ export function AppRoutes() {
           path="/performer/explore"
           element={
             <PageTransition>
-              <Placeholder title="장소 탐색" note="단계 9에서 구현됩니다." />
+              <VenueExploreScreen />
             </PageTransition>
           }
         />
@@ -143,7 +150,7 @@ export function AppRoutes() {
           path="/performer/venue/:venueId"
           element={
             <PageTransition>
-              <Placeholder title="공간 상세" note="단계 9에서 구현됩니다." />
+              <PerformerVenueDetail />
             </PageTransition>
           }
         />
@@ -151,7 +158,7 @@ export function AppRoutes() {
           path="/performer/posts"
           element={
             <PageTransition>
-              <Placeholder title="구인글 & 역경매" note="단계 9에서 구현됩니다." />
+              <PerformerPostsScreen />
             </PageTransition>
           }
         />
@@ -159,7 +166,7 @@ export function AppRoutes() {
           path="/performer/activity"
           element={
             <PageTransition>
-              <Placeholder title="내 활동" note="단계 9에서 구현됩니다." />
+              <PerformerActivity />
             </PageTransition>
           }
         />
@@ -167,7 +174,7 @@ export function AppRoutes() {
           path="/performer/profile"
           element={
             <PageTransition>
-              <Placeholder title="프로필 / 포트폴리오" note="단계 9에서 구현됩니다." />
+              <PerformerProfile />
             </PageTransition>
           }
         />
@@ -185,7 +192,7 @@ export function AppRoutes() {
           path="/chat"
           element={
             <PageTransition>
-              <Placeholder title="채팅" note="단계 10에서 구현됩니다." />
+              <ChatListScreen />
             </PageTransition>
           }
         />
@@ -193,7 +200,7 @@ export function AppRoutes() {
           path="/chat/:threadId"
           element={
             <PageTransition>
-              <Placeholder title="채팅방" note="단계 10에서 구현됩니다." />
+              <ChatThreadScreen />
             </PageTransition>
           }
         />
