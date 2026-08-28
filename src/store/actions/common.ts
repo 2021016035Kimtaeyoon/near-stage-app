@@ -25,7 +25,7 @@ export function createCommonActions(set: SetState, get: GetState) {
         currentPerformerId: DEMO_PERFORMER_ID,
         seq: 1000,
         audienceFilter: { ...DEFAULT_FILTER },
-        demo: { active: false, stepIndex: 0, playing: false, speed: 1, highlightShowId: null },
+        demo: { active: false, stepIndex: 0, playing: false, speed: 1, highlightShowId: null, runId: 0 },
       }),
 
     pushNotification: (n: Omit<AppNotification, 'id' | 'createdAt' | 'read'>) => {

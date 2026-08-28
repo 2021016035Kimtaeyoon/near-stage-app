@@ -14,11 +14,11 @@ import { TicketScreen } from '@/screens/audience/TicketScreen'
 import { ChatListScreen } from '@/screens/common/ChatListScreen'
 import { ChatThreadScreen } from '@/screens/common/ChatThreadScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
-import { Placeholder } from '@/screens/common/Placeholder'
 import { OwnerApplicantsScreen } from '@/screens/owner/OwnerApplicantsScreen'
 import { OwnerDashboard } from '@/screens/owner/OwnerDashboard'
 import { OwnerRecruitScreen } from '@/screens/owner/OwnerRecruitScreen'
 import { OwnerSettlementScreen } from '@/screens/owner/OwnerSettlementScreen'
+import { DemoScreen } from '@/screens/demo/DemoScreen'
 import { OwnerVenueScreen } from '@/screens/owner/OwnerVenueScreen'
 import { PerformerActivity } from '@/screens/performer/PerformerActivity'
 import { PerformerPostsScreen } from '@/screens/performer/PerformerPostsScreen'
@@ -209,7 +209,7 @@ export function AppRoutes() {
           path="/demo"
           element={
             <PageTransition>
-              <Placeholder title="자동 시연" note="단계 11에서 구현됩니다." />
+              <DemoScreen />
             </PageTransition>
           }
         />

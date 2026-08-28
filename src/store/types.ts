@@ -24,6 +24,8 @@ export interface DemoState {
   speed: number
   /** 방금 지도에 추가된 공연 id — 핀 팝 애니메이션용 */
   highlightShowId: string | null
+  /** "처음부터" 실행마다 증가 — 시연 엔진이 진행 상태(ctx)를 리셋하는 신호로 씁니다 */
+  runId: number
 }
 
 export interface AppState extends SeedData {

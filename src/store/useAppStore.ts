@@ -22,6 +22,7 @@ const INITIAL_DEMO: DemoState = {
   playing: false,
   speed: 1,
   highlightShowId: null,
+  runId: 0,
 }
 
 export const useAppStore = create<AppStore>()(
@@ -49,6 +50,7 @@ export const useAppStore = create<AppStore>()(
 
         /** 자동 시연을 처음부터 다시 돌리기 위해 데이터를 초기 상태로 되돌립니다 */
         resetDemoScenario: () => {
+          const prevRunId = get().demo.runId
           set({
             ...createSeedData(),
             role: 'owner',
@@ -57,7 +59,7 @@ export const useAppStore = create<AppStore>()(
             currentPerformerId: DEMO_PERFORMER_ID,
             seq: 2000,
             audienceFilter: { ...DEFAULT_FILTER },
-            demo: { ...INITIAL_DEMO, active: true },
+            demo: { ...INITIAL_DEMO, active: true, playing: true, runId: prevRunId + 1 },
           })
         },
       }
