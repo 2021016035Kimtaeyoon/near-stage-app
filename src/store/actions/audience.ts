@@ -6,7 +6,7 @@ import type { GetState, SetState } from '../types'
 /** 예약 코드 — 결정론적으로 만들어 QR 캔버스 시드로 사용 */
 function makeCode(showId: string, seq: number): string {
   const h = hashSeed(`${showId}-${seq}`).toString(36).toUpperCase().slice(0, 4).padEnd(4, 'X')
-  return `OMD-${showId.toUpperCase()}-${h}`
+  return `NST-${showId.toUpperCase()}-${h}`
 }
 
 export function createAudienceActions(set: SetState, get: GetState) {

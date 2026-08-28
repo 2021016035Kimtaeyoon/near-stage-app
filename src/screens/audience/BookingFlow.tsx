@@ -6,7 +6,7 @@ import { Screen } from '@/components/shell/ScreenHeader'
 import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PosterArt } from '@/components/ui/PosterArt'
-import { DEPOSIT_AMOUNT } from '@/config/brand'
+import { DEPOSIT_AMOUNT, SERVICE_NAME } from '@/config/brand'
 import { humanDateTime, priceLabel, won } from '@/lib/datetime'
 import { resolvePlace } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
@@ -203,7 +203,7 @@ function StepPay({
         <div>
           <p className="tnum text-lg font-bold tracking-[0.18em]">•••• •••• •••• 4242</p>
           <div className="tnum mt-2 flex items-center justify-between text-xs opacity-80">
-            <span>오늘무대 데모카드</span>
+            <span>{SERVICE_NAME} 데모카드</span>
             <span>09/29</span>
           </div>
         </div>

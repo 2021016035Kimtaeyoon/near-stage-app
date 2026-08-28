@@ -4,7 +4,7 @@
  */
 
 /** 서비스명 (가칭). 이 값만 바꾸면 앱 전체 표기가 바뀝니다. */
-export const SERVICE_NAME = '오늘무대'
+export const SERVICE_NAME = 'NEAR:STAGE'
 export const SERVICE_TAGLINE = '오늘 밤, 우리 동네 무대'
 export const SERVICE_DESCRIPTION =
   '공연할 곳이 없는 공연자와 손님이 필요한 공간을 연결하고, 그렇게 만들어진 공연을 지도로 유통합니다.'
