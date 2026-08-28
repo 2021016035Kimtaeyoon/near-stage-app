@@ -13,6 +13,7 @@ import { ShowDetail } from '@/screens/audience/ShowDetail'
 import { TicketScreen } from '@/screens/audience/TicketScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
 import { Placeholder } from '@/screens/common/Placeholder'
+import { OwnerDashboard } from '@/screens/owner/OwnerDashboard'
 
 function RoleRedirect() {
   const role = useAppStore((s) => s.role)
@@ -89,7 +90,7 @@ export function AppRoutes() {
           path="/owner/dashboard"
           element={
             <PageTransition>
-              <Placeholder title="대시보드" note="단계 6에서 구현됩니다." />
+              <OwnerDashboard />
             </PageTransition>
           }
         />
