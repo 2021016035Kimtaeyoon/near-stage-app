@@ -1,0 +1,150 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --brand-from: #ff6b4a;
+    --brand-to: #ff3d77;
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-bg text-ink font-sans antialiased;
+    margin: 0;
+    overscroll-behavior: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* 숫자는 자리 흔들림 없이 */
+  .tnum {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum';
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-border bg-surface;
+    box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.04);
+  }
+
+  .card-hover {
+    @apply transition-colors duration-150 active:bg-surface-2;
+  }
+
+  .brand-gradient {
+    background-image: linear-gradient(135deg, var(--brand-from) 0%, var(--brand-to) 100%);
+  }
+
+  .brand-text {
+    background-image: linear-gradient(135deg, var(--brand-from) 0%, var(--brand-to) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  /* 터치 타겟 최소 44px */
+  .tap {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .skeleton {
+    background-image: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 0%,
+      rgba(255, 255, 255, 0.09) 50%,
+      rgba(255, 255, 255, 0.03) 100%
+    );
+    background-size: 200% 100%;
+    @apply animate-shimmer rounded-lg;
+  }
+
+  .divider {
+    @apply h-px w-full bg-border;
+  }
+}
+
+/* ───────────── Leaflet 다크 테마 보정 ───────────── */
+
+.leaflet-container {
+  background: #0e0e14;
+  font-family: inherit;
+  outline: none;
+}
+
+/* 타일을 어둡게 — 밤의 공연장 톤에 맞춤 */
+.leaflet-tile-pane {
+  filter: invert(1) hue-rotate(190deg) brightness(0.86) contrast(0.92) saturate(0.5);
+}
+
+.leaflet-control-attribution {
+  background: rgba(11, 11, 15, 0.7) !important;
+  color: #6b6b77 !important;
+  font-size: 9px !important;
+  border-radius: 6px 0 0 0;
+}
+.leaflet-control-attribution a {
+  color: #9a9aa5 !important;
+}
+
+.leaflet-control-zoom {
+  display: none;
+}
+
+.leaflet-marker-icon {
+  background: transparent;
+  border: none;
+}
+
+.leaflet-popup-content-wrapper,
+.leaflet-popup-tip {
+  background: #16161d;
+  color: #f5f5f7;
+  border: 1px solid #26262f;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+}
+.leaflet-popup-content {
+  margin: 0;
+  width: auto !important;
+}
+.leaflet-popup-close-button {
+  display: none;
+}
+
+/* 지도 타일이 안 뜨는 오프라인 환경용 격자 배경 */
+.map-offline-grid {
+  background-color: #0e0e14;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.045) 1px, transparent 1px),
+    radial-gradient(circle at 50% 40%, rgba(255, 107, 74, 0.09), transparent 62%);
+  background-size:
+    48px 48px,
+    48px 48px,
+    100% 100%;
+}
