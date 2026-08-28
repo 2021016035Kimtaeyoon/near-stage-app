@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
-import { PHONE_HEIGHT, PHONE_WIDTH, SERVICE_NAME, SERVICE_TAGLINE } from '@/config/brand'
+import { PHONE_HEIGHT, PHONE_WIDTH, SERVICE_TAGLINE } from '@/config/brand'
 import { useIsDesktop } from '@/lib/useMediaQuery'
+import { LogoMark } from './LogoMark'
 
 interface Props {
   children: ReactNode
@@ -32,8 +33,8 @@ export function PhoneFrame({ children, side }: Props) {
 
       <div className="relative z-10 hidden w-[320px] shrink-0 flex-col gap-6 lg:flex">
         <div>
-          <div className="brand-text text-3xl font-extrabold tracking-tight">{SERVICE_NAME}</div>
-          <p className="mt-2 text-sm leading-relaxed text-ink-2">{SERVICE_TAGLINE}</p>
+          <LogoMark className="w-[168px]" />
+          <p className="mt-3 text-sm leading-relaxed text-ink-2">{SERVICE_TAGLINE}</p>
         </div>
         {side}
       </div>

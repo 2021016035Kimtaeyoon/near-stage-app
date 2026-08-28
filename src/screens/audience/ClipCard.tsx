@@ -1,4 +1,4 @@
-import { Heart, Share2, UserPlus, UserCheck, ChevronRight } from 'lucide-react'
+import { Clapperboard, Heart, Share2, UserPlus, UserCheck, ChevronRight } from 'lucide-react'
 import { GenreTag } from '@/components/ui/Badge'
 import { PosterArt } from '@/components/ui/PosterArt'
 import { humanDateTime } from '@/lib/datetime'
@@ -7,6 +7,13 @@ import type { Performer, Show } from '@/types'
 
 interface Props {
   performer: Performer
+  /** 이 카드가 대표하는 개별 하이라이트의 제목 (사진으로 대체된 "영상") */
+  clipTitle: string
+  /** 이 하이라이트 전용 포스터 시드 — 같은 팀이어도 클립마다 다른 사진처럼 보입니다 */
+  posterSeed: string
+  /** 몇 번째 클립인지 (1부터) / 전체 클립 수 */
+  clipPosition: number
+  clipTotal: number
   liked: boolean
   following: boolean
   onToggleLike: () => void
@@ -19,6 +26,10 @@ interface Props {
 
 export function ClipCard({
   performer,
+  clipTitle,
+  posterSeed,
+  clipPosition,
+  clipTotal,
   liked,
   following,
   onToggleLike,
@@ -30,7 +41,7 @@ export function ClipCard({
   return (
     <div className="relative h-full w-full shrink-0 overflow-hidden">
       <PosterArt
-        seed={performer.photoSeed}
+        seed={posterSeed}
         genre={performer.genre}
         className="absolute inset-0 h-full w-full"
         deep
@@ -40,7 +51,7 @@ export function ClipCard({
       <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-12">
         <GenreTag genre={performer.genre} />
         <span className="rounded-full bg-black/40 px-2.5 py-1 text-2xs font-bold text-white">
-          클립 {performer.clipCount}개
+          클립 {clipPosition}/{clipTotal}
         </span>
       </div>
 
@@ -89,6 +100,10 @@ export function ClipCard({
       {/* 하단 정보 */}
       <div className="absolute inset-x-0 bottom-0 px-4 pb-4 text-white">
         <h2 className="text-lg font-extrabold drop-shadow">{performer.teamName}</h2>
+        <p className="mt-0.5 flex items-center gap-1 text-[13px] font-semibold text-white/95 drop-shadow">
+          <Clapperboard size={13} className="shrink-0" />
+          <span className="truncate">{clipTitle}</span>
+        </p>
         <p className="mt-1 text-[13px] leading-relaxed text-white/85 drop-shadow">
           {performer.bio}
         </p>
