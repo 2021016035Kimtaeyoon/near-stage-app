@@ -38,6 +38,11 @@ export interface ShowWithMeta {
   place: ShowPlace
   distanceKm: number
   performer: Performer | null
+  /**
+   * 공간·공연자 평점 평균. 등록 공연(KOPIS)은 우리 플랫폼에 등록된 평점 데이터가
+   * 없으므로 null — 별점순 정렬 시 자연스럽게 맨 뒤로 밀립니다.
+   */
+  rating: number | null
 }
 
 export function withMeta(
@@ -50,11 +55,19 @@ export function withMeta(
   for (const show of shows) {
     const place = resolvePlace(show, venues)
     if (!place) continue
+    const venue = show.venueId ? venues.find((v) => v.id === show.venueId) : undefined
+    const performer = performers.find((p) => p.id === show.performerId) ?? null
+    const rating = venue
+      ? performer
+        ? Math.round(((venue.rating + performer.rating) / 2) * 10) / 10
+        : venue.rating
+      : null
     out.push({
       show,
       place,
       distanceKm: distanceKm(origin, { lat: place.lat, lng: place.lng }),
-      performer: performers.find((p) => p.id === show.performerId) ?? null,
+      performer,
+      rating,
     })
   }
   return out
@@ -128,6 +141,9 @@ export function sortShows(
       break
     case 'near':
       arr.sort((a, b) => a.distanceKm - b.distanceKm)
+      break
+    case 'rating':
+      arr.sort((a, b) => (b.rating ?? -1) - (a.rating ?? -1))
       break
     case 'likes':
       arr.sort((a, b) => b.show.likes - a.show.likes)

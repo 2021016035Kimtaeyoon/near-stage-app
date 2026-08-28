@@ -358,7 +358,7 @@ export type WhenFilter = 'tonight' | 'weekend' | 'all'
 export type PriceFilter = 'free' | 'under10k' | 'all'
 /** 0 = 전체(거리 무제한) */
 export type DistanceFilter = 1 | 2 | 5 | 0
-export type SortKey = 'soon' | 'near' | 'likes' | 'recommend'
+export type SortKey = 'soon' | 'near' | 'rating' | 'likes' | 'recommend'
 
 export interface AudienceFilter {
   when: WhenFilter

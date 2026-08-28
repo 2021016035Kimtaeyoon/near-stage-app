@@ -1,6 +1,6 @@
 import { Heart, MapPin, Users } from 'lucide-react'
 import { GenreTag, SourceBadge, StatusDot } from '@/components/ui/Badge'
-import { PosterArt } from '@/components/ui/PosterArt'
+import { PosterArt, Rating } from '@/components/ui/PosterArt'
 import { cn } from '@/lib/cn'
 import { countdownLabel, humanDateTime, priceLabel } from '@/lib/datetime'
 import { distanceLabel } from '@/lib/geo'
@@ -26,7 +26,7 @@ export function ShowCard({
   highlighted = false,
   compact = false,
 }: Props) {
-  const { show, place, distanceKm: d, performer } = item
+  const { show, place, distanceKm: d, performer, rating } = item
   const countdown = countdownLabel(show.startAt, nowIso, show.durationMin)
   const live = countdown === '진행 중'
   const seatsLeft = Math.max(0, show.capacity - show.reservedCount)
@@ -68,6 +68,7 @@ export function ShowCard({
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <GenreTag genre={show.genre} size="sm" />
+            {rating !== null && <Rating value={rating} size={11} />}
             <span className="tnum text-2xs text-ink-3">{humanDateTime(show.startAt, nowIso)}</span>
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">

@@ -6,20 +6,23 @@ import { ShowCard, ShowMiniCard } from '@/components/cards/ShowCard'
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { MapView } from '@/components/map/MapView'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Segmented } from '@/components/ui/Chip'
+import { Chip } from '@/components/ui/Chip'
 import { SnapSheet, type SnapIndex } from '@/components/ui/SnapSheet'
 import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
+import { computeTrendingKeywords } from '@/lib/trending'
 import { DEFAULT_FILTER, filterShows, withMeta } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
 import { FilterChips } from './FilterChips'
 import { FilterSheet } from './FilterSheet'
+import { TrendingSearchPanel } from './TrendingSearchPanel'
 
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: 'soon', label: '임박순' },
   { value: 'near', label: '거리순' },
-  { value: 'likes', label: '좋아요순' },
+  { value: 'rating', label: '별점순' },
+  { value: 'likes', label: '인기순' },
   { value: 'recommend', label: '추천순' },
 ]
 
@@ -43,6 +46,7 @@ export function HomeMap() {
 
   const all = useMemo(() => withMeta(shows, venues, performers), [shows, venues, performers])
   const results = useMemo(() => filterShows(all, filter, nowIso), [all, filter, nowIso])
+  const trending = useMemo(() => computeTrendingKeywords(all), [all])
 
   const ownCount = results.filter((r) => r.show.source === 'own').length
   const kopisCount = results.length - ownCount
@@ -82,7 +86,7 @@ export function HomeMap() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'linear-gradient(180deg, rgba(11,11,15,.96) 0%, rgba(11,11,15,.86) 62%, rgba(11,11,15,0) 100%)',
+              'linear-gradient(180deg, rgba(255,255,255,.97) 0%, rgba(255,255,255,.9) 62%, rgba(255,255,255,0) 100%)',
           }}
         />
         <div className="pointer-events-auto relative">
@@ -134,6 +138,14 @@ export function HomeMap() {
               </>
             )}
           </div>
+          {searchOpen && !filter.query.trim() && (
+            <div className="pointer-events-auto mb-2.5">
+              <TrendingSearchPanel
+                keywords={trending}
+                onSelect={(term) => setFilter({ query: term })}
+              />
+            </div>
+          )}
           <FilterChips
             filter={filter}
             onChange={setFilter}
@@ -187,12 +199,17 @@ export function HomeMap() {
                   우리 무대 {ownCount} · 등록 공연 {kopisCount}
                 </span>
               </div>
-              <Segmented
-                className="mt-2.5"
-                value={filter.sort}
-                options={SORT_OPTIONS}
-                onChange={(v) => setFilter({ sort: v })}
-              />
+              <div className="no-scrollbar mt-2.5 flex gap-1.5 overflow-x-auto">
+                {SORT_OPTIONS.map((o) => (
+                  <Chip
+                    key={o.value}
+                    active={filter.sort === o.value}
+                    onClick={() => setFilter({ sort: o.value })}
+                  >
+                    {o.label}
+                  </Chip>
+                ))}
+              </div>
             </div>
           }
         >
