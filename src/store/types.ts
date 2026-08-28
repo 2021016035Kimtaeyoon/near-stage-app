@@ -2,6 +2,7 @@ import type { SeedData } from '@/data/seed'
 import type {
   AppNotification,
   Application,
+  AudienceFilter,
   BidProposal,
   Genre,
   Performer,
@@ -37,6 +38,8 @@ export interface AppState extends SeedData {
   /** 런타임 생성 엔티티 id 시퀀스 */
   seq: number
   demo: DemoState
+  /** 관객 지도 필터 (자동 시연이 조작할 수 있도록 전역 상태로 둡니다) */
+  audienceFilter: AudienceFilter
 }
 
 export interface AcceptResult {
@@ -56,6 +59,7 @@ export interface AppActions {
   setHighlightShow: (showId: string | null) => void
 
   /* 관객 */
+  setAudienceFilter: (patch: Partial<AudienceFilter>) => void
   toggleLike: (showId: string) => void
   toggleFollow: (performerId: string) => void
   createReservation: (showId: string, headcount: number) => Reservation

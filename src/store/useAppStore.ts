@@ -8,6 +8,7 @@ import {
   STORAGE_VERSION,
 } from '@/config/brand'
 import { createSeedData } from '@/data/seed'
+import { DEFAULT_FILTER } from './selectors'
 import { createAudienceActions } from './actions/audience'
 import { createChatActions } from './actions/chat'
 import { createCommonActions } from './actions/common'
@@ -35,6 +36,7 @@ export const useAppStore = create<AppStore>()(
         currentVenueId: DEMO_OWNER_VENUE_ID,
         currentPerformerId: DEMO_PERFORMER_ID,
         seq: 1000,
+        audienceFilter: { ...DEFAULT_FILTER },
         demo: INITIAL_DEMO,
 
         ...createCommonActions(s, g),
@@ -54,6 +56,7 @@ export const useAppStore = create<AppStore>()(
             currentVenueId: DEMO_OWNER_VENUE_ID,
             currentPerformerId: DEMO_PERFORMER_ID,
             seq: 2000,
+            audienceFilter: { ...DEFAULT_FILTER },
             demo: { ...INITIAL_DEMO, active: true },
           })
         },

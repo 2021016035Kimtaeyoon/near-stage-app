@@ -4,6 +4,7 @@ import { PageTransition } from '@/components/shell/PageTransition'
 import { ROLE_HOME } from '@/config/nav'
 import { useAppStore } from '@/store/useAppStore'
 
+import { HomeMap } from '@/screens/audience/HomeMap'
 import { Placeholder } from '@/screens/common/Placeholder'
 
 function RoleRedirect() {
@@ -23,7 +24,7 @@ export function AppRoutes() {
           path="/audience/home"
           element={
             <PageTransition>
-              <Placeholder title="홈 / 지도" note="단계 3에서 구현됩니다." />
+              <HomeMap />
             </PageTransition>
           }
         />

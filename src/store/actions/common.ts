@@ -1,5 +1,6 @@
 import { DEMO_NOW_ISO, DEMO_OWNER_VENUE_ID, DEMO_PERFORMER_ID } from '@/config/brand'
 import { createSeedData } from '@/data/seed'
+import { DEFAULT_FILTER } from '../selectors'
 import type { AppNotification, Role } from '@/types'
 import type { GetState, SetState } from '../types'
 
@@ -23,6 +24,7 @@ export function createCommonActions(set: SetState, get: GetState) {
         currentVenueId: DEMO_OWNER_VENUE_ID,
         currentPerformerId: DEMO_PERFORMER_ID,
         seq: 1000,
+        audienceFilter: { ...DEFAULT_FILTER },
         demo: { active: false, stepIndex: 0, playing: false, speed: 1, highlightShowId: null },
       }),
 

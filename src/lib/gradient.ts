@@ -20,15 +20,17 @@ function hsl(h: number, s: number, l: number): string {
 }
 
 export function seedGradient(seed: string): SeedGradient {
+  // hashSeed는 0~2^32-1 범위의 값을 돌려줍니다. 이 값이 2^31을 넘으면
+  // 부호 있는 `>>` 연산에서 음수가 나올 수 있으므로, 반드시 `>>>`(부호 없는 시프트)를 씁니다.
   const h = hashSeed(seed)
   const baseHue = h % 360
-  const spread = 26 + ((h >> 9) % 46) // 26~71도 차이
+  const spread = 26 + ((h >>> 9) % 46) // 26~71도 차이
   const secondHue = (baseHue + spread) % 360
-  const angle = 100 + ((h >> 5) % 140) // 100~239도
-  const from = hsl(baseHue, 58 + ((h >> 3) % 16), 26 + ((h >> 7) % 12))
-  const to = hsl(secondHue, 48 + ((h >> 11) % 20), 13 + ((h >> 13) % 9))
-  const glowX = 18 + ((h >> 17) % 64)
-  const glowY = 12 + ((h >> 19) % 50)
+  const angle = 100 + ((h >>> 5) % 140) // 100~239도
+  const from = hsl(baseHue, 58 + ((h >>> 3) % 16), 26 + ((h >>> 7) % 12))
+  const to = hsl(secondHue, 48 + ((h >>> 11) % 20), 13 + ((h >>> 13) % 9))
+  const glowX = 18 + ((h >>> 17) % 64)
+  const glowY = 12 + ((h >>> 19) % 50)
   const css = [
     `radial-gradient(120% 90% at ${glowX}% ${glowY}%, rgba(255,255,255,0.16) 0%, rgba(255,255,255,0) 58%)`,
     `linear-gradient(${angle}deg, ${from} 0%, ${to} 100%)`,
@@ -54,9 +56,9 @@ export function seedDots(seed: string, count = 18): Array<{ x: number; y: number
     a = (Math.imul(a ^ (a >>> 15), 2246822507) + i * 2654435761) >>> 0
     out.push({
       x: a % 100,
-      y: (a >> 7) % 100,
-      r: 0.6 + ((a >> 14) % 18) / 10,
-      o: 0.05 + ((a >> 20) % 12) / 100,
+      y: (a >>> 7) % 100,
+      r: 0.6 + ((a >>> 14) % 18) / 10,
+      o: 0.05 + ((a >>> 20) % 12) / 100,
     })
   }
   return out

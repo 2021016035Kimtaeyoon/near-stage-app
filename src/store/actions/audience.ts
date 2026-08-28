@@ -1,6 +1,6 @@
 import { DEPOSIT_AMOUNT } from '@/config/brand'
 import { hashSeed } from '@/lib/rng'
-import type { Reservation, Review } from '@/types'
+import type { AudienceFilter, Reservation, Review } from '@/types'
 import type { GetState, SetState } from '../types'
 
 /** 예약 코드 — 결정론적으로 만들어 QR 캔버스 시드로 사용 */
@@ -11,6 +11,9 @@ function makeCode(showId: string, seq: number): string {
 
 export function createAudienceActions(set: SetState, get: GetState) {
   return {
+    setAudienceFilter: (patch: Partial<AudienceFilter>) =>
+      set((s) => ({ audienceFilter: { ...s.audienceFilter, ...patch } })),
+
     toggleLike: (showId: string) =>
       set((s) => {
         const liked = s.likedShowIds.includes(showId)
