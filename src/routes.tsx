@@ -13,7 +13,9 @@ import { ShowDetail } from '@/screens/audience/ShowDetail'
 import { TicketScreen } from '@/screens/audience/TicketScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
 import { Placeholder } from '@/screens/common/Placeholder'
+import { OwnerApplicantsScreen } from '@/screens/owner/OwnerApplicantsScreen'
 import { OwnerDashboard } from '@/screens/owner/OwnerDashboard'
+import { OwnerRecruitScreen } from '@/screens/owner/OwnerRecruitScreen'
 import { OwnerVenueScreen } from '@/screens/owner/OwnerVenueScreen'
 
 function RoleRedirect() {
@@ -107,7 +109,7 @@ export function AppRoutes() {
           path="/owner/recruit"
           element={
             <PageTransition>
-              <Placeholder title="구인 & 지원자" note="단계 8에서 구현됩니다." />
+              <OwnerRecruitScreen />
             </PageTransition>
           }
         />
@@ -115,7 +117,7 @@ export function AppRoutes() {
           path="/owner/applicants/:postId"
           element={
             <PageTransition>
-              <Placeholder title="지원자" note="단계 8에서 구현됩니다." />
+              <OwnerApplicantsScreen />
             </PageTransition>
           }
         />
