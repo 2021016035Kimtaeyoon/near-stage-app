@@ -14,6 +14,7 @@ import { TicketScreen } from '@/screens/audience/TicketScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
 import { Placeholder } from '@/screens/common/Placeholder'
 import { OwnerDashboard } from '@/screens/owner/OwnerDashboard'
+import { OwnerVenueScreen } from '@/screens/owner/OwnerVenueScreen'
 
 function RoleRedirect() {
   const role = useAppStore((s) => s.role)
@@ -98,7 +99,7 @@ export function AppRoutes() {
           path="/owner/venue"
           element={
             <PageTransition>
-              <Placeholder title="내 공간 관리" note="단계 7에서 구현됩니다." />
+              <OwnerVenueScreen />
             </PageTransition>
           }
         />

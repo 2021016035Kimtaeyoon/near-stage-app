@@ -75,7 +75,8 @@ export interface AppActions {
   createPost: (input: Omit<Post, 'id' | 'createdAt' | 'applications' | 'closed'>) => Post
   acceptApplication: (postId: string, applicationId: string, startAt: string) => AcceptResult | null
   rejectApplication: (postId: string, applicationId: string, reason: string) => void
-  sendUrgentMatch: (venueId: string, message: string) => void
+  /** 긴급 매칭 요청을 발송하고, 방금 생성된 구인글 id를 반환합니다 */
+  sendUrgentMatch: (venueId: string, message: string) => string
   settleAll: (venueId: string) => number
 
   /* 공연자 */
