@@ -29,6 +29,6 @@ export function KpiCard({ icon: Icon, label, value, hint, tone = 'default' }: Kp
   )
 }
 
-export function KpiGrid({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-2 gap-2.5">{children}</div>
+export function KpiGrid({ children, className }: { children: ReactNode; className?: string }) {
+  return <div className={cn('grid grid-cols-2 gap-2.5', className)}>{children}</div>
 }

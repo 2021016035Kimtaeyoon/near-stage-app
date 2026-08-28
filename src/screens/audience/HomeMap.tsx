@@ -38,7 +38,8 @@ export function HomeMap() {
   const setFilter = useAppStore((s) => s.setAudienceFilter)
   const highlightShowId = useAppStore((s) => s.demo.highlightShowId)
 
-  const [view, setView] = useState<'map' | 'list'>('map')
+  // 홈은 지도 단독이 아니라 상단 검색창 + 하단 공연 리스트가 기본입니다
+  const [view, setView] = useState<'map' | 'list'>('list')
   const [snap, setSnap] = useState<SnapIndex>(1)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
