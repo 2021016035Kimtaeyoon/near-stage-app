@@ -5,10 +5,13 @@ import { ROLE_HOME } from '@/config/nav'
 import { useAppStore } from '@/store/useAppStore'
 
 import { BookingFlow } from '@/screens/audience/BookingFlow'
+import { ClipFeed } from '@/screens/audience/ClipFeed'
 import { HomeMap } from '@/screens/audience/HomeMap'
+import { MyPage } from '@/screens/audience/MyPage'
 import { ReviewCompose } from '@/screens/audience/ReviewCompose'
 import { ShowDetail } from '@/screens/audience/ShowDetail'
 import { TicketScreen } from '@/screens/audience/TicketScreen'
+import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
 import { Placeholder } from '@/screens/common/Placeholder'
 
 function RoleRedirect() {
@@ -36,7 +39,7 @@ export function AppRoutes() {
           path="/audience/clips"
           element={
             <PageTransition>
-              <Placeholder title="클립 피드" note="단계 5에서 구현됩니다." />
+              <ClipFeed />
             </PageTransition>
           }
         />
@@ -76,7 +79,7 @@ export function AppRoutes() {
           path="/audience/my"
           element={
             <PageTransition>
-              <Placeholder title="마이" note="단계 5에서 구현됩니다." />
+              <MyPage />
             </PageTransition>
           }
         />
@@ -170,7 +173,7 @@ export function AppRoutes() {
           path="/notifications"
           element={
             <PageTransition>
-              <Placeholder title="알림" note="단계 10에서 구현됩니다." />
+              <NotificationsScreen />
             </PageTransition>
           }
         />
