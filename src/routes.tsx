@@ -4,7 +4,11 @@ import { PageTransition } from '@/components/shell/PageTransition'
 import { ROLE_HOME } from '@/config/nav'
 import { useAppStore } from '@/store/useAppStore'
 
+import { BookingFlow } from '@/screens/audience/BookingFlow'
 import { HomeMap } from '@/screens/audience/HomeMap'
+import { ReviewCompose } from '@/screens/audience/ReviewCompose'
+import { ShowDetail } from '@/screens/audience/ShowDetail'
+import { TicketScreen } from '@/screens/audience/TicketScreen'
 import { Placeholder } from '@/screens/common/Placeholder'
 
 function RoleRedirect() {
@@ -40,7 +44,7 @@ export function AppRoutes() {
           path="/audience/show/:showId"
           element={
             <PageTransition>
-              <Placeholder title="공연 상세" note="단계 4에서 구현됩니다." />
+              <ShowDetail />
             </PageTransition>
           }
         />
@@ -48,7 +52,7 @@ export function AppRoutes() {
           path="/audience/book/:showId"
           element={
             <PageTransition>
-              <Placeholder title="예약" note="단계 4에서 구현됩니다." />
+              <BookingFlow />
             </PageTransition>
           }
         />
@@ -56,7 +60,7 @@ export function AppRoutes() {
           path="/audience/ticket/:reservationId"
           element={
             <PageTransition>
-              <Placeholder title="QR 티켓" note="단계 4에서 구현됩니다." />
+              <TicketScreen />
             </PageTransition>
           }
         />
@@ -64,7 +68,7 @@ export function AppRoutes() {
           path="/audience/review/:showId"
           element={
             <PageTransition>
-              <Placeholder title="리뷰 작성" note="단계 4에서 구현됩니다." />
+              <ReviewCompose />
             </PageTransition>
           }
         />
