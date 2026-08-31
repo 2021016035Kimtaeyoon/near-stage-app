@@ -68,7 +68,7 @@ export function VenueInfoForm({ venue }: { venue: Venue }) {
               onClick={() => toggleGenre(g)}
               className={
                 genres.includes(g)
-                  ? 'brand-gradient rounded-full px-3 py-1.5 text-xs font-bold text-white'
+                  ? 'bg-gold-500 rounded-full px-3 py-1.5 text-xs font-bold text-gold-ink'
                   : 'rounded-full border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-ink-2'
               }
             >

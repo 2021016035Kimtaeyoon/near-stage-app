@@ -47,7 +47,7 @@ export function OwnerDashboard() {
         {pending.length > 0 && (
           <button
             onClick={() => navigate('/owner/recruit')}
-            className="brand-gradient mb-4 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left text-white"
+            className="bg-gold-500 mb-4 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left text-gold-ink"
           >
             <span>
               <span className="block text-[13px] font-extrabold">

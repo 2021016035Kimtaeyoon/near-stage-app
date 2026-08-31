@@ -109,7 +109,7 @@ export function RangeSlider({
       <div className="relative h-9">
         <div className="absolute inset-x-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full bg-border" />
         <div
-          className="brand-gradient absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full"
+          className="bg-gold-500 absolute left-0 top-1/2 h-1.5 -translate-y-1/2 rounded-full"
           style={{ width: `${pct}%` }}
         />
         <input
@@ -122,9 +122,9 @@ export function RangeSlider({
           className="absolute inset-0 h-9 w-full cursor-pointer appearance-none bg-transparent
             [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none
             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2
-            [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#FF5560]
+            [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#F0B429]
             [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#FF5560]"
+            [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#F0B429]"
         />
       </div>
     </div>
@@ -141,7 +141,7 @@ export function Gauge({ value, caption }: { value: number; caption?: string }) {
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-border">
         <div
-          className="brand-gradient h-full rounded-full transition-all duration-500"
+          className="bg-gold-500 h-full rounded-full transition-all duration-500"
           style={{ width: `${value}%` }}
         />
       </div>

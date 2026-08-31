@@ -142,7 +142,7 @@ export function AcceptSheet({
 
       {step === 'done' && (
         <div className="flex flex-col items-center py-6 text-center">
-          <div className="brand-gradient flex h-14 w-14 items-center justify-center rounded-full text-white">
+          <div className="bg-gold-500 flex h-14 w-14 items-center justify-center rounded-full text-gold-ink">
             <CheckCircle2 size={28} />
           </div>
           <p className="mt-3 text-sm font-bold">{performer.teamName} 공연이 확정되었어요</p>

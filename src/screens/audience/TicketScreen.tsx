@@ -47,7 +47,7 @@ export function TicketScreen() {
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pb-8 pt-2">
         <div className="overflow-hidden rounded-3xl border border-border">
-          <div className="brand-gradient px-5 pb-8 pt-6 text-white">
+          <div className="bg-gold-500 px-5 pb-8 pt-6 text-gold-ink">
             <div className="flex items-center justify-between">
               <SourceBadge source={show.source} />
               <span className="flex items-center gap-1 text-2xs font-bold opacity-90">

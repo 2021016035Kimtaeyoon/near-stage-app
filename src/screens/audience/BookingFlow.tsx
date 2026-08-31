@@ -225,7 +225,7 @@ function StepPay({
             className="mt-4 flex items-center justify-center gap-2 text-sm font-semibold text-ink-2"
           >
             <motion.span
-              className="h-4 w-4 rounded-full border-2 border-border-strong border-t-[#FF5560]"
+              className="h-4 w-4 rounded-full border-2 border-border-strong border-t-[#F0B429]"
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
             />
@@ -244,7 +244,7 @@ function StepDone({ reservationId, onGoTicket }: { reservationId: string; onGoTi
       animate={{ opacity: 1, scale: 1 }}
       className="flex flex-col items-center pt-8 text-center"
     >
-      <div className="brand-gradient flex h-16 w-16 items-center justify-center rounded-full text-white">
+      <div className="bg-gold-500 flex h-16 w-16 items-center justify-center rounded-full text-gold-ink">
         <CheckCircle2 size={32} />
       </div>
       <h2 className="mt-4 text-lg font-extrabold">예약이 완료되었어요</h2>

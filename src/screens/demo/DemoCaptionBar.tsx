@@ -25,7 +25,7 @@ export function DemoCaptionBar() {
   return (
     <div className="absolute inset-x-0 top-0 z-[110] border-b border-border-strong bg-[#17171C] px-4 pb-2.5 pt-11 text-white shadow-lg">
       <div className="mb-1.5 flex items-center justify-between gap-2">
-        <span className="tnum brand-gradient rounded-full px-2 py-0.5 text-2xs font-extrabold">
+        <span className="tnum bg-gold-500 rounded-full px-2 py-0.5 text-2xs font-extrabold">
           {stepIndex + 1} / {DEMO_STEPS.length}
         </span>
         <span className="rounded-full bg-white/15 px-2 py-0.5 text-2xs font-bold">
@@ -110,7 +110,7 @@ function IconBtn({
       aria-label={label}
       className={
         primary
-          ? 'brand-gradient tap flex h-9 w-9 items-center justify-center rounded-full disabled:opacity-30'
+          ? 'bg-gold-500 tap flex h-9 w-9 items-center justify-center rounded-full disabled:opacity-30'
           : 'tap flex h-9 w-9 items-center justify-center rounded-full bg-white/10 disabled:opacity-30'
       }
     >

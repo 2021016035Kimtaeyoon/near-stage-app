@@ -17,7 +17,7 @@ export function KpiCard({ icon: Icon, label, value, hint, tone = 'default' }: Kp
       <div
         className={cn(
           'mb-2 flex h-8 w-8 items-center justify-center rounded-lg',
-          tone === 'brand' ? 'brand-gradient text-white' : 'bg-surface-2 text-ink-2',
+          tone === 'brand' ? 'bg-gold-500 text-gold-ink' : 'bg-surface-2 text-ink-2',
         )}
       >
         <Icon size={15} />

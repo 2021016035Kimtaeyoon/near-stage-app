@@ -71,7 +71,7 @@ export function UrgentMatchModal({
     >
       {sent ? (
         <div className="flex flex-col items-center py-4 text-center">
-          <span className="brand-gradient flex h-12 w-12 items-center justify-center rounded-full text-white">
+          <span className="bg-gold-500 flex h-12 w-12 items-center justify-center rounded-full text-gold-ink">
             <Zap size={22} />
           </span>
           <p className="mt-3 text-sm font-bold">발송 완료!</p>

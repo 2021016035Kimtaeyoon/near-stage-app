@@ -50,7 +50,7 @@ export function ShowDetailHero({
         >
           <Heart
             size={16}
-            className={liked ? 'fill-[#FF3D77] text-[#FF3D77]' : ''}
+            className={liked ? 'fill-[#F0B429] text-[#F0B429]' : ''}
             strokeWidth={liked ? 0 : 2}
           />
         </IconButton>

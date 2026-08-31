@@ -49,7 +49,7 @@ export function DesktopOwnerHome() {
           {pending.length > 0 && (
             <button
               onClick={() => navigate('/owner/recruit')}
-              className="brand-gradient flex items-center gap-1.5 rounded-full px-5 py-3 text-sm font-bold text-white"
+              className="bg-gold-500 flex items-center gap-1.5 rounded-full px-5 py-3 text-sm font-bold text-gold-ink"
             >
               대기 중인 지원자 {pending.length}명 확인하기
               <ChevronRight size={16} />

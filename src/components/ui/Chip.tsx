@@ -20,7 +20,7 @@ export function Chip({ active = false, onClick, children, brand = false, classNa
         'inline-flex h-9 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border px-3 text-xs font-semibold transition-colors',
         active
           ? brand
-            ? 'brand-gradient border-transparent text-white'
+            ? 'bg-gold-500 border-transparent text-gold-ink'
             : 'border-ink/80 bg-ink text-bg'
           : 'border-border bg-surface text-ink-2 active:bg-surface-2',
         className,
@@ -93,7 +93,7 @@ export function Toggle({
       <span
         className={cn(
           'relative h-[30px] w-[52px] shrink-0 rounded-full transition-colors duration-200',
-          checked ? 'brand-gradient' : 'bg-border-strong',
+          checked ? 'bg-gold-500' : 'bg-border-strong',
         )}
       >
         <span

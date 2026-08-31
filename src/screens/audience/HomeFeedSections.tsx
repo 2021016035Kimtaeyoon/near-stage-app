@@ -19,7 +19,7 @@ function Row({
   return (
     <section className="mb-5">
       <h2 className="mb-2 flex items-center gap-1.5 text-[15px] font-bold">
-        <Icon size={16} className="text-[#FF3D77]" />
+        <Icon size={16} className="text-[#F0B429]" />
         {title}
       </h2>
       <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4">
@@ -57,7 +57,7 @@ export function FreeShowsBanner({ count, onClick }: { count: number; onClick: ()
   return (
     <button
       onClick={onClick}
-      className="brand-gradient mb-5 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left text-white"
+      className="bg-gold-500 mb-5 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left text-gold-ink"
     >
       <div>
         <p className="text-xs font-bold opacity-90">지금 예약할 수 있는</p>

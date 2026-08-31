@@ -139,8 +139,8 @@ export function ClipFeed() {
       {/* 하이라이트 업로드 */}
       <button
         onClick={() => setUploadOpen(true)}
-        className="brand-gradient absolute left-3 top-12 z-30 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold text-white"
-        style={{ boxShadow: '0 8px 20px rgba(255,61,119,.4)' }}
+        className="bg-gold-500 absolute left-3 top-12 z-30 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold text-gold-ink"
+        style={{ boxShadow: '0 8px 20px rgba(240,180,41,.4)' }}
       >
         <Plus size={15} />
         하이라이트 올리기

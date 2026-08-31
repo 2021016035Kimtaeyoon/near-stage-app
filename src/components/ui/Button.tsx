@@ -14,7 +14,7 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  brand: 'brand-gradient text-white font-bold shadow-[0_6px_20px_rgba(255,61,119,.25)]',
+  brand: 'bg-gold-500 text-gold-ink font-bold shadow-[0_6px_20px_rgba(240,180,41,.25)]',
   solid: 'bg-surface-2 text-ink font-semibold border border-border-strong',
   ghost: 'bg-transparent text-ink-2 font-semibold',
   outline: 'bg-transparent text-ink font-semibold border border-border-strong',

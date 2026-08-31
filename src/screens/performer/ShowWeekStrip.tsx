@@ -38,7 +38,7 @@ export function ShowWeekStrip({
           className={cn(
             'flex flex-1 flex-col items-center gap-1 rounded-xl border py-2 text-2xs font-bold transition-colors',
             selectedDate === d.key
-              ? 'brand-gradient border-transparent text-white'
+              ? 'bg-gold-500 border-transparent text-gold-ink'
               : d.isToday
                 ? 'border-border-strong bg-surface-2 text-ink'
                 : 'border-border bg-surface text-ink-2',
@@ -49,7 +49,7 @@ export function ShowWeekStrip({
           <span
             className={cn(
               'h-1 w-1 rounded-full',
-              d.hasShow ? (selectedDate === d.key ? 'bg-white' : 'bg-[#FF5560]') : 'bg-transparent',
+              d.hasShow ? (selectedDate === d.key ? 'bg-white' : 'bg-[#F0B429]') : 'bg-transparent',
             )}
           />
         </button>

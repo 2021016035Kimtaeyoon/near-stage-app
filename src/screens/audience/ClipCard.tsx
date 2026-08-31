@@ -63,7 +63,7 @@ export function ClipCard({
           className="flex flex-col items-center gap-1 text-white"
         >
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/35">
-            <Heart size={22} className={liked ? 'fill-[#FF3D77] text-[#FF3D77]' : ''} />
+            <Heart size={22} className={liked ? 'fill-[#F0B429] text-[#F0B429]' : ''} />
           </span>
           <span className="text-2xs font-bold drop-shadow">
             {(performer.followerCount / 10).toFixed(0)}
@@ -88,7 +88,7 @@ export function ClipCard({
             className={
               following
                 ? 'flex h-11 w-11 items-center justify-center rounded-full bg-white/25'
-                : 'brand-gradient flex h-11 w-11 items-center justify-center rounded-full'
+                : 'bg-gold-500 flex h-11 w-11 items-center justify-center rounded-full'
             }
           >
             {following ? <UserCheck size={20} /> : <UserPlus size={20} />}
@@ -122,8 +122,8 @@ export function ClipCard({
         {upcomingShow && (
           <button
             onClick={() => onOpenShow(upcomingShow.id)}
-            className="brand-gradient mt-3 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left"
-            style={{ boxShadow: '0 10px 28px rgba(255,61,119,.4)' }}
+            className="bg-gold-500 mt-3 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left"
+            style={{ boxShadow: '0 10px 28px rgba(240,180,41,.4)' }}
           >
             <span className="min-w-0">
               <span className="block text-[13px] font-extrabold leading-tight">

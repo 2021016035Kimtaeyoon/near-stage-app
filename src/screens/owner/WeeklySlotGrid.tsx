@@ -88,7 +88,7 @@ export function WeeklySlotGrid({ venueId, slots, onEmptyCellTap }: Props) {
                       slot &&
                         !booked &&
                         open &&
-                        'brand-gradient border-transparent text-white',
+                        'bg-gold-500 border-transparent text-gold-ink',
                       slot &&
                         !booked &&
                         !open &&
@@ -113,7 +113,7 @@ export function WeeklySlotGrid({ venueId, slots, onEmptyCellTap }: Props) {
       </div>
 
       <div className="mt-3 flex flex-wrap items-center gap-3 text-2xs text-ink-3">
-        <Legend swatchClass="brand-gradient" label="열림" />
+        <Legend swatchClass="bg-gold-500" label="열림" />
         <Legend swatchClass="border border-border bg-surface" label="닫힘" />
         <Legend swatchClass="border border-border-strong bg-surface-2" label="공연 확정 (잠금)" />
         <Legend swatchClass="border border-dashed border-border" label="빈 슬롯 · 탭해서 추가" />

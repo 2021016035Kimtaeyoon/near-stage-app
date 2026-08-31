@@ -80,7 +80,7 @@ export function ReviewCompose() {
           <h1 className="text-[16px] font-bold">리뷰 작성</h1>
         </div>
         <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
-          <div className="brand-gradient flex h-14 w-14 items-center justify-center rounded-full text-2xl text-white">
+          <div className="bg-gold-500 flex h-14 w-14 items-center justify-center rounded-full text-2xl text-gold-ink">
             ✓
           </div>
           <h2 className="mt-4 text-lg font-extrabold">리뷰가 등록되었어요</h2>

@@ -33,7 +33,7 @@ export class ErrorBoundary extends Component<Props, State> {
           </p>
           <button
             onClick={() => window.location.reload()}
-            className="brand-gradient rounded-full px-5 py-3 text-sm font-bold text-white"
+            className="bg-gold-500 rounded-full px-5 py-3 text-sm font-bold text-gold-ink"
           >
             새로고침
           </button>

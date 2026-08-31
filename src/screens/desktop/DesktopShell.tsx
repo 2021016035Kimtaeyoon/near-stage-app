@@ -40,7 +40,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
         </p>
         <button
           onClick={() => navigate('/')}
-          className="brand-gradient mt-2 flex items-center gap-1.5 rounded-full px-5 py-3 text-sm font-bold text-white"
+          className="bg-gold-500 mt-2 flex items-center gap-1.5 rounded-full px-5 py-3 text-sm font-bold text-gold-ink"
         >
           <Smartphone size={15} />
           모바일 앱으로 보기
@@ -77,8 +77,8 @@ export function DesktopShell({ children }: { children: ReactNode }) {
                 {role === r && (
                   <motion.span
                     layoutId="desktop-role-pill"
-                    className="brand-gradient absolute inset-0 rounded-full"
-                    style={{ boxShadow: '0 4px 12px -2px rgba(255,61,119,.4)' }}
+                    className="bg-gold-500 absolute inset-0 rounded-full"
+                    style={{ boxShadow: '0 4px 12px -2px rgba(240,180,41,.4)' }}
                     transition={{ type: 'spring', stiffness: 450, damping: 45 }}
                   />
                 )}
@@ -96,7 +96,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
           >
             <Bell size={18} />
             {unread > 0 && (
-              <span className="tnum absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#FF3D77] px-1 text-[9px] font-bold text-white">
+              <span className="tnum absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#F0B429] px-1 text-[9px] font-bold text-white">
                 {unread}
               </span>
             )}
@@ -128,7 +128,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
               className={cn(
                 'flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-[13px] font-bold transition-colors',
                 active
-                  ? 'border-[#FF3D77] text-ink'
+                  ? 'border-[#F0B429] text-ink'
                   : 'border-transparent text-ink-3 hover:text-ink-2',
               )}
             >

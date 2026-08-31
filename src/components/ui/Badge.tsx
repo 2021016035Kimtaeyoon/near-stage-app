@@ -20,7 +20,7 @@ export function SourceBadge({
     return (
       <span
         className={cn(
-          'brand-gradient inline-flex items-center gap-1 rounded-full font-bold text-white',
+          'bg-gold-500 inline-flex items-center gap-1 rounded-full font-bold text-gold-ink',
           sm ? 'px-1.5 py-0.5 text-2xs' : 'px-2 py-1 text-xs',
         )}
       >
@@ -86,7 +86,7 @@ export function Tag({
 
 export function StatusDot({ label, tone }: { label: string; tone: 'live' | 'soon' | 'done' }) {
   const map = {
-    live: { color: '#FF3D77', text: 'text-[#FF7FA6]' },
+    live: { color: '#F0B429', text: 'text-[#F7C851]' },
     soon: { color: '#4ED4A0', text: 'text-ok' },
     done: { color: '#6B6B77', text: 'text-ink-3' },
   }[tone]

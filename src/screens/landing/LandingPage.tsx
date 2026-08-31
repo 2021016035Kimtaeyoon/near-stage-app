@@ -78,7 +78,7 @@ export function LandingPage() {
             </button>
             <button
               onClick={() => navigate('/desktop')}
-              className="brand-gradient rounded-full px-4 py-2 text-sm font-bold text-white"
+              className="bg-gold-500 rounded-full px-4 py-2 text-sm font-bold text-gold-ink"
             >
               웹으로 시작하기
             </button>
@@ -114,7 +114,7 @@ export function LandingPage() {
               </button>
               <button
                 onClick={() => navigate('/desktop')}
-                className="brand-gradient rounded-full px-4 py-2.5 text-sm font-bold text-white"
+                className="bg-gold-500 rounded-full px-4 py-2.5 text-sm font-bold text-gold-ink"
               >
                 웹으로 시작하기
               </button>

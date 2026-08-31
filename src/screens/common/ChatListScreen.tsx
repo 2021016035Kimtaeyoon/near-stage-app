@@ -50,7 +50,7 @@ export function ChatListScreen() {
                     <p className="truncate text-xs text-ink-2">{t.lastText}</p>
                   </div>
                   {t.unread > 0 && (
-                    <span className="brand-gradient tnum flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-bold text-white">
+                    <span className="bg-gold-500 tnum flex h-5 min-w-[20px] shrink-0 items-center justify-center rounded-full px-1 text-[10px] font-bold text-gold-ink">
                       {t.unread}
                     </span>
                   )}

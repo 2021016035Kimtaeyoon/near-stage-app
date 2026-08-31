@@ -67,7 +67,7 @@ export function ChatThreadScreen() {
                 <div
                   className={cn(
                     'inline-block rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed',
-                    mine ? 'brand-gradient text-white' : 'border border-border bg-surface-2 text-ink',
+                    mine ? 'bg-gold-500 text-gold-ink' : 'border border-border bg-surface-2 text-ink',
                   )}
                 >
                   {m.text}
@@ -90,7 +90,7 @@ export function ChatThreadScreen() {
         <button
           onClick={submit}
           aria-label="전송"
-          className="brand-gradient tap flex items-center justify-center rounded-full text-white"
+          className="bg-gold-500 tap flex items-center justify-center rounded-full text-gold-ink"
         >
           <Send size={17} />
         </button>

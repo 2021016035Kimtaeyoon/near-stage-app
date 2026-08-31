@@ -37,7 +37,7 @@ export function TabBar() {
                     className={active ? 'text-ink' : 'text-ink-3'}
                   />
                   {badge > 0 && (
-                    <span className="brand-gradient tnum absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold text-white">
+                    <span className="bg-gold-500 tnum absolute -right-2 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[9px] font-bold text-gold-ink">
                       {badge}
                     </span>
                   )}

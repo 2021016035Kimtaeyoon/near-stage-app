@@ -45,7 +45,7 @@ export function FollowerTrendChart({ performerId, current }: { performerId: stri
               labelFormatter={(l) => l}
               contentStyle={{ fontSize: 11, borderRadius: 8, border: '1px solid #E5E5EA' }}
             />
-            <Line type="monotone" dataKey="followers" stroke="#FF5560" strokeWidth={2.4} dot={false} />
+            <Line type="monotone" dataKey="followers" stroke="#F0B429" strokeWidth={2.4} dot={false} />
           </LineChart>
         </ResponsiveContainer>
       </div>

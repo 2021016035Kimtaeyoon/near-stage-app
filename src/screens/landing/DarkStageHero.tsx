@@ -330,8 +330,8 @@ export function DarkStageHero() {
             <div className={`pointer-events-auto flex flex-wrap items-center justify-center gap-3 ${ctaGapClass}`}>
               <button
                 onClick={() => navigate('/desktop')}
-                className="brand-gradient rounded-full px-7 py-4 text-[15px] font-bold text-white"
-                style={{ boxShadow: '0 16px 40px rgba(255,61,119,.4)' }}
+                className="bg-gold-500 rounded-full px-7 py-4 text-[15px] font-bold text-gold-ink"
+                style={{ boxShadow: '0 16px 40px rgba(240,180,41,.4)' }}
               >
                 웹으로 둘러보기 →
               </button>
@@ -363,13 +363,13 @@ export function DarkStageHero() {
                 <p className="text-xs font-bold uppercase tracking-widest text-white/50">{panel.role}</p>
                 <p className="mt-2 text-3xl font-extrabold text-white sm:text-4xl">“{panel.quote}”</p>
                 <p className="mt-4 text-[15px] leading-relaxed text-white/70">{panel.body}</p>
-                <p className="brand-text mt-3 text-[15px] font-bold">{panel.solution}</p>
+                <p className="text-gold-500 mt-3 text-[15px] font-bold">{panel.solution}</p>
                 {panel.withCta && (
                   <div className="mt-7 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
                     <button
                       onClick={() => navigate('/desktop')}
-                      className="brand-gradient rounded-full px-7 py-4 text-[15px] font-bold text-white"
-                      style={{ boxShadow: '0 16px 40px rgba(255,61,119,.4)' }}
+                      className="bg-gold-500 rounded-full px-7 py-4 text-[15px] font-bold text-gold-ink"
+                      style={{ boxShadow: '0 16px 40px rgba(240,180,41,.4)' }}
                     >
                       웹으로 둘러보기 →
                     </button>
@@ -475,7 +475,7 @@ export function DarkStageHero() {
         {/* 진행 인디케이터 */}
         <div className="pointer-events-none absolute inset-x-0 bottom-8 z-30 flex justify-center gap-2">
           {dots.map((d, i) => (
-            <motion.span key={i} className="h-1.5 w-1.5 rounded-full bg-[#FF5560]" style={{ opacity: d }} />
+            <motion.span key={i} className="h-1.5 w-1.5 rounded-full bg-[#F0B429]" style={{ opacity: d }} />
           ))}
         </div>
       </div>
@@ -701,7 +701,7 @@ function StaticHeroFallback({ onNavigate }: { onNavigate: (path: string) => void
         <LogoMark dark className="w-[260px] sm:w-[320px]" />
         <p className="mt-6 text-[15px] font-semibold text-white/80">{HERO_TAGLINE}</p>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <button onClick={() => onNavigate('/desktop')} className="brand-gradient rounded-full px-7 py-4 text-[15px] font-bold text-white">
+          <button onClick={() => onNavigate('/desktop')} className="bg-gold-500 rounded-full px-7 py-4 text-[15px] font-bold text-gold-ink">
             웹으로 둘러보기 →
           </button>
           <button onClick={() => onNavigate('/')} className="rounded-full border border-white/25 px-7 py-4 text-[15px] font-bold text-white">
@@ -716,10 +716,10 @@ function StaticHeroFallback({ onNavigate }: { onNavigate: (path: string) => void
             <p className="text-xs font-bold uppercase tracking-widest text-white/50">{panel.role}</p>
             <p className="mt-2 text-2xl font-extrabold text-white">“{panel.quote}”</p>
             <p className="mt-3 text-[15px] leading-relaxed text-white/70">{panel.body}</p>
-            <p className="brand-text mt-2 text-[15px] font-bold">{panel.solution}</p>
+            <p className="text-gold-500 mt-2 text-[15px] font-bold">{panel.solution}</p>
             {panel.withCta && (
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-                <button onClick={() => onNavigate('/desktop')} className="brand-gradient rounded-full px-7 py-4 text-[15px] font-bold text-white">
+                <button onClick={() => onNavigate('/desktop')} className="bg-gold-500 rounded-full px-7 py-4 text-[15px] font-bold text-gold-ink">
                   웹으로 둘러보기 →
                 </button>
                 <button onClick={() => onNavigate('/')} className="rounded-full border border-white/25 px-7 py-4 text-[15px] font-bold text-white">

@@ -112,7 +112,7 @@ export function DevPanel() {
                         [&::-webkit-slider-thumb]:mt-[-9px] [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6
                         [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full
                         [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white
-                        [&::-webkit-slider-thumb]:bg-[#FF5560]"
+                        [&::-webkit-slider-thumb]:bg-[#F0B429]"
                     />
                     <div className="flex items-center justify-between">
                       <span className="text-2xs text-ink-3">시간대별 지도 변화 시연용</span>

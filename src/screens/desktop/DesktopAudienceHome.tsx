@@ -120,7 +120,7 @@ export function DesktopAudienceHome() {
 
           <div className="flex items-center justify-between border-t border-border pt-3">
             <p className="text-xs font-bold text-ink">
-              이 지역 공연 <span className="tnum text-[#FF5560]">{results.length}</span>건
+              이 지역 공연 <span className="tnum text-[#F0B429]">{results.length}</span>건
             </p>
             <p className="tnum text-2xs text-ink-3">
               우리 무대 {ownCount} · 등록 공연 {kopisCount}
