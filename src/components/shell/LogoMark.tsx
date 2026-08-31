@@ -1,54 +1,43 @@
 interface Props {
   className?: string
-  /** 어두운 배경(랜딩 인트로, 푸터 등) 위에 놓일 때 — 배경 없이도 대비가 유지되도록 색을 반전 */
+  /** 어두운 배경(랜딩 인트로, 푸터 등) 위에 놓일 때 — NEAR를 흰색으로 반전 */
   dark?: boolean
 }
-
-const STAGE_LETTERS: Array<{ char: string; x: number; y: number }> = [
-  { char: 'S', x: 81, y: 205 },
-  { char: 'T', x: 136, y: 219 },
-  { char: 'A', x: 200, y: 224 },
-  { char: 'G', x: 264, y: 219 },
-  { char: 'E', x: 319, y: 205 },
-]
 
 /**
  * NEAR:STAGE 워드마크. 외부 이미지 파일 없이 SVG로 그려서
  * 어떤 배율에서도 또렷하게 보이고 오프라인에서도 항상 렌더링됩니다.
- * NEAR를 감싸는 타원 링 아래로 STAGE 글자가 무대 곡선을 따라 놓입니다.
- * 글자 자체는 기울이지 않고 위치만 곡선을 따라 배치해 또렷하게 읽힙니다.
+ * NEAR는 곧게, STAGE는 무대가 NEAR를 아래에서 감싸듯 깊게 파인
+ * 곡선을 따라(SVG textPath) 이탤릭으로 흐르며, 배경 플레이트는 없습니다.
  */
 export function LogoMark({ className, dark = false }: Props) {
-  const color = dark ? '#FFFFFF' : '#0A0A0F'
   return (
-    <svg viewBox="0 0 400 260" className={className} role="img" aria-label="NEAR:STAGE">
-      <ellipse cx="200" cy="148" rx="178" ry="76" fill="none" stroke={color} strokeWidth="4" />
+    <svg viewBox="0 0 340 260" className={className} role="img" aria-label="NEAR:STAGE">
+      <path id="stage-arc" d="M 50 122 Q 170 232 290 122" fill="none" />
       <text
-        x="200"
-        y="176"
+        x="170"
+        y="92"
         textAnchor="middle"
         fontFamily="Pretendard Variable, Pretendard, -apple-system, sans-serif"
         fontWeight={900}
-        fontSize="102"
-        fill={color}
-        letterSpacing="-2"
+        fontSize="66"
+        fill={dark ? '#FFFFFF' : '#0A0A0F'}
+        letterSpacing="-1"
       >
         NEAR
       </text>
-      {STAGE_LETTERS.map((l) => (
-        <text
-          key={l.char}
-          x={l.x}
-          y={l.y}
-          textAnchor="middle"
-          fontFamily="Pretendard Variable, Pretendard, -apple-system, sans-serif"
-          fontWeight={700}
-          fontSize="30"
-          fill={color}
-        >
-          {l.char}
-        </text>
-      ))}
+      <text
+        fontFamily="Pretendard Variable, Pretendard, -apple-system, sans-serif"
+        fontWeight={800}
+        fontStyle="italic"
+        fontSize="46"
+        fill="#FF5560"
+        letterSpacing="11"
+      >
+        <textPath href="#stage-arc" startOffset="50%" textAnchor="middle">
+          STAGE
+        </textPath>
+      </text>
     </svg>
   )
 }
