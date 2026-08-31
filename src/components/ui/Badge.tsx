@@ -86,7 +86,7 @@ export function Tag({
 
 export function StatusDot({ label, tone }: { label: string; tone: 'live' | 'soon' | 'done' }) {
   const map = {
-    live: { color: '#3D5FC7', text: 'text-[#93AEEF]' },
+    live: { color: '#FF3D77', text: 'text-[#FF7FA6]' },
     soon: { color: '#4ED4A0', text: 'text-ok' },
     done: { color: '#6B6B77', text: 'text-ink-3' },
   }[tone]

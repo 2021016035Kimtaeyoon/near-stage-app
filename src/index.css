@@ -5,8 +5,8 @@
 @layer base {
   :root {
     color-scheme: light;
-    --brand-from: #6D93E8;
-    --brand-to: #3D5FC7;
+    --brand-from: #FF6B4A;
+    --brand-to: #FF3D77;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 

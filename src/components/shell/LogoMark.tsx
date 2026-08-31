@@ -39,7 +39,7 @@ export function LogoMark({ className, dark = false, stageColor }: Props) {
         fontWeight={800}
         fontStyle="italic"
         fontSize="44"
-        fill={stageColor ?? (dark ? '#93AEEF' : '#3D5FC7')}
+        fill={stageColor ?? (dark ? '#FF7FA6' : '#FF3D77')}
         letterSpacing="3"
         transform="rotate(-7 150 132)"
       >

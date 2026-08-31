@@ -2,9 +2,9 @@
 name: NEAR:STAGE
 description: 공연할 곳이 없는 공연자와 손님이 필요한 공간을 잇는 3면 마켓플레이스
 colors:
-  primary: "#5B84DE"
-  primary-light: "#6D93E8"
-  primary-deep: "#3D5FC7"
+  primary: "#FF5560"
+  primary-light: "#FF6B4A"
+  primary-deep: "#FF3D77"
   neutral-bg: "#FFFFFF"
   neutral-surface-2: "#F2F2F5"
   neutral-border: "#E5E5EA"
@@ -44,23 +44,21 @@ components:
 
 **Creative North Star: "동네 무대의 간판"**
 
-NEAR:STAGE의 시각적 진실은 로고 한 장에서 시작합니다: 파란 바탕에 검정 "NEAR", 그 위로 살짝 기울여 앉은 흰 이탤릭 "STAGE". 정식 간판이 아니라 동네 카페 문 앞에 손으로 세워둔 입간판 같은 태도 — 화려하게 꾸미지 않고, 또렷하고, 약간 비스듬합니다. 이 문서는 그 태도를 화면 전체로 확장한 결과입니다.
-
-이전 버전은 로고와 무관한 주황→로즈 그라데이션을 화면 전반의 주조색으로 써 왔습니다. 이번 개정에서 이를 로고의 파란색 계열로 전면 교체해, 로고와 실제 화면이 같은 색 언어를 쓰도록 맞췄습니다. 배경은 여전히 흰색을 지킵니다 — 이 서비스의 진짜 콘텐츠는 공연 사진과 지도 위 핀이고, UI 크롬이 그 위를 덮으면 안 되기 때문입니다.
+NEAR:STAGE의 시각적 진실은 무대 조명입니다: 어두운 무대 위로 조명이 떨어지고, 그 아래 굵은 흰 "NEAR"와 무대 앞줄처럼 아래로 둥글게 휘어지는 코랄 레드 "STAGE"가 서 있습니다. 랜딩 인트로는 이 장면을 스크롤로 직접 연출하고(빈 무대 → 조명 → 로고 등장), 그 외 화면에서는 같은 색 언어를 평면 워드마크(LogoMark)로 이어받습니다.
 
 **Key Characteristics:**
-- 단일 주조색(블루)만 쓰고, 카테고리·상태 표시에만 예외적으로 별도 색을 허용한다
+- 단일 주조색(코랄 레드)만 쓰고, 카테고리·상태 표시에만 예외적으로 별도 색을 허용한다
 - 배경은 항상 흰색 — 사진·지도·실데이터가 색을 대신 채운다
 - 카드는 옅은 다층 그림자로 뜨고, 보라/네온 계열 장식은 쓰지 않는다
 - 아이콘은 `lucide-react`로 통일하고, 이모지는 쓰지 않는다
 
 ## Colors
 
-주조색은 로고에서 그대로 가져온 파란색 하나이며, 나머지는 전부 무채색과 기능색(성공/경고/위험)입니다.
+주조색은 무대 조명을 닮은 코랄 레드 하나이며, 나머지는 전부 무채색과 기능색(성공/경고/위험)입니다.
 
 ### Primary
-- **Stage Blue** (`#5B84DE`): 로고 원본 색. 단색으로 쓸 때(뱃지, 상태 점, 강조 숫자, 아이콘 스트로크)의 기준값이다.
-- **Stage Blue Light** (`#6D93E8`) / **Stage Blue Deep** (`#3D5FC7`): 버튼·CTA·`brand-text` 헤드라인 강조에 쓰는 그라데이션의 양 끝. `--brand-from`/`--brand-to` (`src/index.css`)로 정의되어 있고, 화면 코드는 이 두 값을 직접 쓰지 않고 `.brand-gradient`/`.brand-text` 클래스만 참조한다.
+- **Stage Coral** (`#FF5560`): 단색으로 쓸 때(뱃지, 상태 점, 강조 숫자, 아이콘 스트로크)의 기준값. 랜딩 인트로의 곡선 STAGE 워드마크에도 이 값을 쓴다.
+- **Stage Coral Light** (`#FF6B4A`) / **Stage Coral Deep** (`#FF3D77`): 버튼·CTA·`brand-text` 헤드라인 강조에 쓰는 그라데이션의 양 끝. `--brand-from`/`--brand-to` (`src/index.css`)로 정의되어 있고, 화면 코드는 이 두 값을 직접 쓰지 않고 `.brand-gradient`/`.brand-text` 클래스만 참조한다.
 
 ### Neutral
 - **Pure White** (`#FFFFFF`): 배경(`bg`)과 카드 표면(`surface`). 페이지 전체가 이 위에 뜬다.
@@ -72,7 +70,7 @@ NEAR:STAGE의 시각적 진실은 로고 한 장에서 시작합니다: 파란 �
 - **Ok** (`#1EA672`), **Warn** (`#D98A00`), **Danger** (`#E0403E`): 예약 성공/대기/취소 같은 시스템 상태 전용. 브랜드 강조 용도로 전용하지 않는다.
 
 ### Named Rules
-**The One Blue Rule.** 주조색은 이 파란색 계열 하나뿐이다. 장르 태그·카테고리 색(`GENRE_COLOR`, `CATEGORY_COLOR`, `src/lib/theme.ts`)은 지도 마커와 필터 칩을 구분하기 위한 예외이며, 브랜드 강조에는 절대 쓰지 않는다.
+**The One Coral Rule.** 주조색은 이 코랄 레드 계열 하나뿐이다. 장르 태그·카테고리 색(`GENRE_COLOR`, `CATEGORY_COLOR`, `src/lib/theme.ts`)은 지도 마커와 필터 칩을 구분하기 위한 예외이며, 브랜드 강조에는 절대 쓰지 않는다.
 
 **The White Canvas Rule.** 배경은 항상 흰색이다. 섹션마다 옅은 회색(`surface-2`)으로 리듬을 줄 수는 있어도, 채도 있는 색 배경(파스텔, 다크 섹션 등)으로 전환하지 않는다. 유일한 예외는 랜딩페이지 클로징 섹션의 다크 풋터 한 곳뿐이며, 그 외 어디에도 반복하지 않는다.
 
@@ -107,7 +105,7 @@ NEAR:STAGE의 시각적 진실은 로고 한 장에서 시작합니다: 파란 �
 - **card-hover** (호버 시 `translateY(-2px)` + 그림자 확대, `@media (hover:hover)`에서만): 인터랙션 피드백.
 
 ### Named Rules
-**The Tinted Shadow Rule.** 그림자 색은 항상 배경(잉크) 톤에서 파생시킨다. 브랜드 블루를 그림자에 섞는 곳은 CTA 버튼처럼 "이건 누르는 액션이다"를 강조해야 할 때로 한정한다(`rgba(61,95,199,…)`).
+**The Tinted Shadow Rule.** 그림자 색은 항상 배경(잉크) 톤에서 파생시킨다. 브랜드 코랄을 그림자에 섞는 곳은 CTA 버튼처럼 "이건 누르는 액션이다"를 강조해야 할 때로 한정한다(`rgba(255,61,119,…)`).
 
 ## Shapes
 
@@ -117,7 +115,7 @@ NEAR:STAGE의 시각적 진실은 로고 한 장에서 시작합니다: 파란 �
 
 ### Buttons
 - **Shape:** 항상 pill (`rounded-full`).
-- **Primary:** `.brand-gradient` (Stage Blue Light → Deep) 배경, 흰 텍스트, `shadow-[0_6px_20px_rgba(61,95,199,.25)]`.
+- **Primary:** `.brand-gradient` (Stage Coral Light → Deep) 배경, 흰 텍스트, `shadow-[0_6px_20px_rgba(255,61,119,.25)]`.
 - **Secondary:** 흰 배경 + `border-border-strong` 테두리, 잉크 텍스트.
 - **Hover / Active:** `active:scale-[0.985]` — 눌림을 물리적으로 느끼게 하는 최소한의 피드백만 준다.
 
@@ -136,7 +134,8 @@ NEAR:STAGE의 시각적 진실은 로고 한 장에서 시작합니다: 파란 �
 - 비활성 상태는 `text-ink-2`, hover 시 `text-ink`로만 바뀌며 배경은 바뀌지 않는다.
 
 ### 로고 (LogoMark)
-- 파란 바탕(`#5B84DE`) 카드 위에 검정(`#0A0A0F`) 굵은 "NEAR"와 흰색 이탤릭 "STAGE"(-7도 회전)를 겹친 워드마크. 모든 화면에서 이 SVG 컴포넌트(`src/components/shell/LogoMark.tsx`)로만 렌더링하고, 별도 이미지 파일이나 재해석된 변형을 만들지 않는다.
+- 배경 없이 굵은 검정(라이트)/흰색(다크) "NEAR"와 코랄 레드 이탤릭 "STAGE"(-7도 회전)를 겹친 평면 워드마크. 모든 화면에서 `src/components/shell/LogoMark.tsx`로만 렌더링한다.
+- **랜딩 인트로 전용 예외:** `src/screens/landing/StageWordmark.tsx`는 STAGE를 무대 앞줄처럼 아래로 둥글게 휘는 곡선(SVG textPath)에 얹은 별도 워드마크로, 어두운 무대 연출(`DarkStageHero.tsx`) 안에서만 쓴다. 배경·조명이 있는 이 특정 장면 밖으로 확장하지 않는다.
 
 ## Do's and Don'ts
 

@@ -225,7 +225,7 @@ function StepPay({
             className="mt-4 flex items-center justify-center gap-2 text-sm font-semibold text-ink-2"
           >
             <motion.span
-              className="h-4 w-4 rounded-full border-2 border-border-strong border-t-[#5B84DE]"
+              className="h-4 w-4 rounded-full border-2 border-border-strong border-t-[#FF5560]"
               animate={{ rotate: 360 }}
               transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
             />

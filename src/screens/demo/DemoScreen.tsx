@@ -65,7 +65,7 @@ export function DemoScreen() {
                 className={cn(
                   'flex items-start gap-3 rounded-xl border p-3',
                   current
-                    ? 'border-transparent bg-[#5B84DE]/10 ring-1 ring-[#5B84DE]'
+                    ? 'border-transparent bg-[#FF5560]/10 ring-1 ring-[#FF5560]'
                     : 'border-border bg-surface',
                 )}
               >

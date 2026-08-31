@@ -19,7 +19,7 @@ function Row({
   return (
     <section className="mb-5">
       <h2 className="mb-2 flex items-center gap-1.5 text-[15px] font-bold">
-        <Icon size={16} className="text-[#3D5FC7]" />
+        <Icon size={16} className="text-[#FF3D77]" />
         {title}
       </h2>
       <div className="no-scrollbar -mx-4 flex gap-2.5 overflow-x-auto px-4">
