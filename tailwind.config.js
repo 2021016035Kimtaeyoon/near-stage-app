@@ -14,7 +14,7 @@ export default {
         ink: '#17171C',
         'ink-2': '#5B5B66',
         'ink-3': '#8B8B96',
-        brand: { from: '#FF6B4A', to: '#FF3D77', DEFAULT: '#FF5560' },
+        brand: { from: '#6D93E8', to: '#3D5FC7', DEFAULT: '#5B84DE' },
         ok: '#1EA672',
         warn: '#D98A00',
         danger: '#E0403E',

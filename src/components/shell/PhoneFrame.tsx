@@ -65,11 +65,11 @@ function AmbientBackdrop() {
     <div aria-hidden className="pointer-events-none absolute inset-0">
       <div
         className="absolute -left-40 top-0 h-[520px] w-[520px] rounded-full opacity-[0.16] blur-[120px]"
-        style={{ background: 'radial-gradient(circle, #FF6B4A 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, #6D93E8 0%, transparent 70%)' }}
       />
       <div
         className="absolute -right-32 bottom-0 h-[560px] w-[560px] rounded-full opacity-[0.14] blur-[130px]"
-        style={{ background: 'radial-gradient(circle, #FF3D77 0%, transparent 70%)' }}
+        style={{ background: 'radial-gradient(circle, #3D5FC7 0%, transparent 70%)' }}
       />
     </div>
   )

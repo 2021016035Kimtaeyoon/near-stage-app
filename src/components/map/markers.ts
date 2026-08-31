@@ -27,7 +27,7 @@ export function showMarkerIcon({ genre, source, selected, popped = false }: Opti
   const genreColor = GENRE_COLOR[genre]
 
   const body = own
-    ? `background-image:linear-gradient(135deg,${BRAND_FROM} 0%,${BRAND_TO} 100%);border:2px solid rgba(255,255,255,.9);box-shadow:0 6px 18px rgba(255,61,119,.45)`
+    ? `background-image:linear-gradient(135deg,${BRAND_FROM} 0%,${BRAND_TO} 100%);border:2px solid rgba(255,255,255,.9);box-shadow:0 6px 18px rgba(61,95,199,.45)`
     : `background:#14141B;border:1.5px solid ${KOPIS_LINE};box-shadow:0 4px 12px rgba(0,0,0,.5)`
 
   const ring = selected

@@ -122,9 +122,9 @@ export function RangeSlider({
           className="absolute inset-0 h-9 w-full cursor-pointer appearance-none bg-transparent
             [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none
             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2
-            [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#FF5560]
+            [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#5B84DE]
             [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#FF5560]"
+            [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#5B84DE]"
         />
       </div>
     </div>

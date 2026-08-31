@@ -5,8 +5,8 @@
 @layer base {
   :root {
     color-scheme: light;
-    --brand-from: #ff6b4a;
-    --brand-to: #ff3d77;
+    --brand-from: #6D93E8;
+    --brand-to: #3D5FC7;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
   }
 
@@ -161,7 +161,7 @@
   background-image:
     linear-gradient(rgba(23, 23, 28, 0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(23, 23, 28, 0.06) 1px, transparent 1px),
-    radial-gradient(circle at 50% 40%, rgba(255, 107, 74, 0.12), transparent 62%);
+    radial-gradient(circle at 50% 40%, rgba(109, 147, 232, 0.12), transparent 62%);
   background-size:
     48px 48px,
     48px 48px,

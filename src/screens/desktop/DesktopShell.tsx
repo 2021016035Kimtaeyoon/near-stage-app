@@ -73,7 +73,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
                   <motion.span
                     layoutId="desktop-role-pill"
                     className="brand-gradient absolute inset-0 rounded-full"
-                    style={{ boxShadow: '0 4px 12px -2px rgba(255,61,119,.4)' }}
+                    style={{ boxShadow: '0 4px 12px -2px rgba(61,95,199,.4)' }}
                     transition={{ type: 'spring', stiffness: 450, damping: 34 }}
                   />
                 )}
@@ -90,7 +90,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
           >
             <Bell size={18} />
             {unread > 0 && (
-              <span className="tnum absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#FF3D77] px-1 text-[9px] font-bold text-white">
+              <span className="tnum absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#3D5FC7] px-1 text-[9px] font-bold text-white">
                 {unread}
               </span>
             )}

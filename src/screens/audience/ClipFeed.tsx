@@ -140,7 +140,7 @@ export function ClipFeed() {
       <button
         onClick={() => setUploadOpen(true)}
         className="brand-gradient absolute left-3 top-12 z-30 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold text-white"
-        style={{ boxShadow: '0 8px 20px rgba(255,61,119,.4)' }}
+        style={{ boxShadow: '0 8px 20px rgba(61,95,199,.4)' }}
       >
         <Plus size={15} />
         하이라이트 올리기

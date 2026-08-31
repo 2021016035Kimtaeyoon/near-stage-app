@@ -81,7 +81,7 @@ export function PhoneMockup() {
               style={{
                 top: m.top,
                 left: m.left,
-                background: m.own ? 'linear-gradient(135deg,#FF6B4A,#FF3D77)' : '#14141B',
+                background: m.own ? 'linear-gradient(135deg,#6D93E8,#3D5FC7)' : '#14141B',
                 border: m.own ? '2px solid #fff' : '1.5px solid #6B6B77',
                 boxShadow: '0 4px 10px rgba(0,0,0,.25)',
               }}
@@ -92,7 +92,7 @@ export function PhoneMockup() {
           <div className="absolute inset-x-0 bottom-0 rounded-t-3xl border-t border-border bg-surface/97 px-4 pb-6 pt-3 shadow-[0_-16px_40px_rgba(0,0,0,.12)]">
             <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-border-strong" />
             <p className="mb-2 text-xs font-bold">
-              이 지역 공연 <span className="text-[#FF5560]">12건</span>
+              이 지역 공연 <span className="text-[#5B84DE]">12건</span>
             </p>
             <div className="card flex gap-2.5 p-2.5">
               <PosterArt seed="landing-mock-1" genre="스탠드업" className="h-14 w-14 shrink-0 rounded-xl" />

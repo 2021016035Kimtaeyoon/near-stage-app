@@ -112,7 +112,7 @@ export function LandingPage() {
           >
             <div
               className="h-full w-full rounded-full"
-              style={{ background: 'radial-gradient(circle, #FF6B4A 0%, transparent 70%)' }}
+              style={{ background: 'radial-gradient(circle, #6D93E8 0%, transparent 70%)' }}
             />
           </motion.div>
           <motion.div
@@ -121,7 +121,7 @@ export function LandingPage() {
           >
             <div
               className="h-full w-full rounded-full"
-              style={{ background: 'radial-gradient(circle, #FF3D77 0%, transparent 70%)' }}
+              style={{ background: 'radial-gradient(circle, #3D5FC7 0%, transparent 70%)' }}
             />
           </motion.div>
         </div>
@@ -156,7 +156,7 @@ export function LandingPage() {
               <button
                 onClick={() => navigate('/desktop')}
                 className="brand-gradient rounded-full px-7 py-4 text-[15px] font-bold text-white"
-                style={{ boxShadow: '0 16px 40px rgba(255,61,119,.3)' }}
+                style={{ boxShadow: '0 16px 40px rgba(61,95,199,.3)' }}
               >
                 웹으로 둘러보기 →
               </button>
