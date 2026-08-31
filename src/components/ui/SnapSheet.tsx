@@ -47,7 +47,7 @@ export function SnapSheet({
       )}
       style={{ boxShadow: '0 -18px 48px rgba(0,0,0,.5)' }}
       animate={{ height }}
-      transition={{ type: 'spring', stiffness: 340, damping: 34 }}
+      transition={{ type: 'spring', stiffness: 340, damping: 38 }}
     >
       <motion.div
         className="shrink-0 cursor-grab touch-none active:cursor-grabbing"

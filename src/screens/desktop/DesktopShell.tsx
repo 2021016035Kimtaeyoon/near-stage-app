@@ -74,7 +74,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
                     layoutId="desktop-role-pill"
                     className="brand-gradient absolute inset-0 rounded-full"
                     style={{ boxShadow: '0 4px 12px -2px rgba(61,95,199,.4)' }}
-                    transition={{ type: 'spring', stiffness: 450, damping: 34 }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 45 }}
                   />
                 )}
                 <span className="relative">{ROLE_LABEL[r]}</span>

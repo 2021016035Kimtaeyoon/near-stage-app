@@ -77,7 +77,7 @@ export function DevPanel() {
               initial={{ opacity: 0, y: -16, scale: 0.97 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -12, scale: 0.97 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 42 }}
             >
               <div className="flex items-center justify-between border-b border-border px-4 py-3.5">
                 <div className="flex items-center gap-2">

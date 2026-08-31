@@ -33,7 +33,7 @@ export function ToastHost() {
               initial={{ opacity: 0, y: -16, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -12, scale: 0.96 }}
-              transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 42 }}
               onClick={() => remove(t.id)}
               className="pointer-events-auto flex w-full max-w-[340px] items-start gap-2.5 rounded-2xl border border-border bg-white/97 px-3.5 py-3 text-left backdrop-blur-md"
               style={{ boxShadow: '0 16px 40px rgba(23,23,28,.16)' }}

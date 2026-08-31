@@ -161,7 +161,7 @@
   background-image:
     linear-gradient(rgba(23, 23, 28, 0.06) 1px, transparent 1px),
     linear-gradient(90deg, rgba(23, 23, 28, 0.06) 1px, transparent 1px),
-    radial-gradient(circle at 50% 40%, rgba(109, 147, 232, 0.12), transparent 62%);
+    radial-gradient(circle at 50% 40%, rgba(23, 23, 28, 0.05), transparent 62%);
   background-size:
     48px 48px,
     48px 48px,

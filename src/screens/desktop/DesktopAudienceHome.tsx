@@ -64,8 +64,8 @@ export function DesktopAudienceHome() {
   }
 
   return (
-    <div className="relative flex h-full w-full gap-4 p-4">
-      <div className="card flex w-[420px] shrink-0 flex-col overflow-hidden">
+    <div className="relative flex h-full w-full">
+      <div className="flex w-[420px] shrink-0 flex-col overflow-hidden border-r border-border bg-surface">
         <div ref={searchRef} className="space-y-3 border-b border-border p-5">
           <div className="flex h-11 items-center gap-2 rounded-full border border-border bg-surface-2/70 px-3.5 transition-colors focus-within:border-border-strong focus-within:bg-surface">
             <Search size={15} className="shrink-0 text-ink-3" />
@@ -161,7 +161,7 @@ export function DesktopAudienceHome() {
         </div>
       </div>
 
-      <div className="card min-w-0 flex-1 overflow-hidden">
+      <div className="card m-4 min-w-0 flex-1 overflow-hidden">
         <MapView
           items={results}
           selectedId={selectedId}

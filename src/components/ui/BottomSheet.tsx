@@ -44,7 +44,7 @@ export function BottomSheet({
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
-            transition={{ type: 'spring', stiffness: 380, damping: 36 }}
+            transition={{ type: 'spring', stiffness: 380, damping: 40 }}
             drag="y"
             dragConstraints={{ top: 0, bottom: 0 }}
             dragElastic={{ top: 0, bottom: 0.4 }}
@@ -110,7 +110,7 @@ export function CenterModal({
             initial={{ opacity: 0, scale: 0.94, y: 12 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: 8 }}
-            transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+            transition={{ type: 'spring', stiffness: 400, damping: 42 }}
           >
             <div className="flex shrink-0 items-center justify-between border-b border-border px-5 py-4">
               <h2 className="text-[16px] font-bold">{title}</h2>

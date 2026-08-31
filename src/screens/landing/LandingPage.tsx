@@ -31,9 +31,6 @@ export function LandingPage() {
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
   const { scrollY } = useScroll()
-  // 배경 블롭 두 개를 서로 다른 속도로 움직여 패럴랙스 깊이감을 만듭니다
-  const blobLeftY = useTransform(scrollY, [0, 800], [0, 220])
-  const blobRightY = useTransform(scrollY, [0, 800], [0, -140])
   const heroFade = useTransform(scrollY, [0, 420], [1, 0.25])
 
   return (
@@ -105,27 +102,6 @@ export function LandingPage() {
       </header>
 
       <section className="relative overflow-hidden">
-        <div aria-hidden className="pointer-events-none absolute inset-0">
-          <motion.div
-            style={{ y: blobLeftY }}
-            className="absolute -left-40 -top-20 h-[520px] w-[520px] rounded-full opacity-[0.14] blur-[130px]"
-          >
-            <div
-              className="h-full w-full rounded-full"
-              style={{ background: 'radial-gradient(circle, #6D93E8 0%, transparent 70%)' }}
-            />
-          </motion.div>
-          <motion.div
-            style={{ y: blobRightY }}
-            className="absolute -right-32 top-40 h-[480px] w-[480px] rounded-full opacity-[0.12] blur-[130px]"
-          >
-            <div
-              className="h-full w-full rounded-full"
-              style={{ background: 'radial-gradient(circle, #3D5FC7 0%, transparent 70%)' }}
-            />
-          </motion.div>
-        </div>
-
         <motion.div
           style={{ opacity: heroFade }}
           initial="hidden"

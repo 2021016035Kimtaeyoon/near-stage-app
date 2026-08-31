@@ -41,7 +41,7 @@ export function PhoneMockup() {
           onMouseLeave={handleMouseLeave}
           initial={{ opacity: 0, scale: 0.9, rotateY: -22, rotateX: 6 }}
           animate={{ opacity: 1, scale: 1, rotateX: tilt.rx, rotateY: tilt.ry }}
-          transition={{ type: 'spring', stiffness: 140, damping: 16 }}
+          transition={{ type: 'spring', stiffness: 140, damping: 24 }}
           className="relative shrink-0 overflow-hidden rounded-[46px] border-[10px] border-[#101016] bg-bg"
           style={{
             width: 300,

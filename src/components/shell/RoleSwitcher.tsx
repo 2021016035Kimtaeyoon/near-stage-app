@@ -41,7 +41,7 @@ export function RoleSwitcherFab() {
               initial={{ opacity: 0, y: 12, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.9 }}
-              transition={{ delay: i * 0.035, type: 'spring', stiffness: 420, damping: 30 }}
+              transition={{ delay: i * 0.035, type: 'spring', stiffness: 420, damping: 42 }}
               onClick={() => {
                 switchRole(r)
                 setOpen(false)

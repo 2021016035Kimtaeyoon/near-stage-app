@@ -171,7 +171,7 @@ export function HomeMap() {
             initial={{ opacity: 0, y: 14, scale: 0.96 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.97 }}
-            transition={{ type: 'spring', stiffness: 420, damping: 32 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 42 }}
             className="absolute left-1/2 z-40 -translate-x-1/2 overflow-hidden rounded-2xl border border-border bg-surface/97 backdrop-blur-xl"
             style={{ bottom: snap === 0 ? 150 : 402, boxShadow: '0 16px 40px rgba(0,0,0,.55)' }}
           >

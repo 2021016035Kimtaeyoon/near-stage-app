@@ -29,8 +29,6 @@ export function PhoneFrame({ children, side }: Props) {
 
   return (
     <div className="relative flex min-h-[100dvh] w-full items-center justify-center gap-10 overflow-hidden bg-[#F3F3F6] px-8 py-10">
-      <AmbientBackdrop />
-
       <div className="relative z-10 hidden w-[320px] shrink-0 flex-col gap-6 lg:flex">
         <div>
           <LogoMark className="w-[168px]" />
@@ -60,17 +58,3 @@ export function PhoneFrame({ children, side }: Props) {
   )
 }
 
-function AmbientBackdrop() {
-  return (
-    <div aria-hidden className="pointer-events-none absolute inset-0">
-      <div
-        className="absolute -left-40 top-0 h-[520px] w-[520px] rounded-full opacity-[0.16] blur-[120px]"
-        style={{ background: 'radial-gradient(circle, #6D93E8 0%, transparent 70%)' }}
-      />
-      <div
-        className="absolute -right-32 bottom-0 h-[560px] w-[560px] rounded-full opacity-[0.14] blur-[130px]"
-        style={{ background: 'radial-gradient(circle, #3D5FC7 0%, transparent 70%)' }}
-      />
-    </div>
-  )
-}

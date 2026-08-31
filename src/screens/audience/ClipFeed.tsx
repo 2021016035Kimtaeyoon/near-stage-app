@@ -161,7 +161,7 @@ export function ClipFeed() {
 
       {index === 0 && (
         <div className="pointer-events-none absolute inset-x-0 top-24 flex flex-col items-center gap-1 text-white/70">
-          <ChevronUp size={18} className="animate-bounce" />
+          <ChevronUp size={18} className="animate-pulse" />
           <span className="text-2xs font-semibold">위로 밀어서 다음 하이라이트 보기</span>
         </div>
       )}

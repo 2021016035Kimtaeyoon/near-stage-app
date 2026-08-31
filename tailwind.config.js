@@ -40,7 +40,6 @@ export default {
       keyframes: {
         'pin-pop': {
           '0%': { transform: 'scale(0) translateY(-16px)', opacity: '0' },
-          '60%': { transform: 'scale(1.35) translateY(0)', opacity: '1' },
           '100%': { transform: 'scale(1) translateY(0)', opacity: '1' },
         },
         shimmer: {
@@ -53,7 +52,7 @@ export default {
         },
       },
       animation: {
-        'pin-pop': 'pin-pop 620ms cubic-bezier(.22,1.3,.36,1) both',
+        'pin-pop': 'pin-pop 420ms cubic-bezier(.16,1,.3,1) both',
         shimmer: 'shimmer 1.4s linear infinite',
         'pulse-ring': 'pulse-ring 1.6s ease-out infinite',
       },

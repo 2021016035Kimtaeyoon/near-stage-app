@@ -39,7 +39,7 @@ export function StatsBand() {
 /** 카드에 공통으로 쓰는 "떠오르는" 호버 — 그림자가 깊어지고 살짝 들립니다 */
 const liftHover = {
   whileHover: { y: -8, boxShadow: '0 24px 48px -12px rgba(23,23,28,.18)' },
-  transition: { type: 'spring' as const, stiffness: 300, damping: 22 },
+  transition: { type: 'spring' as const, stiffness: 300, damping: 36 },
 }
 
 export function DifferentiationSection() {
