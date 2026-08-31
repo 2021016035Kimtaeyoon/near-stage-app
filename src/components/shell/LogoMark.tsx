@@ -2,6 +2,8 @@ interface Props {
   className?: string
   /** 어두운 배경(랜딩 푸터 등) 위에 놓일 때 — 배경 없이도 대비가 유지되도록 색을 반전 */
   dark?: boolean
+  /** STAGE 텍스트 색 오버라이드 — 랜딩 인트로처럼 특정 장면에서만 다른 강조색을 쓸 때 */
+  stageColor?: string
 }
 
 /**
@@ -9,7 +11,7 @@ interface Props {
  * 어떤 배율에서도 또렷하게 보이고 오프라인에서도 항상 렌더링됩니다.
  * 배경 플레이트 없이 텍스트만 놓여 어떤 배경 위에서도 자연스럽게 어울립니다.
  */
-export function LogoMark({ className, dark = false }: Props) {
+export function LogoMark({ className, dark = false, stageColor }: Props) {
   return (
     <svg
       viewBox="0 0 300 193"
@@ -37,7 +39,7 @@ export function LogoMark({ className, dark = false }: Props) {
         fontWeight={800}
         fontStyle="italic"
         fontSize="44"
-        fill={dark ? '#93AEEF' : '#3D5FC7'}
+        fill={stageColor ?? (dark ? '#93AEEF' : '#3D5FC7')}
         letterSpacing="3"
         transform="rotate(-7 150 132)"
       >

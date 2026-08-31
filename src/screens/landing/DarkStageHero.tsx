@@ -26,17 +26,30 @@ export function DarkStageHero() {
   return (
     <section ref={ref} className="relative h-[230dvh] bg-[#0F0F14]">
       <div className="sticky top-0 flex h-dvh flex-col items-center justify-center overflow-hidden px-6">
-        {/* 위에서 내려오는 조명 */}
+        {/* 위에서 내려오는 조명 — 좁고 밝은 코어 + 넓은 헤일로 두 겹 */}
         <motion.div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 flex justify-center"
           style={{ opacity: spotlightOpacity, scale: spotlightScale }}
         >
           <div
-            className="h-[900px] w-[900px]"
+            className="h-[900px] w-[1100px]"
             style={{
               background:
-                'radial-gradient(ellipse 42% 65% at 50% 0%, rgba(255,255,255,.18) 0%, rgba(255,255,255,.05) 45%, transparent 72%)',
+                'radial-gradient(ellipse 30% 60% at 50% 0%, rgba(255,250,240,.55) 0%, rgba(255,244,222,.22) 30%, rgba(255,244,222,.08) 50%, transparent 72%)',
+            }}
+          />
+        </motion.div>
+        <motion.div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 flex justify-center"
+          style={{ opacity: spotlightOpacity }}
+        >
+          <div
+            className="h-[420px] w-[260px]"
+            style={{
+              background:
+                'radial-gradient(ellipse 60% 90% at 50% 0%, rgba(255,255,255,.65) 0%, rgba(255,250,240,.2) 55%, transparent 80%)',
             }}
           />
         </motion.div>
@@ -44,16 +57,16 @@ export function DarkStageHero() {
         {/* 조명이 닿는 무대 바닥 */}
         <motion.div
           aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-[280px]"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-[320px]"
           style={{
             opacity: floorOpacity,
             background:
-              'radial-gradient(ellipse 60% 100% at 50% 100%, rgba(255,255,255,.07) 0%, transparent 70%)',
+              'radial-gradient(ellipse 55% 100% at 50% 100%, rgba(255,244,222,.16) 0%, transparent 70%)',
           }}
         />
 
         <motion.div style={{ y: logoY, opacity: logoOpacity }} className="relative z-10">
-          <LogoMark dark className="w-[260px] sm:w-[340px]" />
+          <LogoMark dark stageColor="#FF5560" className="w-[260px] sm:w-[340px]" />
         </motion.div>
 
         <motion.div
