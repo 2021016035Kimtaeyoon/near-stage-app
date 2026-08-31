@@ -54,7 +54,7 @@ export function VenueExploreScreen() {
     return (
       <Screen>
         <ScreenHeader title="장소 탐색" />
-        <EmptyState art="search" title="공연자 프로필을 찾을 수 없어요" />
+        <EmptyState art="search" title="아티스트 프로필을 찾을 수 없어요" />
       </Screen>
     )
   }

@@ -40,7 +40,7 @@ export function ContractPreviewModal({
           <br />
           공간: {venue.name} ({venue.address})
           <br />
-          공연자: {performer.teamName} ({performer.memberCount}인)
+          아티스트: {performer.teamName} ({performer.memberCount}인)
         </p>
         <p>
           <b className="text-ink">제2조 (공연 조건)</b>
@@ -57,7 +57,7 @@ export function ContractPreviewModal({
         <p>
           <b className="text-ink">제4조 (플랫폼 수수료)</b>
           <br />
-          {SERVICE_NAME}는 본 매칭 성사에 대해 공간주로부터 10,000원의 중개 수수료를 받습니다.
+          {SERVICE_NAME}는 본 매칭 성사에 대해 호스트로부터 10,000원의 중개 수수료를 받습니다.
         </p>
         <p>
           <b className="text-ink">제5조 (분쟁 해결)</b>

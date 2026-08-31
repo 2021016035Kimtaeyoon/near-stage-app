@@ -55,7 +55,7 @@ interface Panel {
 const PANELS: Panel[] = [
   {
     num: '01',
-    role: '공연자',
+    role: '아티스트',
     quote: '무대가 없다',
     body: '밴드·마술·스탠드업·연극·토론. 재능은 있는데 설 곳이 없습니다.',
     solution: 'NEAR:STAGE는 동네 카페와 바를 무대로 만듭니다.',
@@ -69,7 +69,7 @@ const PANELS: Panel[] = [
   },
   {
     num: '03',
-    role: '관객',
+    role: '공연보기',
     quote: '볼 게 없다',
     body: '주말 저녁, 뭘 볼지 검색해도 정식 공연장만 나옵니다.',
     solution: '걸어갈 수 있는 거리의 무대가 지도에 뜹니다.',

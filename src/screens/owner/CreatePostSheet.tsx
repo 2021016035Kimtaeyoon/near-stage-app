@@ -43,7 +43,7 @@ export function CreatePostSheet({
       return
     }
     if (!message.trim()) {
-      toast('공연자에게 전할 메시지를 입력해주세요', 'error')
+      toast('아티스트에게 전할 메시지를 입력해주세요', 'error')
       return
     }
     const [fy, fm, fd] = from.split('-').map(Number)
@@ -55,7 +55,7 @@ export function CreatePostSheet({
       offerFee: revenueShare ? 0 : Math.max(0, Number(fee) || 0),
       message: message.trim(),
     })
-    toast('구인글이 등록되었습니다', 'success', '조건에 맞는 공연자에게 알림이 갔어요')
+    toast('구인글이 등록되었습니다', 'success', '조건에 맞는 아티스트에게 알림이 갔어요')
     setMessage('')
     onClose()
   }
@@ -128,7 +128,7 @@ export function CreatePostSheet({
         )}
 
         <div>
-          <Label hint="공연자에게 그대로 보입니다">메시지</Label>
+          <Label hint="아티스트에게 그대로 보입니다">메시지</Label>
           <TextArea
             rows={3}
             value={message}

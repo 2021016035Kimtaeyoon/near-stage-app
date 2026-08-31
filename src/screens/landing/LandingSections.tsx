@@ -17,7 +17,7 @@ export function StatsBand() {
 
   const stats = [
     { value: venues.length, label: '참여 공간' },
-    { value: performers.length, label: '공연자 팀' },
+    { value: performers.length, label: '아티스트 팀' },
     { value: ownShows, label: '우리가 만든 공연' },
     { value: shows.length - ownShows, label: '연동된 등록 공연' },
   ]
@@ -68,7 +68,7 @@ export function DifferentiationSection() {
             마커로 한눈에 구분됩니다.
           </p>
           <ul className="mt-4 space-y-2 text-sm text-ink-2">
-            <li>· 공연자 프로필·클립·팔로우 확인 가능</li>
+            <li>· 아티스트 프로필·클립·팔로우 확인 가능</li>
             <li>· 공간·공연 리뷰를 각각 남길 수 있음</li>
             <li>· 무료~1만 원대 부담 없는 가격</li>
           </ul>
@@ -94,17 +94,17 @@ export function DifferentiationSection() {
 const ROLES = [
   {
     icon: MapPinned,
-    title: '관객',
+    title: '공연보기',
     desc: '"오늘 밤 근처에 볼 거 없나?" 지도 하나로 우리 동네 무대와 정식 공연을 한 번에 찾습니다.',
   },
   {
     icon: CalendarClock,
-    title: '공간주',
+    title: '호스트',
     desc: '한가한 시간대를 공연으로 채워 집객합니다. 장비 조건을 등록하면 매칭 실패 없이 지원자가 옵니다.',
   },
   {
     icon: Users2,
-    title: '공연자',
+    title: '아티스트',
     desc: '설 무대가 필요한 밴드·마술·스탠드업·연극 팀. 조건에 맞는 공간을 지도에서 바로 찾고 지원합니다.',
   },
 ]
@@ -146,7 +146,7 @@ const FEATURES = [
   {
     icon: Star,
     title: '장비 자동 매칭',
-    desc: '공연자가 필요한 조건과 공간의 장비를 항목별로 대조해 매칭 실패를 미리 막습니다.',
+    desc: '아티스트가 필요한 조건과 공간의 장비를 항목별로 대조해 매칭 실패를 미리 막습니다.',
   },
   {
     icon: Flame,

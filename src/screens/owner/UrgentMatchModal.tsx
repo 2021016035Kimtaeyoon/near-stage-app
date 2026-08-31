@@ -27,7 +27,7 @@ export function UrgentMatchModal({
   const send = () => {
     const postId = useAppStore.getState().sendUrgentMatch(venue.id, message)
     setSent(true)
-    toast('반경 내 공연자에게 긴급 매칭 요청을 보냈습니다', 'success')
+    toast('반경 내 아티스트에게 긴급 매칭 요청을 보냈습니다', 'success')
 
     window.setTimeout(() => {
       const state = useAppStore.getState()
@@ -64,7 +64,7 @@ export function UrgentMatchModal({
           </Button>
         ) : (
           <Button full variant="brand" leading={<Send size={15} />} onClick={send}>
-            반경 2km 공연자에게 발송
+            반경 2km 아티스트에게 발송
           </Button>
         )
       }
@@ -76,7 +76,7 @@ export function UrgentMatchModal({
           </span>
           <p className="mt-3 text-sm font-bold">발송 완료!</p>
           <p className="mt-1 text-xs leading-relaxed text-ink-2">
-            반경 내 {venue.preferredGenres.join('·')} 공연자에게 알림을 보냈어요.
+            반경 내 {venue.preferredGenres.join('·')} 아티스트에게 알림을 보냈어요.
             <br />
             지원이 도착하면 알려드릴게요.
           </p>
@@ -84,7 +84,7 @@ export function UrgentMatchModal({
       ) : (
         <div>
           <p className="mb-3 text-xs leading-relaxed text-ink-2">
-            {venue.district} 반경 2km 안의 {venue.preferredGenres.join('·')} 공연자에게 즉시
+            {venue.district} 반경 2km 안의 {venue.preferredGenres.join('·')} 아티스트에게 즉시
             알림이 발송됩니다.
           </p>
           <TextArea rows={3} value={message} onChange={(e) => setMessage(e.target.value)} />

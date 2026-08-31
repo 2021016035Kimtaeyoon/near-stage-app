@@ -20,7 +20,7 @@ export function DemoScreen() {
         {!active && (
           <div className="mb-5 rounded-2xl border border-border-strong bg-surface-2 p-4">
             <p className="text-[13px] leading-relaxed text-ink-2">
-              재생 버튼 하나로 공간주가 구인글을 올리는 순간부터, 관객이 예약하고 리뷰를 남기기까지
+              재생 버튼 하나로 호스트가 구인글을 올리는 순간부터, 관객이 예약하고 리뷰를 남기기까지
               전체 흐름이 실제 화면 전환과 함께 자동으로 진행됩니다.
             </p>
             <Button

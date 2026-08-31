@@ -19,7 +19,7 @@ export function PerformerBlock({
   const navigate = useNavigate()
   return (
     <section className="border-t border-border px-4 py-5">
-      <h2 className="mb-3 text-[15px] font-bold">공연자</h2>
+      <h2 className="mb-3 text-[15px] font-bold">아티스트</h2>
       <div className="flex items-start gap-3">
         <SeedAvatar seed={performer.photoSeed} genre={performer.genre} size={56} />
         <div className="min-w-0 flex-1">

@@ -56,7 +56,7 @@ export function OwnerApplicantsScreen() {
         </div>
 
         {sorted.length === 0 ? (
-          <EmptyState art="search" title="아직 지원자가 없어요" description="조건에 맞는 공연자에게 곧 알림이 도착합니다." />
+          <EmptyState art="search" title="아직 지원자가 없어요" description="조건에 맞는 아티스트에게 곧 알림이 도착합니다." />
         ) : (
           <div className="space-y-3">
             {sorted.map((application) => {

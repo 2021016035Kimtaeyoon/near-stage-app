@@ -30,7 +30,7 @@ export function RejectSheet({
 
   const submit = () => {
     rejectApplication(post.id, application.id, reason)
-    toast('지원을 거절했습니다', 'default', '사유가 공연자에게 전달됩니다')
+    toast('지원을 거절했습니다', 'default', '사유가 아티스트에게 전달됩니다')
     onClose()
   }
 
@@ -39,7 +39,7 @@ export function RejectSheet({
       open={open}
       onClose={onClose}
       title="지원 거절"
-      subtitle="사유를 선택하면 공연자에게 전달됩니다"
+      subtitle="사유를 선택하면 아티스트에게 전달됩니다"
       footer={
         <Button full variant="danger" onClick={submit}>
           거절하기

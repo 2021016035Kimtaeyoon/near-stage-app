@@ -43,7 +43,7 @@ export function ReviewCompose() {
         <EmptyState
           art="chat"
           title="리뷰를 작성할 수 없어요"
-          description="등록 공연(KOPIS)은 우리 플랫폼에 등록된 공간·공연자 정보가 없어 리뷰를 남길 수 없습니다."
+          description="등록 공연(KOPIS)은 우리 플랫폼에 등록된 공간·아티스트 정보가 없어 리뷰를 남길 수 없습니다."
         />
       </Screen>
     )

@@ -52,7 +52,7 @@ export function AddSlotSheet({ open, onClose, venueId, defaultWeekday, defaultSt
       open={open}
       onClose={onClose}
       title="가능 시간 추가"
-      subtitle="공연자가 이 시간에 지원할 수 있게 됩니다"
+      subtitle="아티스트가 이 시간에 지원할 수 있게 됩니다"
       footer={
         <Button full variant="brand" onClick={submit}>
           이 시간 열기

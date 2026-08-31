@@ -16,7 +16,7 @@ export function createDemoCtx(): DemoCtx {
 export interface DemoStep {
   title: string
   caption: string
-  role: '공간주' | '공연자' | '시스템' | '관객'
+  role: '호스트' | '아티스트' | '시스템' | '공연보기'
   /** ctx를 참고해 이동할 경로를 계산합니다 */
   path: (ctx: DemoCtx) => string
   /** 이 단계에 들어올 때 한 번 실행되는 실제 상태 변화 */
@@ -29,7 +29,7 @@ const PERFORMER_ID = DEMO_PERFORMER_ID
 export const DEMO_STEPS: DemoStep[] = [
   {
     title: '구인글 작성',
-    role: '공간주',
+    role: '호스트',
     caption: "연남동 '카페 온화'가 수요일 저녁 슬롯을 열고 구인글을 작성합니다",
     path: () => '/owner/recruit',
     run: (ctx) => {
@@ -47,7 +47,7 @@ export const DEMO_STEPS: DemoStep[] = [
   },
   {
     title: '구인글 지원',
-    role: '공연자',
+    role: '아티스트',
     caption: "스탠드업 팀 '실없는사람들'이 구인글을 발견하고 지원합니다",
     path: () => '/performer/posts',
     run: (ctx) => {
@@ -64,7 +64,7 @@ export const DEMO_STEPS: DemoStep[] = [
   },
   {
     title: '지원자 수락',
-    role: '공간주',
+    role: '호스트',
     caption: '장비 조건 충족을 확인하고, 매칭 수수료 10,000원을 결제해 공연을 확정합니다',
     path: (ctx) => (ctx.postId ? `/owner/applicants/${ctx.postId}` : '/owner/recruit'),
     run: (ctx) => {
@@ -88,7 +88,7 @@ export const DEMO_STEPS: DemoStep[] = [
   },
   {
     title: '공연 발견',
-    role: '관객',
+    role: '공연보기',
     caption: "관객이 '오늘 밤 · 2km' 필터에서 새 공연을 발견하고 상세 화면으로 들어갑니다",
     path: (ctx) => (ctx.showId ? `/audience/show/${ctx.showId}` : '/audience/home'),
     run: () => {
@@ -97,7 +97,7 @@ export const DEMO_STEPS: DemoStep[] = [
   },
   {
     title: '예약 · QR 발급',
-    role: '관객',
+    role: '공연보기',
     caption: '예약금 1,000원을 결제하고 QR 티켓을 발급받습니다',
     path: (ctx) => (ctx.reservationId ? `/audience/ticket/${ctx.reservationId}` : '/audience/home'),
     run: (ctx) => {
@@ -109,7 +109,7 @@ export const DEMO_STEPS: DemoStep[] = [
   },
   {
     title: '대시보드 확인',
-    role: '공간주',
+    role: '호스트',
     caption: '대시보드에서 예약 관객 수 증가와 성과 리포트 갱신을 확인합니다',
     path: () => '/owner/dashboard',
     run: () => {
@@ -118,7 +118,7 @@ export const DEMO_STEPS: DemoStep[] = [
   },
   {
     title: '분리 리뷰 작성',
-    role: '관객',
+    role: '공연보기',
     caption: '공연이 끝난 뒤, 공간 리뷰와 공연 리뷰를 각각 따로 남깁니다',
     path: (ctx) => (ctx.showId ? `/audience/show/${ctx.showId}` : '/audience/home'),
     run: (ctx) => {

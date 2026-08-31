@@ -7,7 +7,7 @@
 export const SERVICE_NAME = 'NEAR:STAGE'
 export const SERVICE_TAGLINE = '오늘 밤, 우리 동네 무대'
 export const SERVICE_DESCRIPTION =
-  '공연할 곳이 없는 공연자와 손님이 필요한 공간을 연결하고, 그렇게 만들어진 공연을 지도로 유통합니다.'
+  '공연할 곳이 없는 아티스트와 손님이 필요한 공간을 연결하고, 그렇게 만들어진 공연을 지도로 유통합니다.'
 
 /**
  * ★ 데모 기준 시각.
@@ -27,7 +27,7 @@ export const DEPOSIT_AMOUNT = 1_000
 
 /** localStorage 키 & 스키마 버전 (버전이 바뀌면 자동 초기화) */
 export const STORAGE_KEY = 'oneul-mudae-store'
-export const STORAGE_VERSION = 1
+export const STORAGE_VERSION = 2
 
 /** 데모용 고정 주인공 */
 export const DEMO_OWNER_VENUE_ID = 'v1' // 카페 온화

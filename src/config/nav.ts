@@ -74,9 +74,9 @@ export const TABS: Record<Role, TabItem[]> = {
 }
 
 export const ROLE_LABEL: Record<Role, string> = {
-  audience: '관객',
-  owner: '공간주',
-  performer: '공연자',
+  audience: '공연보기',
+  owner: '호스트',
+  performer: '아티스트',
 }
 
 export const ROLE_DESCRIPTION: Record<Role, string> = {

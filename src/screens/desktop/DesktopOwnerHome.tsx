@@ -44,7 +44,7 @@ export function DesktopOwnerHome() {
         <div className="mb-6 flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-extrabold">{venue.name}</h1>
-            <p className="mt-1 text-sm text-ink-2">공간주 대시보드 · 데스크톱 홈</p>
+            <p className="mt-1 text-sm text-ink-2">호스트 대시보드 · 데스크톱 홈</p>
           </div>
           {pending.length > 0 && (
             <button

@@ -78,7 +78,7 @@ export function VenueInfoForm({ venue }: { venue: Venue }) {
         </div>
       </div>
       <div>
-        <Label hint="공연자에게 그대로 보여집니다">사장님 한마디</Label>
+        <Label hint="아티스트에게 그대로 보여집니다">사장님 한마디</Label>
         <TextArea rows={3} value={ownerNote} onChange={(e) => setOwnerNote(e.target.value)} />
       </div>
       <Button full variant="brand" onClick={save}>

@@ -36,7 +36,7 @@ export function OwnerRecruitScreen() {
           <EmptyState
             art="stage"
             title="등록된 구인글이 없어요"
-            description="원하는 장르와 조건을 알려주면 공연자가 지원할 수 있어요."
+            description="원하는 장르와 조건을 알려주면 아티스트가 지원할 수 있어요."
             action={
               <Button variant="brand" onClick={() => setCreateOpen(true)}>
                 첫 구인글 등록하기

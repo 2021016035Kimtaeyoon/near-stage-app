@@ -25,7 +25,7 @@ export function ChatListScreen() {
       <ScreenHeader title="채팅" />
       <ScreenBody>
         {mine.length === 0 ? (
-          <EmptyState art="chat" title="대화가 없어요" description="공간이나 공연자에게 먼저 말을 걸어보세요." />
+          <EmptyState art="chat" title="대화가 없어요" description="공간이나 아티스트에게 먼저 말을 걸어보세요." />
         ) : (
           <div className="space-y-1">
             {mine.map((t) => {

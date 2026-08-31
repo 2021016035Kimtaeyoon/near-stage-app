@@ -39,7 +39,7 @@ export function EquipmentForm({ venue }: { venue: Venue }) {
       />
 
       <div>
-        <Label hint="공연자가 요구하는 최소 조건과 비교됩니다">무대 가로</Label>
+        <Label hint="아티스트가 요구하는 최소 조건과 비교됩니다">무대 가로</Label>
         <RangeSlider
           value={eq.stageWidthM}
           onChange={(v) => updateVenueEquipment(venue.id, { stageWidthM: v })}
