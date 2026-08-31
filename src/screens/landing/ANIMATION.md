@@ -24,9 +24,9 @@
 | 0.50 ~ 0.53 | 바닥 중앙 섬광(screen 블렌드) | `LANDING_FLASH_END` |
 | 0.50 ~ 0.60 | 착지 먼지 2겹 | `LANDING_DUST_END` |
 | 0.38 ~ 0.62 | 로고 바닥 반사 opacity 0→0.16(유지)→0(2막 축소 구간에서 소멸) | 낙하/2막 구간 상수 재사용 |
-| 0.50 ~ 0.56 | 로고+태그라인+CTA 정지(숨 고르기), 1막 텍스트 페이드인 | `ACT1_HOLD_START/END` |
-| 0.56 ~ 0.62 | 로고 축소(scale 1→0.4) + 좌상단 이동(x 0→−38vw, y 0→−32vh) + opacity 1→0.5, **동시에** 1막 태그라인·CTA 페이드아웃 | `ACT2_LOGO_SHRINK_START/END`, `ACT1_TITLE_FADEOUT_START/END` |
-| 0.56 ~ 0.97 | 가로 트랙 `x: 100vw → -200vw` (패널 중앙 도달 시점 근사: 0.66 / 0.815 / 0.97) | `ACT2_START/END`, `TRACK_X_RANGE` |
+| 0.50 ~ 0.60 | 로고+태그라인+CTA 정지(숨 고르기), 1막 텍스트 페이드인 — 넓혀서 2막 전환 전 더 오래 머무름 | `ACT1_HOLD_START/END` |
+| 0.60 ~ 0.66 | 로고 축소(scale 1→0.4) + 좌상단 이동(x 0→−38vw, y 0→−32vh) + opacity 1→0.5, **동시에** 1막 태그라인·CTA 페이드아웃 | `ACT2_LOGO_SHRINK_START/END`, `ACT1_TITLE_FADEOUT_START/END` |
+| 0.60 ~ 0.97 | 가로 트랙 `x: 100vw → -200vw` (패널 중앙 도달 시점 근사: 0.72 / 0.85 / 0.97) | `ACT2_START/END`, `TRACK_X_RANGE` |
 | 각 패널 구간 | 패널 내부 텍스트가 패널 이동보다 살짝 늦게 opacity/y로 따라옴 | `PANEL_CONTENT_WINDOWS[0..2]` |
 | 0.97 ~ 1.00 | 마지막 패널(관객, CTA 포함) 유지 → pin 해제, 다음 섹션으로 이어짐 | `ACT2_END`, `ACT2_TAIL_END` |
 

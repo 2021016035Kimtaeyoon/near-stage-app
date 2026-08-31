@@ -228,9 +228,9 @@ export function DarkStageHero() {
     { opacity: panel2Opacity, y: panel2Y },
   ]
 
-  const dot0 = useTransform(p, [0.56, 0.66, 0.74], [0.3, 1, 0.3])
-  const dot1 = useTransform(p, [0.66, 0.815, 0.89], [0.3, 1, 0.3])
-  const dot2 = useTransform(p, [0.815, 0.97, 1], [0.3, 1, 1])
+  const dot0 = useTransform(p, [0.6, 0.723, 0.785], [0.3, 1, 0.3])
+  const dot1 = useTransform(p, [0.723, 0.847, 0.909], [0.3, 1, 0.3])
+  const dot2 = useTransform(p, [0.909, 0.97, 1], [0.3, 1, 1])
   const dots = [dot0, dot1, dot2]
 
   const heroHeightClass = isMobile ? 'h-[400dvh]' : 'h-[560dvh]'

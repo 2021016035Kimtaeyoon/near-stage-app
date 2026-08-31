@@ -43,26 +43,27 @@ export const LANDING_DUST_END = 0.6
 export const LANDING_SHAKE_END = 0.54
 export const LANDING_FLASH_END = 0.53
 
+/** 로고+태그라인+CTA가 멈춰 있는 "숨 고르기" 구간 — 여기를 늘리면 2막으로 넘어가기 전 더 오래 머무름 */
 export const ACT1_HOLD_START = 0.5
-export const ACT1_HOLD_END = 0.56
+export const ACT1_HOLD_END = 0.6
 
 // 2막 — 가로 트랙
-export const ACT2_START = 0.56
+export const ACT2_START = 0.6
 export const ACT2_END = 0.97
 export const ACT2_TAIL_END = 1.0
 /** 로고 축소·좌상단 이동 + 1막 카피 페이드아웃 — 같은 구간 */
-export const ACT2_LOGO_SHRINK_START = 0.56
-export const ACT2_LOGO_SHRINK_END = 0.62
-export const ACT1_TITLE_FADEOUT_START = 0.56
-export const ACT1_TITLE_FADEOUT_END = 0.62
+export const ACT2_LOGO_SHRINK_START = 0.6
+export const ACT2_LOGO_SHRINK_END = 0.66
+export const ACT1_TITLE_FADEOUT_START = 0.6
+export const ACT1_TITLE_FADEOUT_END = 0.66
 
-/** 트랙 x좌표 매핑 — 공식 그대로. 패널 중앙 도달 시점은 근사치(약 0.66/0.815/0.97) */
+/** 트랙 x좌표 매핑 — 공식 그대로. 패널 중앙 도달 시점은 근사치(약 0.72/0.85/0.97) */
 export const TRACK_X_RANGE: [string, string] = ['100vw', '-200vw']
 
 /** 패널 내부 텍스트가 패널 자체보다 살짝 늦게 따라오는 구간 (패널당) */
 export const PANEL_CONTENT_WINDOWS: Array<[number, number]> = [
-  [0.59, 0.675],
-  [0.745, 0.83],
+  [0.653, 0.738],
+  [0.777, 0.862],
   [0.9, 0.985],
 ]
 
@@ -73,7 +74,7 @@ export const DEV_JUMPS: Array<{ label: string; value: number }> = [
   { label: '무대', value: 0.3 },
   { label: '조명', value: 0.35 },
   { label: '착지', value: 0.51 },
-  { label: '패널1', value: 0.66 },
-  { label: '패널2', value: 0.82 },
+  { label: '패널1', value: 0.72 },
+  { label: '패널2', value: 0.85 },
   { label: '패널3', value: 0.97 },
 ]
