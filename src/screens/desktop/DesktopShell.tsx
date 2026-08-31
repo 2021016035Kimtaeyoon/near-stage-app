@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
 import { Bell, ExternalLink, Smartphone } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { LogoMark } from '@/components/shell/LogoMark'
-import { ROLE_DESCRIPTION, ROLE_LABEL } from '@/config/nav'
+import { ROLE_DESCRIPTION, ROLE_LABEL, TABS } from '@/config/nav'
 import { cn } from '@/lib/cn'
 import { useIsDesktop } from '@/lib/useMediaQuery'
 import { useAppStore } from '@/store/useAppStore'
@@ -18,12 +18,14 @@ const ROLES: Role[] = ['audience', 'owner', 'performer']
  */
 export function DesktopShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate()
+  const location = useLocation()
   const role = useAppStore((s) => s.role)
   const setRole = useAppStore((s) => s.setRole)
   const unread = useAppStore((s) =>
     s.notifications.filter((n) => n.role === s.role && !n.read).length,
   )
   const isDesktop = useIsDesktop()
+  const subPath = location.pathname.replace(/^\/desktop/, '') || '/'
 
   // 이 화면은 넓은 화면 전용 레이아웃(고정 폭 사이드바 등)이라 좁은 화면에서는
   // 레이아웃이 깨집니다. 모바일 폭에서는 잘 만들어진 모바일 앱으로 안내합니다.
@@ -62,7 +64,10 @@ export function DesktopShell({ children }: { children: ReactNode }) {
             {ROLES.map((r) => (
               <button
                 key={r}
-                onClick={() => setRole(r)}
+                onClick={() => {
+                  setRole(r)
+                  navigate('/desktop')
+                }}
                 className={cn(
                   'relative rounded-full px-4 py-1.5 text-sm font-bold transition-colors',
                   role === r ? 'text-white' : 'text-ink-2 hover:text-ink',
@@ -85,6 +90,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
 
         <div className="flex items-center gap-2">
           <button
+            onClick={() => navigate('/desktop/notifications')}
             aria-label="알림"
             className="tap relative flex h-9 w-9 items-center justify-center rounded-full text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
           >
@@ -111,6 +117,27 @@ export function DesktopShell({ children }: { children: ReactNode }) {
           </button>
         </div>
       </header>
+
+      <nav className="flex h-11 shrink-0 items-center gap-1 border-b border-border bg-bg px-8">
+        {TABS[role].map((tab) => {
+          const active = tab.matches.some((m) => subPath.startsWith(m))
+          return (
+            <button
+              key={tab.to}
+              onClick={() => navigate(`/desktop${tab.to}`)}
+              className={cn(
+                'flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-[13px] font-bold transition-colors',
+                active
+                  ? 'border-[#3D5FC7] text-ink'
+                  : 'border-transparent text-ink-3 hover:text-ink-2',
+              )}
+            >
+              <tab.icon size={15} />
+              {tab.label}
+            </button>
+          )
+        })}
+      </nav>
 
       <div className="min-h-0 flex-1">{children}</div>
     </div>

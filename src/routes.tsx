@@ -31,8 +31,17 @@ function RoleRedirect() {
   return <Navigate to={ROLE_HOME[role]} replace />
 }
 
-export function AppRoutes() {
-  const location = useLocation()
+/**
+ * `prefix`가 있으면 그 접두사를 뗀 경로로 라우트를 매칭합니다.
+ * 데스크톱 웹앱(`/desktop/...`)이 모바일과 같은 화면들을 그대로 재사용할 때 씁니다.
+ * 단, 화면 내부의 navigate()는 접두사 없는 실제 경로로 이동하므로,
+ * 하위 화면에서 다른 경로로 이동하면 데스크톱 셸을 벗어나 모바일 화면으로 전환됩니다.
+ */
+export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
+  const rawLocation = useLocation()
+  const location = prefix
+    ? { ...rawLocation, pathname: rawLocation.pathname.slice(prefix.length) || '/' }
+    : rawLocation
   return (
     <AnimatePresence mode="wait" initial={false}>
       <Routes location={location} key={location.pathname}>
