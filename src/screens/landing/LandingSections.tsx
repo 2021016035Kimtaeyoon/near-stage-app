@@ -211,7 +211,7 @@ export function ClosingSection() {
       </ScrollReveal>
 
       <footer className="mx-auto mt-16 max-w-5xl border-t border-white/10 px-6 pt-8">
-        <LogoMark className="w-[104px] opacity-90" />
+        <LogoMark dark className="w-[104px] opacity-90" />
         <p className="mt-3 text-xs leading-relaxed text-white/50">
           {SERVICE_NAME} · {SERVICE_TAGLINE}
           <br />

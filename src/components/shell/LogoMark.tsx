@@ -1,8 +1,15 @@
+interface Props {
+  className?: string
+  /** 어두운 배경(랜딩 푸터 등) 위에 놓일 때 — 배경 없이도 대비가 유지되도록 색을 반전 */
+  dark?: boolean
+}
+
 /**
  * NEAR:STAGE 워드마크. 외부 이미지 파일 없이 SVG로 그려서
  * 어떤 배율에서도 또렷하게 보이고 오프라인에서도 항상 렌더링됩니다.
+ * 배경 플레이트 없이 텍스트만 놓여 어떤 배경 위에서도 자연스럽게 어울립니다.
  */
-export function LogoMark({ className }: { className?: string }) {
+export function LogoMark({ className, dark = false }: Props) {
   return (
     <svg
       viewBox="0 0 300 193"
@@ -10,7 +17,6 @@ export function LogoMark({ className }: { className?: string }) {
       role="img"
       aria-label="NEAR:STAGE"
     >
-      <rect x="3" y="3" width="294" height="187" rx="10" fill="#5B84DE" stroke="#E2E2E8" strokeWidth="4" />
       <text
         x="150"
         y="92"
@@ -18,7 +24,7 @@ export function LogoMark({ className }: { className?: string }) {
         fontFamily="Pretendard Variable, Pretendard, -apple-system, sans-serif"
         fontWeight={900}
         fontSize="62"
-        fill="#0A0A0F"
+        fill={dark ? '#FFFFFF' : '#0A0A0F'}
         letterSpacing="-1"
       >
         NEAR
@@ -31,7 +37,7 @@ export function LogoMark({ className }: { className?: string }) {
         fontWeight={800}
         fontStyle="italic"
         fontSize="44"
-        fill="#FFFFFF"
+        fill={dark ? '#93AEEF' : '#3D5FC7'}
         letterSpacing="3"
         transform="rotate(-7 150 132)"
       >
