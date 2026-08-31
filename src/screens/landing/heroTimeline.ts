@@ -11,18 +11,15 @@ export const CURTAIN_CUE_FADE_END = 0.06
 export const CURTAIN_OPEN_START = 0.05
 export const CURTAIN_OPEN_END = 0.26
 export const CURTAIN_EMBLEM_FADE_END = 0.12
-/** 통짜 커튼이 걷히며 위에서 살짝 오그라드는 정도 */
-export const CURTAIN_SCALE_END = 0.9
+/** 좌우 패널이 각자 바깥쪽 끝을 축으로 오그라드는 최종 scaleX */
+export const PANEL_SCALE_END = 0.34
+/** 오그라드는 동안 함께 바깥으로 밀려나는 x 이동량(%) */
+export const PANEL_X_END = 6
 
 /** 밸런스(상단 장식 천) — 절대 px 단위. 화면이 넓어지면 개수만 늘어남 */
 export const VALANCE_HEIGHT = 72
 export const SCALLOP_TILE = 80
 export const SCALLOP_DEPTH = 14
-
-/** 커튼 밑단 — 물결 모양 + 좌우로 흐르는 펄럭임 애니메이션 */
-export const HEM_HEIGHT = 22
-export const HEM_WAVE_TILE = 90
-export const HEM_WAVE_DEPTH = 9
 
 export const STAGE_REVEAL_START = 0.2
 export const STAGE_REVEAL_END = 0.32

@@ -1,8 +1,9 @@
 import { cubicBezier, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from 'framer-motion'
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { useMediaQuery } from '@/lib/useMediaQuery'
+import { buildFolds, FOLD_TYPES, FOLD_WIDTHS, type Fold } from './curtainFolds'
 import {
   ACT1_TITLE_FADEOUT_END,
   ACT1_TITLE_FADEOUT_START,
@@ -14,11 +15,7 @@ import {
   CURTAIN_EMBLEM_FADE_END,
   CURTAIN_OPEN_END,
   CURTAIN_OPEN_START,
-  CURTAIN_SCALE_END,
   DEV_JUMPS,
-  HEM_HEIGHT,
-  HEM_WAVE_DEPTH,
-  HEM_WAVE_TILE,
   HERO_TAGLINE,
   LANDING_AT,
   LANDING_DUST_END,
@@ -32,6 +29,8 @@ import {
   LOGO_FALL_END,
   LOGO_FALL_START,
   PANEL_CONTENT_WINDOWS,
+  PANEL_SCALE_END,
+  PANEL_X_END,
   SCALLOP_DEPTH,
   SCALLOP_TILE,
   STAGE_BRIGHTNESS_END,
@@ -41,6 +40,7 @@ import {
 } from './heroTimeline'
 
 const FALL_EASE = cubicBezier(0.55, 0.06, 0.68, 0.19)
+const CURTAIN_EASE = cubicBezier(0.4, 0, 0.2, 1)
 const DEBUG_STORAGE_KEY = 'ns-hero-debug'
 
 interface Panel {
@@ -134,14 +134,18 @@ export function DarkStageHero() {
   // ── 스크롤 유도 ────────────────────────────────────────────────
   const scrollCueOpacity = useTransform(p, [0, 0.02, CURTAIN_CUE_FADE_END], [1, 1, 0])
 
-  // ── 커튼(통짜) ────────────────────────────────────────────────
-  const curtainY = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], ['0%', '-100%'])
-  const curtainScaleY = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], [1, CURTAIN_SCALE_END])
-  const hemCounterScale = useTransform(curtainScaleY, (s) => 1 / s)
-  const gatherHeight = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], ['0%', '22%'])
-  const gatherOpacity = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_START + 0.03], [0, 1])
+  // ── 커튼 (좌우 분할 개막) ────────────────────────────────────────
+  const panelScaleX = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], [1, PANEL_SCALE_END], {
+    ease: CURTAIN_EASE,
+  })
+  const leftPanelX = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], ['0%', `-${PANEL_X_END}%`], {
+    ease: CURTAIN_EASE,
+  })
+  const rightPanelX = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], ['0%', `${PANEL_X_END}%`], {
+    ease: CURTAIN_EASE,
+  })
+  const seamOpacity = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], [1, 0])
   const emblemOpacity = useTransform(p, [0, CURTAIN_EMBLEM_FADE_END], [1, 0])
-  const hemShadowOpacity = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], [1, 0])
 
   // ── 무대 밝기 + 착지 흔들림(무대 컨테이너 전용) ─────────────────
   const stageBrightness = useTransform(p, [STAGE_BRIGHTNESS_START, STAGE_BRIGHTNESS_END], [0.28, 1])
@@ -238,6 +242,11 @@ export function DarkStageHero() {
   const logoWidthClass = isMobile ? 'w-[220px]' : shortViewport ? 'w-[260px]' : 'w-[330px]'
   const gapClass = shortViewport ? 'gap-6' : 'gap-10'
   const ctaGapClass = shortViewport ? 'mt-4' : 'mt-7'
+  // 주름 16개(모바일 10개) — 폭 배열을 잘라서 넘기면 buildFolds가 다시 100 단위로 정규화한다
+  const folds = buildFolds(
+    isMobile ? FOLD_WIDTHS.slice(0, 10) : FOLD_WIDTHS,
+    isMobile ? FOLD_TYPES.slice(0, 10) : FOLD_TYPES,
+  )
 
   return (
     <section ref={ref} className={`relative ${heroHeightClass} bg-[#0A0A0D]`}>
@@ -377,65 +386,29 @@ export function DarkStageHero() {
           ))}
         </motion.div>
 
-        {/* 커튼 — 통짜 한 장, 조각으로 나누지 않음 */}
+        {/* 커튼 — 좌우 두 폭이 바깥쪽으로 오그라들며 갈라짐 */}
         <div className="pointer-events-none absolute inset-0 z-40">
           <motion.div
             aria-hidden
-            className="absolute inset-x-0 top-0 h-full origin-top"
-            style={{
-              y: curtainY,
-              scaleY: curtainScaleY,
-              backgroundImage:
-                'repeating-linear-gradient(90deg, #5E0A14 0px, #A8172B 5px, #C4213A 11px, #7A0F1E 15px, #5E0A14 22px, #A8172B 27px, #C4213A 33px, #7A0F1E 37px)',
-              willChange: 'transform',
-            }}
+            className="absolute left-0 top-0 h-full w-[52%] origin-left"
+            style={{ scaleX: panelScaleX, x: leftPanelX, willChange: 'transform' }}
           >
-            {/* 밑단 — 부모 scaleY를 상쇄해 두께는 항상 같고, 끝은 물결 모양 + 좌우로 흐르는 펄럭임 */}
-            <motion.div
-              aria-hidden
-              className="absolute inset-x-0 bottom-0 origin-bottom overflow-hidden"
-              style={{
-                height: HEM_HEIGHT,
-                scaleY: hemCounterScale,
-                opacity: hemShadowOpacity,
-                filter: 'drop-shadow(0 10px 16px rgba(0,0,0,.55))',
-                willChange: 'transform, opacity',
-              }}
-            >
-              <motion.svg
-                width={`calc(100% + ${HEM_WAVE_TILE}px)`}
-                height={HEM_HEIGHT}
-                style={{ position: 'absolute', left: 0, top: 0, willChange: 'transform' }}
-                animate={{ x: [0, -HEM_WAVE_TILE] }}
-                transition={{ duration: 3.4, repeat: Infinity, ease: 'linear' }}
-              >
-                <defs>
-                  <linearGradient id="hem-fill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#3E0810" />
-                    <stop offset="100%" stopColor="#22040A" />
-                  </linearGradient>
-                  <pattern id="hem-wave" width={HEM_WAVE_TILE} height={HEM_HEIGHT} patternUnits="userSpaceOnUse">
-                    <path
-                      d={`M0,0 H${HEM_WAVE_TILE} V${HEM_HEIGHT - HEM_WAVE_DEPTH} C ${HEM_WAVE_TILE * 0.75},${HEM_HEIGHT} ${HEM_WAVE_TILE * 0.25},${HEM_HEIGHT} 0,${HEM_HEIGHT - HEM_WAVE_DEPTH} Z`}
-                      fill="url(#hem-fill)"
-                    />
-                  </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="url(#hem-wave)" />
-              </motion.svg>
-            </motion.div>
+            <CurtainPanelSurface folds={folds} side="left" showVignette={!isMobile} />
           </motion.div>
-
-          {/* 상단 개더 존 — 걷히는 동안 커지며 천이 쌓이는 것처럼 보임 */}
           <motion.div
             aria-hidden
-            className="absolute inset-x-0 top-0 origin-top"
+            className="absolute right-0 top-0 h-full w-[52%] origin-right"
+            style={{ scaleX: panelScaleX, x: rightPanelX, willChange: 'transform' }}
+          >
+            <CurtainPanelSurface folds={folds} side="right" showVignette={!isMobile} />
+          </motion.div>
+          {/* 중앙 이음새 — 닫혔을 때 두 폭이 맞물린 것처럼 보이게, 열리며 함께 사라짐 */}
+          <motion.div
+            aria-hidden
+            className="absolute inset-y-0 left-1/2 w-[10px] -translate-x-1/2"
             style={{
-              height: gatherHeight,
-              opacity: gatherOpacity,
-              backgroundImage:
-                'repeating-linear-gradient(0deg, rgba(0,0,0,.35) 0px, rgba(0,0,0,.35) 3px, rgba(255,255,255,.06) 3px, rgba(255,255,255,.06) 6px), linear-gradient(180deg, #7A0F1E 0%, #4A0810 100%)',
-              willChange: 'opacity',
+              opacity: seamOpacity,
+              background: 'linear-gradient(90deg, transparent, rgba(0,0,0,.55), transparent)',
             }}
           />
         </div>
@@ -444,10 +417,25 @@ export function DarkStageHero() {
         <div className="pointer-events-none absolute inset-x-0 top-0 z-40" style={{ height: VALANCE_HEIGHT }}>
           <svg width="100%" height={VALANCE_HEIGHT} preserveAspectRatio="none" style={{ display: 'block' }}>
             <defs>
+              {/* 밸런스도 같은 천으로 보이도록 §2의 능선/골 그라데이션을 축소 적용 */}
+              <linearGradient id="valance-ridge" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#2A040A" />
+                <stop offset="52%" stopColor="#C4213A" />
+                <stop offset="100%" stopColor="#33050C" />
+              </linearGradient>
+              <linearGradient id="valance-valley" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#1E0308" />
+                <stop offset="55%" stopColor="#6E0C18" />
+                <stop offset="100%" stopColor="#24040A" />
+              </linearGradient>
+              <pattern id="ns-valance-fold" width="14" height={VALANCE_HEIGHT} patternUnits="userSpaceOnUse">
+                <rect x="0" width="7" height={VALANCE_HEIGHT} fill="url(#valance-ridge)" />
+                <rect x="7" width="7" height={VALANCE_HEIGHT} fill="url(#valance-valley)" />
+              </pattern>
               <pattern id="ns-scallop" width={SCALLOP_TILE} height={VALANCE_HEIGHT} patternUnits="userSpaceOnUse">
                 <path
                   d={`M0,0 H${SCALLOP_TILE} V${VALANCE_HEIGHT - SCALLOP_DEPTH} Q${SCALLOP_TILE / 2},${VALANCE_HEIGHT} 0,${VALANCE_HEIGHT - SCALLOP_DEPTH} Z`}
-                  fill="#7A0F1E"
+                  fill="url(#ns-valance-fold)"
                 />
               </pattern>
             </defs>
@@ -585,6 +573,78 @@ function SpotLight({
         }}
       />
     </motion.div>
+  )
+}
+
+/**
+ * 커튼 패널 한 폭의 표면. 주름은 SVG path(+ridge/valley 그라데이션)로,
+ * 그 위에 4겹 오버레이(세로 falloff·측면 조명·안쪽 선단 하이라이트·비네트)를 얹는다.
+ * 이 컴포넌트 전체가 부모 motion.div의 scaleX/x와 함께 통째로 움직인다.
+ */
+function CurtainPanelSurface({
+  folds,
+  side,
+  showVignette,
+}: {
+  folds: Fold[]
+  side: 'left' | 'right'
+  showVignette: boolean
+}) {
+  const ridgeId = `fold-ridge-${side}`
+  const valleyId = `fold-valley-${side}`
+  const sideLightStyle: CSSProperties = {
+    background:
+      side === 'left'
+        ? 'linear-gradient(90deg, rgba(0,0,0,.42) 0%, transparent 60%, rgba(255,190,160,.07) 100%)'
+        : 'linear-gradient(270deg, rgba(0,0,0,.42) 0%, transparent 60%, rgba(255,190,160,.07) 100%)',
+  }
+  const leadingEdgeStyle: CSSProperties =
+    side === 'left'
+      ? { right: 0, background: 'linear-gradient(180deg, transparent 5%, rgba(255,225,190,.45) 50%, transparent 95%)' }
+      : { left: 0, background: 'linear-gradient(180deg, transparent 5%, rgba(255,225,190,.45) 50%, transparent 95%)' }
+
+  return (
+    <div className="relative h-full w-full">
+      <svg viewBox="0 0 100 200" preserveAspectRatio="none" className="h-full w-full" style={{ display: 'block' }}>
+        <defs>
+          <linearGradient id={ridgeId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#2A040A" />
+            <stop offset="14%" stopColor="#8E1424" />
+            <stop offset="52%" stopColor="#C4213A" />
+            <stop offset="78%" stopColor="#8E1424" />
+            <stop offset="100%" stopColor="#33050C" />
+          </linearGradient>
+          <linearGradient id={valleyId} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#1E0308" />
+            <stop offset="16%" stopColor="#4A0810" />
+            <stop offset="55%" stopColor="#6E0C18" />
+            <stop offset="100%" stopColor="#24040A" />
+          </linearGradient>
+        </defs>
+        {folds.map((f, i) => (
+          <path key={i} d={f.d} fill={`url(#${f.type === 'ridge' ? ridgeId : valleyId})`} />
+        ))}
+      </svg>
+
+      {/* ① 세로 명암 falloff */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background: 'linear-gradient(180deg, rgba(0,0,0,.55) 0%, transparent 20%, transparent 76%, rgba(0,0,0,.45) 100%)',
+        }}
+      />
+      {/* ② 측면 조명 — 중앙(안쪽)이 밝고 바깥쪽 끝이 어둡게 */}
+      <div className="pointer-events-none absolute inset-0" style={sideLightStyle} />
+      {/* ③ 안쪽 선단 하이라이트 — 조명이 천 앞단을 스치는 4px 띠 */}
+      <div className="pointer-events-none absolute top-0 h-full w-1" style={leadingEdgeStyle} />
+      {/* ④ 옅은 비네트 (모바일에서는 생략) */}
+      {showVignette && (
+        <div
+          className="pointer-events-none absolute inset-0"
+          style={{ background: 'radial-gradient(ellipse 65% 90% at 50% 50%, transparent 55%, rgba(0,0,0,.22) 100%)' }}
+        />
+      )}
+    </div>
   )
 }
 
