@@ -1,9 +1,9 @@
-import { motion, useScroll, useTransform } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogoMark } from '@/components/shell/LogoMark'
-import { SERVICE_DESCRIPTION } from '@/config/brand'
+import { DarkStageHero } from './DarkStageHero'
 import {
   ClosingSection,
   DifferentiationSection,
@@ -12,11 +12,6 @@ import {
   StatsBand,
 } from './LandingSections'
 import { PhoneMockup } from './PhoneMockup'
-
-const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } },
-}
 
 const NAV_LINKS = [
   { href: '#differentiation', label: '차별점' },
@@ -30,8 +25,6 @@ const NAV_LINKS = [
 export function LandingPage() {
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
-  const { scrollY } = useScroll()
-  const heroFade = useTransform(scrollY, [0, 420], [1, 0.25])
 
   return (
     <div className="min-h-screen w-full bg-bg text-ink">
@@ -101,56 +94,19 @@ export function LandingPage() {
         )}
       </header>
 
-      <section className="relative overflow-hidden">
+      <DarkStageHero />
+
+      <section className="mx-auto flex max-w-5xl justify-center px-6 py-20">
         <motion.div
-          style={{ opacity: heroFade }}
-          initial="hidden"
-          animate="show"
-          variants={{ show: { transition: { staggerChildren: 0.1 } } }}
-          className="relative mx-auto flex max-w-6xl flex-col items-center gap-14 px-6 pb-20 pt-16 lg:flex-row lg:items-center lg:pt-24"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: '-80px' }}
+          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
         >
-          <div className="max-w-xl lg:flex-1">
-            <motion.span
-              variants={fadeUp}
-              className="inline-flex items-center rounded-full border border-border bg-surface-2 px-3 py-1 text-xs font-bold text-ink-2"
-            >
-              공연자 × 공간주 × 관객, 3면 마켓플레이스
-            </motion.span>
-            <motion.h1
-              variants={fadeUp}
-              className="mt-5 text-4xl font-extrabold leading-[1.15] tracking-tight md:text-[52px]"
-            >
-              공연할 곳이 없나요?
-              <br />
-              <span className="brand-text">손님 없는 시간</span>이 아깝나요?
-            </motion.h1>
-            <motion.p variants={fadeUp} className="mt-5 text-[17px] leading-relaxed text-ink-2">
-              {SERVICE_DESCRIPTION}
-            </motion.p>
-
-            <motion.div variants={fadeUp} className="mt-8 flex flex-wrap items-center gap-3">
-              <button
-                onClick={() => navigate('/desktop')}
-                className="brand-gradient rounded-full px-7 py-4 text-[15px] font-bold text-white"
-                style={{ boxShadow: '0 16px 40px rgba(61,95,199,.3)' }}
-              >
-                웹으로 둘러보기 →
-              </button>
-              <button
-                onClick={() => navigate('/')}
-                className="rounded-full border border-border-strong px-7 py-4 text-[15px] font-bold text-ink"
-              >
-                모바일 앱 체험하기
-              </button>
-            </motion.div>
-            <motion.p variants={fadeUp} className="mt-4 text-xs text-ink-3">
-              회원가입 없이 바로 둘러볼 수 있는 심사용 프로토타입입니다.
-            </motion.p>
-          </div>
-
-          <motion.div variants={fadeUp} className="flex justify-center lg:flex-1">
-            <PhoneMockup />
-          </motion.div>
+          <PhoneMockup />
+          <p className="mt-6 text-center text-xs text-ink-3">
+            회원가입 없이 바로 둘러볼 수 있는 심사용 프로토타입입니다.
+          </p>
         </motion.div>
       </section>
 
