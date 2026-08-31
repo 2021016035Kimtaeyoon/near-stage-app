@@ -4,15 +4,20 @@
  * 값을 바꾸면 타이밍이 바뀝니다 — 자세한 설명은 ANIMATION.md 참고.
  */
 
+export const HERO_TAGLINE = '오늘 밤, 걸어갈 수 있는 무대'
+
 // 1막 — 개막
 export const CURTAIN_CUE_FADE_END = 0.06
 export const CURTAIN_OPEN_START = 0.05
 export const CURTAIN_OPEN_END = 0.26
-/** 조각별 시작 지연의 최댓값(중앙 조각) — 진행률 단위 */
-export const CURTAIN_STAGGER_MAX = 0.09
-/** 조각 1개가 스스로 움직이는 데 걸리는 진행률 폭 */
-export const CURTAIN_STRIP_DURATION = CURTAIN_OPEN_END - CURTAIN_OPEN_START - CURTAIN_STAGGER_MAX
 export const CURTAIN_EMBLEM_FADE_END = 0.12
+/** 통짜 커튼이 걷히며 위에서 살짝 오그라드는 정도 */
+export const CURTAIN_SCALE_END = 0.9
+
+/** 밸런스(상단 장식 천) — 절대 px 단위. 화면이 넓어지면 개수만 늘어남 */
+export const VALANCE_HEIGHT = 72
+export const SCALLOP_TILE = 80
+export const SCALLOP_DEPTH = 14
 
 export const STAGE_REVEAL_START = 0.2
 export const STAGE_REVEAL_END = 0.32
@@ -41,22 +46,22 @@ export const ACT1_HOLD_END = 0.56
 
 // 2막 — 가로 트랙
 export const ACT2_START = 0.56
-export const ACT2_END = 0.98
+export const ACT2_END = 0.97
 export const ACT2_TAIL_END = 1.0
-/** 1막 타이틀/CTA 페이드아웃, 로고 축소·이동 구간 */
+/** 로고 축소·좌상단 이동 + 1막 카피 페이드아웃 — 같은 구간 */
 export const ACT2_LOGO_SHRINK_START = 0.56
-export const ACT2_LOGO_SHRINK_END = 0.64
+export const ACT2_LOGO_SHRINK_END = 0.62
 export const ACT1_TITLE_FADEOUT_START = 0.56
 export const ACT1_TITLE_FADEOUT_END = 0.62
 
-/** 트랙 x좌표 매핑 — 공식 그대로. 패널 중앙 도달 시점은 근사치(약 0.70/0.84/0.98) */
+/** 트랙 x좌표 매핑 — 공식 그대로. 패널 중앙 도달 시점은 근사치(약 0.66/0.815/0.97) */
 export const TRACK_X_RANGE: [string, string] = ['100vw', '-200vw']
 
 /** 패널 내부 텍스트가 패널 자체보다 살짝 늦게 따라오는 구간 (패널당) */
 export const PANEL_CONTENT_WINDOWS: Array<[number, number]> = [
-  [0.6, 0.68],
-  [0.74, 0.82],
-  [0.88, 0.97],
+  [0.59, 0.675],
+  [0.745, 0.83],
+  [0.9, 0.985],
 ]
 
 // 개발용 진행률 패널 점프 버튼
@@ -66,7 +71,7 @@ export const DEV_JUMPS: Array<{ label: string; value: number }> = [
   { label: '무대', value: 0.3 },
   { label: '조명', value: 0.35 },
   { label: '착지', value: 0.51 },
-  { label: '패널1', value: 0.65 },
-  { label: '패널2', value: 0.79 },
-  { label: '패널3', value: 0.95 },
+  { label: '패널1', value: 0.66 },
+  { label: '패널2', value: 0.82 },
+  { label: '패널3', value: 0.97 },
 ]

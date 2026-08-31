@@ -65,11 +65,11 @@ export function LandingPage() {
             ))}
           </nav>
 
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden items-center gap-4 whitespace-nowrap md:flex">
             <button
               onClick={() => navigate('/')}
               className={cn(
-                'rounded-full border px-4 py-2 text-sm font-bold transition-colors',
+                'hidden rounded-full border px-4 py-2 text-sm font-bold transition-colors lg:inline-flex',
                 overHero ? 'border-white/30 text-white' : 'border-border text-ink-2',
               )}
             >
