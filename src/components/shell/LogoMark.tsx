@@ -1,63 +1,73 @@
+import { ARC_LOWER, ARC_UPPER, LOGO_VIEWBOX, NEAR, STAGE_FONT_SIZE, STAGE_LETTERS } from './logoGeometry'
+
 interface Props {
   className?: string
   /** 어두운 배경(랜딩 인트로, 푸터 등) 위에 놓일 때 — 검정 요소를 흰색으로 반전 */
   dark?: boolean
 }
 
+const FONT_FAMILY = 'Pretendard Variable, Pretendard, -apple-system, sans-serif'
+
 /**
  * NEAR:STAGE 워드마크. 외부 이미지 파일 없이 SVG로 그려서
  * 어떤 배율에서도 또렷하게 보이고 오프라인에서도 항상 렌더링됩니다.
- * NEAR는 곧게 짜여 있고, 그 아래 두 겹 곡선 트랙 사이로 STAGE가
- * 금색 + 레드 그림자 겹침으로 곡선을 따라 흐릅니다(SVG textPath).
- * viewBox는 참고 이미지의 실제 픽셀 비율(336x260)에 맞췄습니다.
+ * STAGE 글자 5개는 logoGeometry.ts에 손으로 고정한 좌표/회전값을 그대로
+ * 쓰고, textPath로 다시 흐르게 하지 않습니다(폰트 메트릭에 따라 밀림).
  */
 export function LogoMark({ className, dark = false }: Props) {
   const lineColor = dark ? '#FFFFFF' : '#0A0A0F'
   return (
-    <svg viewBox="0 0 336 260" className={className} role="img" aria-label="NEAR:STAGE">
-      <path id="stage-arc" d="M 42 134 Q 168 199 294 134" fill="none" />
-      <path d="M 58 118 Q 168 172 278 118" fill="none" stroke={lineColor} strokeWidth="3.5" />
-      <path d="M 26 150 Q 168 226 310 150" fill="none" stroke={lineColor} strokeWidth="3.5" />
+    <svg viewBox={LOGO_VIEWBOX} className={className} role="img" aria-label="NEAR:STAGE">
+      <path d={ARC_UPPER} fill="none" stroke={lineColor} strokeWidth="3.5" />
+      <path d={ARC_LOWER} fill="none" stroke={lineColor} strokeWidth="3.5" />
 
       <text
-        x="168"
-        y="100"
+        x={NEAR.x}
+        y={NEAR.y}
         textAnchor="middle"
-        fontFamily="Pretendard Variable, Pretendard, -apple-system, sans-serif"
+        fontFamily={FONT_FAMILY}
         fontWeight={900}
-        fontSize="50"
+        fontSize={NEAR.fontSize}
         fill={lineColor}
-        letterSpacing="13"
+        letterSpacing={NEAR.letterSpacing}
       >
         NEAR
       </text>
 
       <g transform="translate(3,5)">
-        <text
-          fontFamily="Pretendard Variable, Pretendard, -apple-system, sans-serif"
-          fontWeight={800}
-          fontSize="34"
-          fill="#A9291C"
-          letterSpacing="11"
-        >
-          <textPath href="#stage-arc" startOffset="50%" textAnchor="middle">
-            STAGE
-          </textPath>
-        </text>
+        {STAGE_LETTERS.map((l) => (
+          <text
+            key={`shadow-${l.ch}`}
+            x={l.x}
+            y={l.y}
+            transform={`rotate(${l.rot} ${l.x} ${l.y})`}
+            textAnchor="middle"
+            fontFamily={FONT_FAMILY}
+            fontWeight={800}
+            fontSize={STAGE_FONT_SIZE}
+            fill="#A9291C"
+          >
+            {l.ch}
+          </text>
+        ))}
       </g>
-      <text
-        fontFamily="Pretendard Variable, Pretendard, -apple-system, sans-serif"
-        fontWeight={800}
-        fontSize="34"
-        fill="#F5C518"
-        stroke="#0A0A0F"
-        strokeWidth="1"
-        letterSpacing="11"
-      >
-        <textPath href="#stage-arc" startOffset="50%" textAnchor="middle">
-          STAGE
-        </textPath>
-      </text>
+      {STAGE_LETTERS.map((l) => (
+        <text
+          key={l.ch}
+          x={l.x}
+          y={l.y}
+          transform={`rotate(${l.rot} ${l.x} ${l.y})`}
+          textAnchor="middle"
+          fontFamily={FONT_FAMILY}
+          fontWeight={800}
+          fontSize={STAGE_FONT_SIZE}
+          fill="#F5C518"
+          stroke="#0A0A0F"
+          strokeWidth="1"
+        >
+          {l.ch}
+        </text>
+      ))}
     </svg>
   )
 }
