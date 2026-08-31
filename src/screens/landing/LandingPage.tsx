@@ -29,9 +29,10 @@ export function LandingPage() {
   const [overHero, setOverHero] = useState(true)
 
   const heroWrapRef = useRef<HTMLDivElement>(null)
+  // DarkStageHero와 동일하게 'end end'를 써야 실제 pin 해제 시점과 맞습니다.
   const { scrollYProgress: heroProgress } = useScroll({
     target: heroWrapRef,
-    offset: ['start start', 'end start'],
+    offset: ['start start', 'end end'],
   })
   const headerBgOpacity = useTransform(heroProgress, [0.94, 1], [0, 1])
 

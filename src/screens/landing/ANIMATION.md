@@ -30,6 +30,24 @@
 | 각 패널 구간 | 패널 내부 텍스트가 패널 이동보다 살짝 늦게 opacity/y로 따라옴 | `PANEL_CONTENT_WINDOWS[0..2]` |
 | 0.97 ~ 1.00 | 마지막 패널(관객, CTA 포함) 유지 → pin 해제, 다음 섹션으로 이어짐 | `ACT2_END`, `ACT2_TAIL_END` |
 
+## ⚠️ 근본 원인이었던 offset 버그 (2막 도중 흰 배경으로 떨어지던 문제의 진짜 원인)
+
+`useScroll({ target: ref, offset: ['start start', 'end start'] })`를 계속 써왔는데,
+이건 **틀린 조합**이었습니다. `'end start'`는 섹션의 **바닥**이 뷰포트 **위쪽**에 닿는
+순간(`scrollY = sectionTop + sectionHeight`)에 progress=1이 되지만, `position: sticky`가
+실제로 풀리는 시점은 그보다 뷰포트 높이(`100dvh`)만큼 **더 이른** `scrollY = sectionTop +
+sectionHeight - viewportHeight`입니다. 그래서 progress가 항상 실제 pin 해제 시점보다
+뒤처져 있었고, 2막 뒷부분(패널2~3, 0.82~1.00 근방)이 이미 pin이 풀려 일반 스크롤이 된
+상태에서 재생되며 화면이 흰 배경으로 뚝 떨어졌습니다.
+
+**수정**: `offset: ['start start', 'end end']`로 교체(`DarkStageHero.tsx`, `LandingPage.tsx`
+둘 다). `'end end'`는 섹션 바닥이 뷰포트 **바닥**에 닿는 순간 progress=1이 되므로
+`scrollY = sectionTop + sectionHeight - viewportHeight`와 정확히 일치합니다 — 이게
+`position: sticky`가 풀리는 지점 그 자체입니다. 실제로 `scrollY=4130`(직전)에서
+sticky top=0, `scrollY=4160`(직후)에서 top=-20으로, 예측한 4140에서 정확히 풀리는 것을
+`getBoundingClientRect()`로 확인했습니다(이건 순수 CSS 동작이라 프레이머모션 리액티비티
+없이도 검증 가능했습니다).
+
 ## 이번 라운드에서 고친 버그 7개
 
 1. **로고·설명문 겹침** — 1막을 절대배치 두 블록 대신 `flex flex-col items-center justify-center` 하나로

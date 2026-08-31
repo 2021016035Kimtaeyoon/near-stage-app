@@ -98,7 +98,11 @@ export function DarkStageHero() {
   const [devProgress, setDevProgress] = useState(0)
   const [debugOpen, setDebugOpen] = useState(false)
 
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end start'] })
+  // 'end end' — pin이 실제로 풀리는 지점(섹션 바닥이 뷰포트 바닥에 닿는 순간)에서
+  // 정확히 progress=1이 되도록 맞춘다. 'end start'를 쓰면 뷰포트 높이만큼 더
+  // 스크롤해야 1에 도달해, 실제 CSS sticky가 풀리는 시점보다 진행률이 항상 뒤처져
+  // 2막 뒷부분(패널2~3)이 pin 밖에서 재생되며 흰 배경으로 떨어지는 버그가 생겼다.
+  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] })
 
   useMotionValueEvent(p, 'change', (v) => {
     if (import.meta.env.DEV) setDevProgress(v)
