@@ -28,9 +28,13 @@ export interface DemoState {
   runId: number
 }
 
+export type ThemeMode = 'dark' | 'light'
+
 export interface AppState extends SeedData {
   /** 현재 보고 있는 역할 */
   role: Role
+  /** 화면 배경 테마 — 마이페이지에서 전환. 랜딩 히어로는 이 값과 무관하게 항상 다크 */
+  theme: ThemeMode
   /** 앱 전체의 "지금" — 실제 시스템 시각을 쓰지 않습니다 */
   demoNowIso: string
   /** 공간주 역할로 로그인한 사장님의 공간 */
@@ -52,6 +56,7 @@ export interface AcceptResult {
 export interface AppActions {
   /* 공통 */
   setRole: (role: Role) => void
+  setTheme: (theme: ThemeMode) => void
   setDemoNow: (iso: string) => void
   resetAll: () => void
   nextId: (prefix: string) => string

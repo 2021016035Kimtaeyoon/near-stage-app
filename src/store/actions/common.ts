@@ -2,11 +2,13 @@ import { DEMO_NOW_ISO, DEMO_OWNER_VENUE_ID, DEMO_PERFORMER_ID } from '@/config/b
 import { createSeedData } from '@/data/seed'
 import { DEFAULT_FILTER } from '../selectors'
 import type { AppNotification, Role } from '@/types'
-import type { GetState, SetState } from '../types'
+import type { GetState, SetState, ThemeMode } from '../types'
 
 export function createCommonActions(set: SetState, get: GetState) {
   return {
     setRole: (role: Role) => set({ role }),
+
+    setTheme: (theme: ThemeMode) => set({ theme }),
 
     setDemoNow: (iso: string) => set({ demoNowIso: iso }),
 

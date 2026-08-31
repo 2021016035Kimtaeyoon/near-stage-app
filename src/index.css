@@ -6,6 +6,61 @@
   :root {
     color-scheme: dark;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+    /* 다크 테마(기본값) — rgb 삼중값. tailwind.config.js의 withOpacity()가 읽어갑니다. */
+    --color-bg: 11 11 15;
+    --color-surface-1: 20 20 26;
+    --color-surface-2: 28 28 36;
+    --color-surface-3: 38 38 48;
+    --color-border: 42 42 53;
+    --color-border-strong: 58 58 71;
+    --color-text: 245 245 247;
+    --color-text-muted: 154 154 165;
+    --color-text-dim: 110 110 122;
+    --color-gold-400: 247 200 81;
+    --color-gold-500: 240 180 41;
+    --color-gold-600: 216 154 30;
+    --color-gold-ink: 20 16 10;
+    --color-ok: 61 190 122;
+    --color-warn: 232 135 58;
+    --color-danger: 229 72 77;
+    --color-info: 91 141 239;
+  }
+
+  /* 라이트 테마 — 마이페이지의 테마 토글에서 <html data-theme="light">로 켭니다(§theme). */
+  :root[data-theme='light'] {
+    color-scheme: light;
+    --color-bg: 255 255 255;
+    --color-surface-1: 247 247 249;
+    --color-surface-2: 240 240 243;
+    --color-surface-3: 231 231 236;
+    --color-border: 229 229 234;
+    --color-border-strong: 209 209 217;
+    --color-text: 23 23 28;
+    --color-text-muted: 91 91 102;
+    --color-text-dim: 139 139 150;
+    --color-gold-400: 217 154 30;
+    --color-gold-500: 184 121 14;
+    --color-gold-600: 150 98 11;
+    --color-gold-ink: 255 255 255;
+  }
+
+  /* 랜딩 히어로는 사용자의 테마 선택과 무관하게 항상 극장 다크 연출을 유지합니다. */
+  [data-theme='dark'] {
+    color-scheme: dark;
+    --color-bg: 11 11 15;
+    --color-surface-1: 20 20 26;
+    --color-surface-2: 28 28 36;
+    --color-surface-3: 38 38 48;
+    --color-border: 42 42 53;
+    --color-border-strong: 58 58 71;
+    --color-text: 245 245 247;
+    --color-text-muted: 154 154 165;
+    --color-text-dim: 110 110 122;
+    --color-gold-400: 247 200 81;
+    --color-gold-500: 240 180 41;
+    --color-gold-600: 216 154 30;
+    --color-gold-ink: 20 16 10;
   }
 
   html,
@@ -98,27 +153,30 @@
   }
 }
 
-/* ───────────── Leaflet 다크 테마 보정 ───────────── */
+/* ───────────── Leaflet 테마 보정 (다크/라이트 공용, CSS 변수로 자동 전환) ───────────── */
 
 .leaflet-container {
-  background: #1c1c24;
+  background: rgb(var(--color-surface-2));
   font-family: inherit;
   outline: none;
 }
 
-/* 다크 UI 위 타일이 눈부시지 않도록 살짝 어둡고 채도 낮게 */
+/* 다크 UI 위 타일이 눈부시지 않도록 살짝 어둡고 채도 낮게 — 라이트 테마에서는 원본 그대로 */
 .leaflet-tile-pane {
   filter: saturate(0.75) brightness(0.82) contrast(1.02);
 }
+[data-theme='light'] .leaflet-tile-pane {
+  filter: none;
+}
 
 .leaflet-control-attribution {
-  background: rgba(20, 20, 26, 0.85) !important;
-  color: #9a9aa5 !important;
+  background: rgb(var(--color-surface-1) / 0.85) !important;
+  color: rgb(var(--color-text-muted)) !important;
   font-size: 9px !important;
   border-radius: 6px 0 0 0;
 }
 .leaflet-control-attribution a {
-  color: #f5f5f7 !important;
+  color: rgb(var(--color-text)) !important;
 }
 
 .leaflet-control-zoom {
@@ -132,9 +190,9 @@
 
 .leaflet-popup-content-wrapper,
 .leaflet-popup-tip {
-  background: #14141a;
-  color: #f5f5f7;
-  border: 1px solid #2a2a35;
+  background: rgb(var(--color-surface-1));
+  color: rgb(var(--color-text));
+  border: 1px solid rgb(var(--color-border));
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
 }
 .leaflet-popup-content {
@@ -147,11 +205,11 @@
 
 /* 지도 타일이 안 뜨는 오프라인 환경용 격자 배경 */
 .map-offline-grid {
-  background-color: #1c1c24;
+  background-color: rgb(var(--color-surface-2));
   background-image:
-    linear-gradient(rgba(245, 245, 247, 0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(245, 245, 247, 0.05) 1px, transparent 1px),
-    radial-gradient(circle at 50% 40%, rgba(240, 180, 41, 0.08), transparent 62%);
+    linear-gradient(rgb(var(--color-text) / 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--color-text) / 0.05) 1px, transparent 1px),
+    radial-gradient(circle at 50% 40%, rgb(var(--color-gold-500) / 0.08), transparent 62%);
   background-size:
     48px 48px,
     48px 48px,

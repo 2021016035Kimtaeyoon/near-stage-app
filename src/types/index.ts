@@ -339,6 +339,19 @@ export interface Settlement {
   settledAt: string | null
 }
 
+/* ────────────────────────── 이벤트 / 회원등급 ────────────────────────── */
+
+export type EventTag = '쿠폰' | '등급' | '신규' | '기획전'
+
+export interface AppEvent {
+  id: string
+  tag: EventTag
+  title: string
+  description: string
+  /** 종료 시각(ISO). 상시 진행이면 없음 */
+  endAt?: string
+}
+
 /* ────────────────────────── 성과 리포트 ────────────────────────── */
 
 export interface WeeklyVisitStat {

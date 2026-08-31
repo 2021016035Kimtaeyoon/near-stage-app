@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { HashRouter, useLocation } from 'react-router-dom'
 import { DevPanel } from '@/components/shell/DevPanel'
 import { PhoneFrame } from '@/components/shell/PhoneFrame'
@@ -18,10 +19,22 @@ import { useAppStore } from '@/store/useAppStore'
  * 아이폰 프레임 없이 풀 너비로 렌더링합니다. 그 외 모든 경로는 기존처럼
  * 아이폰 프레임(데스크톱) 또는 풀스크린(모바일)의 모바일 앱 프로토타입입니다.
  */
+/** 마이페이지의 테마 선택을 <html data-theme>과 상단바 색에 반영합니다 */
+function useThemeSync() {
+  const theme = useAppStore((s) => s.theme)
+  useEffect(() => {
+    document.documentElement.dataset.theme = theme
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute('content', theme === 'light' ? '#FFFFFF' : '#0B0B0F')
+  }, [theme])
+}
+
 function AppShell() {
   const { pathname } = useLocation()
   const fullscreen = isFullscreenRoute(pathname)
   const demoActive = useAppStore((s) => s.demo.active)
+  useThemeSync()
 
   if (pathname.startsWith('/landing')) return <LandingPage />
   if (pathname.startsWith('/desktop')) return <DesktopHome />

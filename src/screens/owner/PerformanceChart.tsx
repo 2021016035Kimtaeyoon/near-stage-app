@@ -14,12 +14,12 @@ function ChartTooltip({ active, payload }: { active?: boolean; payload?: Tooltip
   if (!active || !payload?.length) return null
   const d = payload[0].payload
   return (
-    <div className="rounded-lg border border-border bg-white px-3 py-2 text-xs shadow-lg">
+    <div className="rounded-lg border border-border bg-surface-1 px-3 py-2 text-xs shadow-lg">
       <p className="font-bold">{d.weekLabel}</p>
       <p className="tnum mt-0.5 text-ink-2">
         방문객 {d.visitors.toLocaleString('ko-KR')}명
       </p>
-      <p className={d.hadShow ? 'mt-0.5 font-semibold text-[#F0B429]' : 'mt-0.5 text-ink-3'}>
+      <p className={d.hadShow ? 'mt-0.5 font-semibold text-gold-500' : 'mt-0.5 text-ink-3'}>
         {d.hadShow ? '공연 있던 주' : '공연 없던 주'}
       </p>
     </div>

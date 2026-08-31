@@ -127,7 +127,7 @@ export function ShowDetail() {
         <TabBarSpacer />
       </ScreenBody>
 
-      <div className="absolute inset-x-0 bottom-0 z-40 border-t border-border bg-white/95 px-4 pb-[calc(var(--safe-bottom)+14px)] pt-3 backdrop-blur-xl">
+      <div className="absolute inset-x-0 bottom-0 z-40 border-t border-border bg-surface-1/95 px-4 pb-[calc(var(--safe-bottom)+14px)] pt-3 backdrop-blur-xl">
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="tnum text-lg font-extrabold">{priceLabel(show.ticketPrice)}</p>

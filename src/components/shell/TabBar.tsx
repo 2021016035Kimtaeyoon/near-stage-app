@@ -14,7 +14,7 @@ export function TabBar() {
 
   return (
     <nav
-      className="absolute inset-x-0 bottom-0 z-50 border-t border-border bg-white/92 backdrop-blur-xl"
+      className="absolute inset-x-0 bottom-0 z-50 border-t border-border bg-surface-1/92 backdrop-blur-xl"
       style={{ paddingBottom: 'calc(var(--safe-bottom) + 14px)' }}
       aria-label="주요 메뉴"
     >

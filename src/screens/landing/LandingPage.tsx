@@ -41,7 +41,7 @@ export function LandingPage() {
   })
 
   return (
-    <div className="min-h-screen w-full bg-bg text-ink">
+    <div data-theme="dark" className="min-h-screen w-full bg-bg text-ink">
       <header className="fixed inset-x-0 top-0 z-50">
         <motion.div
           aria-hidden

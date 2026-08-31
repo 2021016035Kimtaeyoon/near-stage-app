@@ -1,42 +1,61 @@
 /** @type {import('tailwindcss').Config} */
+
+// CSS 변수(rgb 삼중값, src/index.css의 :root / [data-theme='light'])를 읽어오는 색상 헬퍼.
+// 클래스 이름(bg-bg, text-ink, bg-gold-500/90 등)은 그대로 두고 실제 값만 테마에 따라
+// 바뀌게 해서, 라이트/다크 토글을 화면 코드 수정 없이 켤 수 있게 합니다.
+function withOpacity(varName) {
+  return ({ opacityValue }) =>
+    opacityValue !== undefined ? `rgb(var(${varName}) / ${opacityValue})` : `rgb(var(${varName}))`
+}
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
     extend: {
       colors: {
-        // 다크 테마 — 로고(금색 STAGE + 극장 크림슨) 기준. 화면 코드는 색상
-        // 리터럴 대신 이 시맨틱 토큰만 참조하므로, 팔레트를 바꾸려면 여기만 고치면 됩니다.
+        // 다크/라이트 두 테마를 모두 이 토큰으로 표현합니다. 화면 코드는 색상 리터럴 대신
+        // 이 시맨틱 토큰만 참조하므로, 팔레트를 바꾸려면 src/index.css의 CSS 변수만 고치면 됩니다.
         // 레거시 별칭(surface/ink/ink-2/ink-3)은 기존 60여개 화면이 그대로 참조 중이라
         // 남겨뒀습니다 — 새 코드는 surface-1/text/text-muted/text-dim을 쓰세요.
-        bg: '#0B0B0F',
-        surface: '#14141A', // = surface-1 (레거시 별칭)
-        'surface-1': '#14141A',
-        'surface-2': '#1C1C24',
-        'surface-3': '#262630',
-        border: '#2A2A35',
-        'border-strong': '#3A3A47',
-        ink: '#F5F5F7', // = text (레거시 별칭)
-        text: '#F5F5F7',
-        'ink-2': '#9A9AA5', // = text-muted (레거시 별칭)
-        'text-muted': '#9A9AA5',
-        'ink-3': '#6E6E7A', // = text-dim (레거시 별칭)
-        'text-dim': '#6E6E7A',
+        bg: withOpacity('--color-bg'),
+        surface: withOpacity('--color-surface-1'), // = surface-1 (레거시 별칭)
+        'surface-1': withOpacity('--color-surface-1'),
+        'surface-2': withOpacity('--color-surface-2'),
+        'surface-3': withOpacity('--color-surface-3'),
+        border: withOpacity('--color-border'),
+        'border-strong': withOpacity('--color-border-strong'),
+        ink: withOpacity('--color-text'), // = text (레거시 별칭)
+        text: withOpacity('--color-text'),
+        'ink-2': withOpacity('--color-text-muted'), // = text-muted (레거시 별칭)
+        'text-muted': withOpacity('--color-text-muted'),
+        'ink-3': withOpacity('--color-text-dim'), // = text-dim (레거시 별칭)
+        'text-dim': withOpacity('--color-text-dim'),
 
         // 브랜드 = 금색 (액션 전용, 버튼/활성상태/우리무대 뱃지)
-        gold: { 400: '#F7C851', 500: '#F0B429', 600: '#D89A1E', DEFAULT: '#F0B429', ink: '#14100A' },
-        // 분위기 = 크림슨 (히어로·커튼 전용, 버튼 금지)
+        gold: {
+          400: withOpacity('--color-gold-400'),
+          500: withOpacity('--color-gold-500'),
+          600: withOpacity('--color-gold-600'),
+          DEFAULT: withOpacity('--color-gold-500'),
+          ink: withOpacity('--color-gold-ink'),
+        },
+        // 분위기 = 크림슨 (히어로·커튼 전용, 버튼 금지) — 테마와 무관하게 항상 어두운 무대 톤 고정
         crimson: { 700: '#8E1424', 600: '#C0271F' },
 
         // 레거시 brand.* — 히어로/커튼 전용 그라데이션에서만 참조(§1). 새 UI에서는 gold.*를 쓰세요.
-        brand: { from: '#F7C851', to: '#D89A1E', DEFAULT: '#F0B429' },
+        brand: {
+          from: withOpacity('--color-gold-400'),
+          to: withOpacity('--color-gold-600'),
+          DEFAULT: withOpacity('--color-gold-500'),
+        },
 
-        // 의미 색 — 금색과 충돌하지 않게 분리
-        ok: '#3DBE7A',
-        success: '#3DBE7A',
-        warn: '#E8873A',
-        warning: '#E8873A',
-        danger: '#E5484D',
-        info: '#5B8DEF',
+        // 의미 색 — 금색과 충돌하지 않게 분리, 테마 공통(가독성 검증된 중간톤이라 그대로 유지)
+        ok: withOpacity('--color-ok'),
+        success: withOpacity('--color-ok'),
+        warn: withOpacity('--color-warn'),
+        warning: withOpacity('--color-warn'),
+        danger: withOpacity('--color-danger'),
+        info: withOpacity('--color-info'),
       },
       fontFamily: {
         sans: [

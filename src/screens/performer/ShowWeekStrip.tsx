@@ -49,7 +49,7 @@ export function ShowWeekStrip({
           <span
             className={cn(
               'h-1 w-1 rounded-full',
-              d.hasShow ? (selectedDate === d.key ? 'bg-white' : 'bg-[#F0B429]') : 'bg-transparent',
+              d.hasShow ? (selectedDate === d.key ? 'bg-gold-ink' : 'bg-gold-500') : 'bg-transparent',
             )}
           />
         </button>
