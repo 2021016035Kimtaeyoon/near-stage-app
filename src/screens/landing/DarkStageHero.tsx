@@ -16,6 +16,9 @@ import {
   CURTAIN_OPEN_START,
   CURTAIN_SCALE_END,
   DEV_JUMPS,
+  HEM_HEIGHT,
+  HEM_WAVE_DEPTH,
+  HEM_WAVE_TILE,
   HERO_TAGLINE,
   LANDING_AT,
   LANDING_DUST_END,
@@ -387,19 +390,40 @@ export function DarkStageHero() {
               willChange: 'transform',
             }}
           >
-            {/* 밑단 — 부모 scaleY를 상쇄해 항상 같은 두께, 항상 수평 */}
+            {/* 밑단 — 부모 scaleY를 상쇄해 두께는 항상 같고, 끝은 물결 모양 + 좌우로 흐르는 펄럭임 */}
             <motion.div
               aria-hidden
-              className="absolute inset-x-0 bottom-0 origin-bottom"
+              className="absolute inset-x-0 bottom-0 origin-bottom overflow-hidden"
               style={{
-                height: 16,
+                height: HEM_HEIGHT,
                 scaleY: hemCounterScale,
-                background: 'linear-gradient(180deg, #3E0810 0%, #2A050A 100%)',
-                boxShadow: '0 10px 22px rgba(0,0,0,.55)',
                 opacity: hemShadowOpacity,
+                filter: 'drop-shadow(0 10px 16px rgba(0,0,0,.55))',
                 willChange: 'transform, opacity',
               }}
-            />
+            >
+              <motion.svg
+                width={`calc(100% + ${HEM_WAVE_TILE}px)`}
+                height={HEM_HEIGHT}
+                style={{ position: 'absolute', left: 0, top: 0, willChange: 'transform' }}
+                animate={{ x: [0, -HEM_WAVE_TILE] }}
+                transition={{ duration: 3.4, repeat: Infinity, ease: 'linear' }}
+              >
+                <defs>
+                  <linearGradient id="hem-fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#3E0810" />
+                    <stop offset="100%" stopColor="#22040A" />
+                  </linearGradient>
+                  <pattern id="hem-wave" width={HEM_WAVE_TILE} height={HEM_HEIGHT} patternUnits="userSpaceOnUse">
+                    <path
+                      d={`M0,0 H${HEM_WAVE_TILE} V${HEM_HEIGHT - HEM_WAVE_DEPTH} C ${HEM_WAVE_TILE * 0.75},${HEM_HEIGHT} ${HEM_WAVE_TILE * 0.25},${HEM_HEIGHT} 0,${HEM_HEIGHT - HEM_WAVE_DEPTH} Z`}
+                      fill="url(#hem-fill)"
+                    />
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="url(#hem-wave)" />
+              </motion.svg>
+            </motion.div>
           </motion.div>
 
           {/* 상단 개더 존 — 걷히는 동안 커지며 천이 쌓이는 것처럼 보임 */}

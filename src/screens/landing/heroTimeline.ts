@@ -19,6 +19,11 @@ export const VALANCE_HEIGHT = 72
 export const SCALLOP_TILE = 80
 export const SCALLOP_DEPTH = 14
 
+/** 커튼 밑단 — 물결 모양 + 좌우로 흐르는 펄럭임 애니메이션 */
+export const HEM_HEIGHT = 22
+export const HEM_WAVE_TILE = 90
+export const HEM_WAVE_DEPTH = 9
+
 export const STAGE_REVEAL_START = 0.2
 export const STAGE_REVEAL_END = 0.32
 export const STAGE_BRIGHTNESS_START = STAGE_REVEAL_START
