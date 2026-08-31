@@ -54,6 +54,7 @@ export interface SeedData {
   weeklyStats: WeeklyVisitStat[]
   likedShowIds: string[]
   followedPerformerIds: string[]
+  recentlyViewedShowIds: string[]
 }
 
 /** 매 호출마다 깊은 복사본을 돌려줍니다 (리셋 시 원본 오염 방지) */
@@ -73,6 +74,7 @@ export function createSeedData(): SeedData {
     weeklyStats: SEED_WEEKLY_STATS,
     likedShowIds: SEED_LIKED_SHOW_IDS,
     followedPerformerIds: SEED_FOLLOWED_PERFORMER_IDS,
+    recentlyViewedShowIds: [],
   })
 }
 

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Screen, ScreenBody } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
@@ -28,8 +28,13 @@ export function ShowDetail() {
   const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const toggleLike = useAppStore((s) => s.toggleLike)
   const toggleFollow = useAppStore((s) => s.toggleFollow)
+  const addRecentlyViewedShow = useAppStore((s) => s.addRecentlyViewedShow)
 
   const show = shows.find((s) => s.id === showId) ?? null
+
+  useEffect(() => {
+    if (showId) addRecentlyViewedShow(showId)
+  }, [showId, addRecentlyViewedShow])
   const place = show ? resolvePlace(show, venues) : null
   const performer = show?.performerId
     ? (performers.find((p) => p.id === show.performerId) ?? null)

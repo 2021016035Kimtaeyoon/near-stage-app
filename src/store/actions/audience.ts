@@ -27,6 +27,14 @@ export function createAudienceActions(set: SetState, get: GetState) {
         }
       }),
 
+    addRecentlyViewedShow: (showId: string) =>
+      set((s) => ({
+        recentlyViewedShowIds: [showId, ...s.recentlyViewedShowIds.filter((id) => id !== showId)].slice(
+          0,
+          10,
+        ),
+      })),
+
     toggleFollow: (performerId: string) =>
       set((s) => {
         const followed = s.followedPerformerIds.includes(performerId)

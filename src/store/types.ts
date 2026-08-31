@@ -63,6 +63,7 @@ export interface AppActions {
   /* 관객 */
   setAudienceFilter: (patch: Partial<AudienceFilter>) => void
   toggleLike: (showId: string) => void
+  addRecentlyViewedShow: (showId: string) => void
   toggleFollow: (performerId: string) => void
   createReservation: (showId: string, headcount: number) => Reservation
   cancelReservation: (reservationId: string) => void

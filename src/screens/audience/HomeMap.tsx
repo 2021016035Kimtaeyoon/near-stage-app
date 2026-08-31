@@ -16,6 +16,7 @@ import { useAppStore } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
 import { FilterChips } from './FilterChips'
 import { FilterSheet } from './FilterSheet'
+import { FreeShowsBanner, RecentlyViewedRow, TrendingRow } from './HomeFeedSections'
 import { TrendingSearchPanel } from './TrendingSearchPanel'
 
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
@@ -33,6 +34,7 @@ export function HomeMap() {
   const performers = useAppStore((s) => s.performers)
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const toggleLike = useAppStore((s) => s.toggleLike)
+  const recentlyViewedShowIds = useAppStore((s) => s.recentlyViewedShowIds)
   const nowIso = useAppStore((s) => s.demoNowIso)
   const filter = useAppStore((s) => s.audienceFilter)
   const setFilter = useAppStore((s) => s.setAudienceFilter)
@@ -48,6 +50,25 @@ export function HomeMap() {
   const all = useMemo(() => withMeta(shows, venues, performers), [shows, venues, performers])
   const results = useMemo(() => filterShows(all, filter, nowIso), [all, filter, nowIso])
   const trending = useMemo(() => computeTrendingKeywords(all), [all])
+
+  const upcoming = useMemo(() => all.filter((a) => a.show.startAt >= nowIso), [all, nowIso])
+  const recentlyViewed = useMemo(
+    () =>
+      recentlyViewedShowIds
+        .map((id) => all.find((a) => a.show.id === id))
+        .filter((a): a is (typeof all)[number] => Boolean(a))
+        .slice(0, 8),
+    [recentlyViewedShowIds, all],
+  )
+  const trendingShows = useMemo(
+    () => [...upcoming].sort((a, b) => b.show.likes - a.show.likes).slice(0, 8),
+    [upcoming],
+  )
+  const freeCount = useMemo(
+    () => upcoming.filter((a) => a.show.ticketPrice === 0).length,
+    [upcoming],
+  )
+  const showDiscoveryFeed = view === 'list' && !filter.query.trim()
 
   const ownCount = results.filter((r) => r.show.source === 'own').length
   const kopisCount = results.length - ownCount
@@ -68,6 +89,14 @@ export function HomeMap() {
         </div>
       ) : (
         <div className="absolute inset-0 overflow-y-auto px-4 pt-[132px]">
+          {showDiscoveryFeed && (
+            <>
+              <FreeShowsBanner count={freeCount} onClick={() => setFilter({ price: 'free' })} />
+              <RecentlyViewedRow items={recentlyViewed} nowIso={nowIso} onOpen={openShow} />
+              <TrendingRow items={trendingShows} nowIso={nowIso} onOpen={openShow} />
+              <h2 className="mb-2.5 text-[15px] font-bold">내 주변 공연</h2>
+            </>
+          )}
           <ResultList
             results={results}
             nowIso={nowIso}
