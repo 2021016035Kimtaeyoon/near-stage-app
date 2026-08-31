@@ -1,14 +1,13 @@
 import { motion, useScroll, useTransform } from 'framer-motion'
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { LogoMark } from '@/components/shell/LogoMark'
 import { SERVICE_DESCRIPTION } from '@/config/brand'
-import { StageWordmark } from './StageWordmark'
 
 /**
  * 랜딩 첫 화면 — 텅 빈 어두운 무대에서 시작해, 스크롤에 따라
  * 조명이 켜지고 로고가 위에서 내려와 자리 잡은 뒤 설명이 뜨는
- * 한 장면짜리 인트로. STAGE는 무대 앞줄처럼 아래로 둥글게 휘어지는
- * 전용 워드마크(StageWordmark)를 씁니다.
+ * 한 장면짜리 인트로. 다른 화면과 동일한 LogoMark를 씁니다.
  */
 export function DarkStageHero() {
   const navigate = useNavigate()
@@ -69,7 +68,7 @@ export function DarkStageHero() {
           style={{ y: logoY, opacity: logoOpacity }}
           className="relative z-10 mt-20 sm:mt-28"
         >
-          <StageWordmark className="w-[280px] sm:w-[380px]" />
+          <LogoMark dark className="w-[280px] sm:w-[380px]" />
         </motion.div>
 
         <motion.div
