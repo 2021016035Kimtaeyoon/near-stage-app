@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#FFFFFF" />
+  <rect x="420" y="150" width="360" height="230" rx="18" fill="#5B84DE" />
+  <text x="600" y="270" text-anchor="middle" font-family="Pretendard, -apple-system, sans-serif" font-weight="900" font-size="72" fill="#0A0A0F" letter-spacing="-1">NEAR</text>
+  <text x="600" y="345" text-anchor="middle" font-family="Pretendard, -apple-system, sans-serif" font-weight="800" font-style="italic" font-size="52" fill="#FFFFFF" letter-spacing="3" transform="rotate(-7 600 322)">STAGE</text>
+  <text x="600" y="450" text-anchor="middle" font-family="Pretendard, -apple-system, sans-serif" font-weight="700" font-size="30" fill="#17171C">공연할 곳이 없는 공연자와, 손님이 필요한 공간을 잇습니다</text>
+</svg>
