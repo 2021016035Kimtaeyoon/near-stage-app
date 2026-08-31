@@ -1,8 +1,9 @@
-import { motion } from 'framer-motion'
+import { motion, useMotionValueEvent, useScroll, useTransform } from 'framer-motion'
 import { Menu, X } from 'lucide-react'
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogoMark } from '@/components/shell/LogoMark'
+import { cn } from '@/lib/cn'
 import { DarkStageHero } from './DarkStageHero'
 import {
   ClosingSection,
@@ -25,16 +26,40 @@ const NAV_LINKS = [
 export function LandingPage() {
   const navigate = useNavigate()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [overHero, setOverHero] = useState(true)
+
+  const heroWrapRef = useRef<HTMLDivElement>(null)
+  const { scrollYProgress: heroProgress } = useScroll({
+    target: heroWrapRef,
+    offset: ['start start', 'end start'],
+  })
+  const headerBgOpacity = useTransform(heroProgress, [0.94, 1], [0, 1])
+
+  useMotionValueEvent(heroProgress, 'change', (v) => {
+    setOverHero(v < 0.96)
+  })
 
   return (
     <div className="min-h-screen w-full bg-bg text-ink">
-      <header className="sticky top-0 z-50 border-b border-border bg-bg/90 backdrop-blur">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <LogoMark className="w-[104px]" />
+      <header className="sticky top-0 z-50">
+        <motion.div
+          aria-hidden
+          className="absolute inset-0 border-b border-border bg-bg/90 backdrop-blur"
+          style={{ opacity: overHero ? headerBgOpacity : 1 }}
+        />
+        <div className="relative mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
+          <LogoMark dark={overHero} className="w-[104px] transition-none" />
 
           <nav className="hidden items-center gap-7 md:flex">
             {NAV_LINKS.map((l) => (
-              <a key={l.href} href={l.href} className="text-sm font-semibold text-ink-2 hover:text-ink">
+              <a
+                key={l.href}
+                href={l.href}
+                className={cn(
+                  'text-sm font-semibold transition-colors',
+                  overHero ? 'text-white/80 hover:text-white' : 'text-ink-2 hover:text-ink',
+                )}
+              >
                 {l.label}
               </a>
             ))}
@@ -43,7 +68,10 @@ export function LandingPage() {
           <div className="hidden items-center gap-2 md:flex">
             <button
               onClick={() => navigate('/')}
-              className="rounded-full border border-border px-4 py-2 text-sm font-bold text-ink-2"
+              className={cn(
+                'rounded-full border px-4 py-2 text-sm font-bold transition-colors',
+                overHero ? 'border-white/30 text-white' : 'border-border text-ink-2',
+              )}
             >
               모바일 앱 체험
             </button>
@@ -58,14 +86,14 @@ export function LandingPage() {
           <button
             onClick={() => setMenuOpen((v) => !v)}
             aria-label="메뉴"
-            className="tap flex items-center justify-center text-ink md:hidden"
+            className={cn('tap flex items-center justify-center md:hidden', overHero ? 'text-white' : 'text-ink')}
           >
             {menuOpen ? <X size={22} /> : <Menu size={22} />}
           </button>
         </div>
 
         {menuOpen && (
-          <div className="border-t border-border px-6 py-4 md:hidden">
+          <div className="relative border-t border-border bg-bg px-6 py-4 md:hidden">
             <div className="flex flex-col gap-3">
               {NAV_LINKS.map((l) => (
                 <a
@@ -94,7 +122,9 @@ export function LandingPage() {
         )}
       </header>
 
-      <DarkStageHero />
+      <div ref={heroWrapRef}>
+        <DarkStageHero />
+      </div>
 
       <section className="mx-auto flex max-w-5xl justify-center px-6 py-20">
         <motion.div
