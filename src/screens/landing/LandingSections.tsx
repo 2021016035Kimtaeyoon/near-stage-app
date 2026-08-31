@@ -4,8 +4,37 @@ import { useNavigate } from 'react-router-dom'
 import { SourceBadge } from '@/components/ui/Badge'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { SERVICE_NAME, SERVICE_TAGLINE } from '@/config/brand'
+import { useAppStore } from '@/store/useAppStore'
 import { staggerItem } from './motionVariants'
 import { ScrollReveal, StaggerGroup } from './ScrollReveal'
+
+/** 실제 목데이터 수치를 그대로 보여주는 신뢰 지표 — 과장 없이, 지금 있는 데이터 그대로 */
+export function StatsBand() {
+  const venues = useAppStore((s) => s.venues)
+  const performers = useAppStore((s) => s.performers)
+  const shows = useAppStore((s) => s.shows)
+  const ownShows = shows.filter((s) => s.source === 'own').length
+
+  const stats = [
+    { value: venues.length, label: '참여 공간' },
+    { value: performers.length, label: '공연자 팀' },
+    { value: ownShows, label: '우리가 만든 공연' },
+    { value: shows.length - ownShows, label: '연동된 등록 공연' },
+  ]
+
+  return (
+    <div className="border-y border-border bg-surface-2/50">
+      <StaggerGroup className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-6 py-10 sm:grid-cols-4">
+        {stats.map((s) => (
+          <motion.div key={s.label} variants={staggerItem} className="text-center">
+            <p className="tnum brand-text text-4xl font-extrabold">{s.value}</p>
+            <p className="mt-1 text-xs font-semibold text-ink-2">{s.label}</p>
+          </motion.div>
+        ))}
+      </StaggerGroup>
+    </div>
+  )
+}
 
 /** 카드에 공통으로 쓰는 "떠오르는" 호버 — 그림자가 깊어지고 살짝 들립니다 */
 const liftHover = {

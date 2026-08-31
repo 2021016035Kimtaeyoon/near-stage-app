@@ -64,10 +64,10 @@ export function DesktopAudienceHome() {
   }
 
   return (
-    <div className="relative flex h-full w-full">
-      <div className="flex w-[440px] shrink-0 flex-col border-r border-border">
-        <div ref={searchRef} className="space-y-3 border-b border-border p-4">
-          <div className="flex h-10 items-center gap-2 rounded-full border border-border bg-surface px-3.5">
+    <div className="relative flex h-full w-full gap-4 p-4">
+      <div className="card flex w-[420px] shrink-0 flex-col overflow-hidden">
+        <div ref={searchRef} className="space-y-3 border-b border-border p-5">
+          <div className="flex h-11 items-center gap-2 rounded-full border border-border bg-surface-2/70 px-3.5 transition-colors focus-within:border-border-strong focus-within:bg-surface">
             <Search size={15} className="shrink-0 text-ink-3" />
             <input
               value={filter.query}
@@ -118,9 +118,14 @@ export function DesktopAudienceHome() {
             ))}
           </div>
 
-          <p className="tnum text-xs text-ink-3">
-            이 지역 공연 {results.length}건 · 우리 무대 {ownCount} · 등록 공연 {kopisCount}
-          </p>
+          <div className="flex items-center justify-between border-t border-border pt-3">
+            <p className="text-xs font-bold text-ink">
+              이 지역 공연 <span className="tnum text-[#FF5560]">{results.length}</span>건
+            </p>
+            <p className="tnum text-2xs text-ink-3">
+              우리 무대 {ownCount} · 등록 공연 {kopisCount}
+            </p>
+          </div>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
@@ -156,7 +161,7 @@ export function DesktopAudienceHome() {
         </div>
       </div>
 
-      <div className="min-w-0 flex-1">
+      <div className="card min-w-0 flex-1 overflow-hidden">
         <MapView
           items={results}
           selectedId={selectedId}

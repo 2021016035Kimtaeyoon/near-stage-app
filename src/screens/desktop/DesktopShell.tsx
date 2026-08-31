@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import { Bell, ExternalLink, Smartphone } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -47,49 +48,63 @@ export function DesktopShell({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="flex h-screen w-full flex-col bg-bg text-ink">
-      <header className="flex h-16 shrink-0 items-center justify-between border-b border-border px-6">
-        <div className="flex items-center gap-8">
-          <button onClick={() => navigate('/landing')} aria-label="랜딩페이지로">
-            <LogoMark className="w-[92px]" />
+    <div className="flex h-screen w-full flex-col bg-surface-2/40 text-ink">
+      <header
+        className="relative z-10 flex h-[68px] shrink-0 items-center justify-between border-b border-border bg-bg px-8"
+        style={{ boxShadow: '0 1px 0 rgba(23,23,28,.04), 0 4px 16px -8px rgba(23,23,28,.06)' }}
+      >
+        <div className="flex items-center gap-9">
+          <button onClick={() => navigate('/landing')} aria-label="랜딩페이지로" className="shrink-0">
+            <LogoMark className="w-[88px]" />
           </button>
 
-          <div className="hidden items-center gap-1 rounded-full border border-border bg-surface-2 p-1 md:flex">
+          <div className="hidden items-center gap-0.5 rounded-full border border-border bg-surface-2 p-1 md:flex">
             {ROLES.map((r) => (
               <button
                 key={r}
                 onClick={() => setRole(r)}
                 className={cn(
-                  'rounded-full px-4 py-1.5 text-sm font-bold transition-colors',
-                  role === r ? 'brand-gradient text-white' : 'text-ink-2',
+                  'relative rounded-full px-4 py-1.5 text-sm font-bold transition-colors',
+                  role === r ? 'text-white' : 'text-ink-2 hover:text-ink',
                 )}
                 title={ROLE_DESCRIPTION[r]}
               >
-                {ROLE_LABEL[r]}
+                {role === r && (
+                  <motion.span
+                    layoutId="desktop-role-pill"
+                    className="brand-gradient absolute inset-0 rounded-full"
+                    style={{ boxShadow: '0 4px 12px -2px rgba(255,61,119,.4)' }}
+                    transition={{ type: 'spring', stiffness: 450, damping: 34 }}
+                  />
+                )}
+                <span className="relative">{ROLE_LABEL[r]}</span>
               </button>
             ))}
           </div>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="relative flex h-9 w-9 items-center justify-center rounded-full text-ink-2">
+          <button
+            aria-label="알림"
+            className="tap relative flex h-9 w-9 items-center justify-center rounded-full text-ink-2 transition-colors hover:bg-surface-2 hover:text-ink"
+          >
             <Bell size={18} />
             {unread > 0 && (
-              <span className="tnum absolute -right-0.5 -top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#FF3D77] px-1 text-[9px] font-bold text-white">
+              <span className="tnum absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#FF3D77] px-1 text-[9px] font-bold text-white">
                 {unread}
               </span>
             )}
-          </span>
+          </button>
           <button
             onClick={() => navigate('/')}
-            className="flex items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-xs font-bold text-ink-2"
+            className="flex items-center gap-1.5 rounded-full border border-border px-3.5 py-2 text-xs font-bold text-ink-2 transition-colors hover:border-border-strong hover:text-ink"
           >
             <Smartphone size={14} />
             모바일 앱 보기
           </button>
           <button
             onClick={() => navigate('/landing')}
-            className="hidden items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold text-ink-3 sm:flex"
+            className="hidden items-center gap-1.5 rounded-full px-3 py-2 text-xs font-bold text-ink-3 transition-colors hover:text-ink-2 sm:flex"
           >
             랜딩페이지
             <ExternalLink size={12} />

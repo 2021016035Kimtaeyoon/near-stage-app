@@ -4,7 +4,13 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { SERVICE_DESCRIPTION } from '@/config/brand'
-import { ClosingSection, DifferentiationSection, FeaturesSection, RolesSection } from './LandingSections'
+import {
+  ClosingSection,
+  DifferentiationSection,
+  FeaturesSection,
+  RolesSection,
+  StatsBand,
+} from './LandingSections'
 import { PhoneMockup } from './PhoneMockup'
 
 const fadeUp = {
@@ -172,6 +178,7 @@ export function LandingPage() {
         </motion.div>
       </section>
 
+      <StatsBand />
       <DifferentiationSection />
       <RolesSection />
       <FeaturesSection />

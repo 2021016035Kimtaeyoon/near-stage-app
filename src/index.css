@@ -41,11 +41,30 @@
 @layer components {
   .card {
     @apply rounded-2xl border border-border bg-surface;
-    box-shadow: 0 1px 2px 0 rgba(23, 23, 28, 0.04);
+    box-shadow:
+      0 1px 2px 0 rgba(23, 23, 28, 0.04),
+      0 8px 20px -12px rgba(23, 23, 28, 0.1);
+  }
+
+  /* 카드보다 한 단계 더 떠 보여야 하는 요소용 (히어로 지표, 강조 카드) */
+  .card-elevated {
+    @apply rounded-2xl border border-border bg-surface;
+    box-shadow:
+      0 2px 4px 0 rgba(23, 23, 28, 0.04),
+      0 20px 40px -16px rgba(23, 23, 28, 0.16);
   }
 
   .card-hover {
-    @apply transition-colors duration-150 active:bg-surface-2;
+    @apply transition-all duration-200 ease-out active:scale-[0.985] active:bg-surface-2;
+  }
+  @media (hover: hover) {
+    .card-hover:hover {
+      border-color: theme('colors.border-strong');
+      box-shadow:
+        0 1px 2px 0 rgba(23, 23, 28, 0.04),
+        0 16px 32px -14px rgba(23, 23, 28, 0.16);
+      transform: translateY(-2px);
+    }
   }
 
   .brand-gradient {
