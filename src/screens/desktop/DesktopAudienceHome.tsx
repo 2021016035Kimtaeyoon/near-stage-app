@@ -10,6 +10,7 @@ import { DEFAULT_FILTER, filterShows, withMeta } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
 import { TrendingSearchPanel } from '../audience/TrendingSearchPanel'
+import { DesktopShowDetailModal } from './DesktopShowDetailModal'
 
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: 'soon', label: '임박순' },
@@ -32,6 +33,7 @@ export function DesktopAudienceHome() {
   const highlightShowId = useAppStore((s) => s.demo.highlightShowId)
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [detailShowId, setDetailShowId] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
   const searchRef = useRef<HTMLDivElement>(null)
 
@@ -55,13 +57,6 @@ export function DesktopAudienceHome() {
 
   const ownCount = results.filter((r) => r.show.source === 'own').length
   const kopisCount = results.length - ownCount
-
-  // 공연 상세는 아직 데스크톱 전용 화면이 없어 기존 모바일 화면을 그대로 보여줍니다.
-  // 같은 탭에서 navigate()하면 데스크톱 웹앱 전체가 모바일 폰프레임 화면으로
-  // 바뀌어버려 지금까지 보던 목록·지도 맥락을 잃으므로, 새 탭으로 엽니다.
-  const openShowDetail = (showId: string) => {
-    window.open(`${location.pathname}#/audience/show/${showId}`, '_blank', 'noopener')
-  }
 
   return (
     <div className="relative flex h-full w-full">
@@ -152,7 +147,7 @@ export function DesktopAudienceHome() {
                   nowIso={nowIso}
                   liked={likedShowIds.includes(item.show.id)}
                   onToggleLike={() => toggleLike(item.show.id)}
-                  onClick={() => openShowDetail(item.show.id)}
+                  onClick={() => setDetailShowId(item.show.id)}
                   highlighted={item.show.id === highlightShowId}
                 />
               ))}
@@ -169,6 +164,8 @@ export function DesktopAudienceHome() {
           highlightShowId={highlightShowId}
         />
       </div>
+
+      <DesktopShowDetailModal showId={detailShowId} onClose={() => setDetailShowId(null)} />
     </div>
   )
 }
