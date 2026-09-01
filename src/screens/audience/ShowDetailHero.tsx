@@ -25,9 +25,13 @@ export function ShowDetailHero({
   return (
     <div className="relative">
       <PosterArt seed={posterSeed} genre={show.genre} className="h-[260px] w-full" glyphScale={1.3} />
+      {/* 사진이 아래 콘텐츠 배경색으로 자연스럽게 번지도록 — 딱 잘린 경계선이 생기지 않게 합니다 */}
       <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-24"
-        style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,.35) 100%)' }}
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-32"
+        style={{
+          background:
+            'linear-gradient(180deg, transparent 0%, rgba(0,0,0,.55) 60%, rgb(var(--color-bg)) 100%)',
+        }}
       />
       <div className="absolute inset-x-4 bottom-3 flex items-end justify-between gap-2">
         <div className="flex items-center gap-1.5">
