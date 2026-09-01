@@ -1,8 +1,10 @@
-import { CalendarDays, ChevronRight, TrendingUp, Users, Wallet } from 'lucide-react'
+import { isSameDay } from 'date-fns'
+import { CalendarDays, ChevronRight, QrCode, TrendingUp, Users, Wallet } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Screen, ScreenBody, ScreenHeader, SectionTitle } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
-import { GenreTag } from '@/components/ui/Badge'
+import { GenreTag, Tag } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { KpiCard, KpiGrid } from '@/components/ui/Kpi'
 import { PosterArt } from '@/components/ui/PosterArt'
@@ -13,6 +15,7 @@ import {
   upcomingShowsForVenue,
 } from '@/store/ownerSelectors'
 import { useAppStore } from '@/store/useAppStore'
+import { toast } from '@/store/useToast'
 import { PerformanceChart } from './PerformanceChart'
 
 export function OwnerDashboard() {
@@ -24,6 +27,8 @@ export function OwnerDashboard() {
   const settlements = useAppStore((s) => s.settlements)
   const weeklyStats = useAppStore((s) => s.weeklyStats)
   const posts = useAppStore((s) => s.posts)
+  const reservations = useAppStore((s) => s.reservations)
+  const checkInReservation = useAppStore((s) => s.checkInReservation)
   const nowIso = useAppStore((s) => s.demoNowIso)
 
   if (!venue) {
@@ -40,9 +45,17 @@ export function OwnerDashboard() {
   const upcoming = upcomingShowsForVenue(venueId, shows, nowIso).slice(0, 4)
   const pending = pendingApplicantsForVenue(venueId, posts)
 
+  const now = new Date(nowIso)
+  const todayShowIds = new Set(
+    shows.filter((sh) => sh.venueId === venueId && isSameDay(new Date(sh.startAt), now)).map((sh) => sh.id),
+  )
+  const todayCheckIns = reservations
+    .filter((r) => todayShowIds.has(r.showId) && r.status !== '취소')
+    .map((r) => ({ reservation: r, show: shows.find((sh) => sh.id === r.showId)! }))
+
   return (
     <Screen>
-      <ScreenHeader title={venue.name} subtitle="공간주 대시보드" />
+      <ScreenHeader title={venue.name} subtitle="호스트 대시보드" />
       <ScreenBody>
         {pending.length > 0 && (
           <button
@@ -77,6 +90,38 @@ export function OwnerDashboard() {
         <div className="mt-5">
           <PerformanceChart stats={myStats} />
         </div>
+
+        {todayCheckIns.length > 0 && (
+          <div className="mt-5">
+            <SectionTitle>오늘 입장 확인</SectionTitle>
+            <div className="space-y-2">
+              {todayCheckIns.map(({ reservation, show }) => (
+                <div key={reservation.id} className="card flex items-center gap-3 p-3">
+                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-surface-2 text-ink-2">
+                    <QrCode size={16} />
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-bold">{show.title}</p>
+                    <p className="tnum mt-0.5 text-xs text-ink-2">{reservation.headcount}명 · {reservation.qrCode}</p>
+                  </div>
+                  {reservation.status === '입장완료' ? (
+                    <Tag tone="ok">입장완료</Tag>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        if (checkInReservation(reservation.id)) toast('입장 처리되었습니다', 'success')
+                      }}
+                    >
+                      입장 처리
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="mt-5">
           <SectionTitle

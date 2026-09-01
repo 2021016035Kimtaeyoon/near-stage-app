@@ -11,29 +11,53 @@ export function Label({ children, hint }: { children: ReactNode; hint?: string }
   )
 }
 
-export function TextInput({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) {
+/** 입력 아래 오류 문구. 아이콘+텍스트로 색 없이도 구분되게 표시합니다. */
+export function ErrorText({ children }: { children?: ReactNode }) {
+  if (!children) return null
+  return <p className="mt-1.5 text-2xs font-semibold text-danger">⚠ {children}</p>
+}
+
+export function TextInput({
+  className,
+  error,
+  ...rest
+}: InputHTMLAttributes<HTMLInputElement> & { error?: string }) {
   return (
-    <input
-      {...rest}
-      className={cn(
-        'h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm outline-none',
-        'placeholder:text-ink-3 focus:border-border-strong',
-        className,
-      )}
-    />
+    <>
+      <input
+        {...rest}
+        aria-invalid={!!error}
+        className={cn(
+          'h-11 w-full rounded-xl border bg-surface px-3.5 text-sm outline-none',
+          'placeholder:text-ink-3 focus:border-border-strong',
+          error ? 'border-danger focus:border-danger' : 'border-border',
+          className,
+        )}
+      />
+      <ErrorText>{error}</ErrorText>
+    </>
   )
 }
 
-export function TextArea({ className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
+export function TextArea({
+  className,
+  error,
+  ...rest
+}: TextareaHTMLAttributes<HTMLTextAreaElement> & { error?: string }) {
   return (
-    <textarea
-      {...rest}
-      className={cn(
-        'w-full resize-none rounded-xl border border-border bg-surface px-3.5 py-3 text-sm leading-relaxed outline-none',
-        'placeholder:text-ink-3 focus:border-border-strong',
-        className,
-      )}
-    />
+    <>
+      <textarea
+        {...rest}
+        aria-invalid={!!error}
+        className={cn(
+          'w-full resize-none rounded-xl border bg-surface px-3.5 py-3 text-sm leading-relaxed outline-none',
+          'placeholder:text-ink-3 focus:border-border-strong',
+          error ? 'border-danger focus:border-danger' : 'border-border',
+          className,
+        )}
+      />
+      <ErrorText>{error}</ErrorText>
+    </>
   )
 }
 
@@ -122,9 +146,9 @@ export function RangeSlider({
           className="absolute inset-0 h-9 w-full cursor-pointer appearance-none bg-transparent
             [&::-webkit-slider-thumb]:h-6 [&::-webkit-slider-thumb]:w-6 [&::-webkit-slider-thumb]:appearance-none
             [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2
-            [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-[#F0B429]
+            [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:bg-gold-500
             [&::-moz-range-thumb]:h-6 [&::-moz-range-thumb]:w-6 [&::-moz-range-thumb]:rounded-full
-            [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-[#F0B429]"
+            [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white [&::-moz-range-thumb]:bg-gold-500"
         />
       </div>
     </div>

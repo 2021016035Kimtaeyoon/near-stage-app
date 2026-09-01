@@ -20,6 +20,7 @@ export function PerformerActivity() {
   const performer = useAppStore((s) => s.performers.find((p) => p.id === performerId))
   const shows = useAppStore((s) => s.shows.filter((sh) => sh.performerId === performerId))
   const venues = useAppStore((s) => s.venues)
+  const posts = useAppStore((s) => s.posts)
   const settlements = useAppStore((s) => s.settlements)
   const reviews = useAppStore((s) => s.reviews.filter((r) => r.targetType === 'performer' && r.targetId === performerId))
   const nowIso = useAppStore((s) => s.demoNowIso)
@@ -35,6 +36,11 @@ export function PerformerActivity() {
 
   const myShowIds = new Set(shows.map((s) => s.id))
   const mySettlements = settlements.filter((st) => myShowIds.has(st.showId))
+  const pendingApplications = posts.flatMap((p) =>
+    p.applications
+      .filter((a) => a.performerId === performerId && a.status === '대기')
+      .map((a) => ({ application: a, post: p })),
+  )
   const shownShows = shows
     .filter((s) => !selectedDate || s.startAt.slice(0, 10) === selectedDate)
     .sort((a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime())
@@ -60,6 +66,27 @@ export function PerformerActivity() {
         <div className="mt-4">
           {tab === 'schedule' && (
             <div>
+              {pendingApplications.length > 0 && (
+                <div className="mb-3 space-y-2">
+                  {pendingApplications.map(({ application, post }) => {
+                    const venue = venues.find((v) => v.id === post.venueId)
+                    return (
+                      <div
+                        key={application.id}
+                        className="flex items-center justify-between rounded-xl border border-border-strong bg-surface-2 px-3.5 py-3"
+                      >
+                        <div className="min-w-0">
+                          <p className="truncate text-[13px] font-bold">{venue?.name ?? '공간'} 지원 중</p>
+                          <p className="tnum mt-0.5 text-2xs text-ink-3">
+                            {relativeFromNow(application.createdAt, nowIso)} · 답변 대기
+                          </p>
+                        </div>
+                        <Tag tone="warn">대기</Tag>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
               <ShowWeekStrip nowIso={nowIso} shows={shows} selectedDate={selectedDate} onSelectDate={setSelectedDate} />
               <div className="mt-3 space-y-2.5">
                 {shownShows.length === 0 ? (
@@ -78,6 +105,9 @@ export function PerformerActivity() {
                           <p className="mt-1 truncate text-sm font-bold">{show.title}</p>
                           <p className="tnum mt-0.5 truncate text-xs text-ink-2">
                             {place?.name} · {humanDateTime(show.startAt, nowIso)}
+                          </p>
+                          <p className="tnum mt-0.5 text-2xs text-ink-3">
+                            예약 {show.reservedCount}/{show.capacity}명
                           </p>
                         </div>
                       </div>

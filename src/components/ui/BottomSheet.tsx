@@ -1,7 +1,20 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import type { ReactNode } from 'react'
+import { useEffect } from 'react'
 import { cn } from '@/lib/cn'
+
+/** ESC로 닫기 — 시트/모달 공용 */
+function useEscClose(open: boolean, onClose: () => void) {
+  useEffect(() => {
+    if (!open) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose()
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [open, onClose])
+}
 
 interface Props {
   open: boolean
@@ -25,10 +38,11 @@ export function BottomSheet({
   footer,
   maxHeightPct = 88,
 }: Props) {
+  useEscClose(open, onClose)
   return (
     <AnimatePresence>
       {open && (
-        <div className="absolute inset-0 z-[80]">
+        <div className="absolute inset-0 z-[80]" role="dialog" aria-modal="true" aria-label={title}>
           <motion.button
             aria-label="닫기"
             className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
@@ -91,10 +105,16 @@ export function CenterModal({
   children,
   footer,
 }: Omit<Props, 'maxHeightPct' | 'subtitle'>) {
+  useEscClose(open, onClose)
   return (
     <AnimatePresence>
       {open && (
-        <div className="absolute inset-0 z-[85] flex items-center justify-center px-5">
+        <div
+          className="absolute inset-0 z-[85] flex items-center justify-center px-5"
+          role="dialog"
+          aria-modal="true"
+          aria-label={title}
+        >
           <motion.button
             aria-label="닫기"
             className="absolute inset-0 bg-black/65 backdrop-blur-[2px]"

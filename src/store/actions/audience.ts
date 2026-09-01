@@ -1,5 +1,6 @@
 import { DEPOSIT_AMOUNT } from '@/config/brand'
 import { hashSeed } from '@/lib/rng'
+import { toast } from '../useToast'
 import type { AudienceFilter, Reservation, Review } from '@/types'
 import type { GetState, SetState } from '../types'
 
@@ -7,6 +8,14 @@ import type { GetState, SetState } from '../types'
 function makeCode(showId: string, seq: number): string {
   const h = hashSeed(`${showId}-${seq}`).toString(36).toUpperCase().slice(0, 4).padEnd(4, 'X')
   return `NST-${showId.toUpperCase()}-${h}`
+}
+
+/** 취소는 공연 시작 3시간 전까지만 가능합니다 */
+const CANCEL_CUTOFF_MS = 3 * 60 * 60 * 1000
+
+/** 평점 1건 추가 시 평균을 다시 계산합니다 (반올림 1자리) */
+function recomputeRating(prevAvg: number, prevCount: number, added: number): number {
+  return Math.round(((prevAvg * prevCount + added) / (prevCount + 1)) * 10) / 10
 }
 
 export function createAudienceActions(set: SetState, get: GetState) {
@@ -60,6 +69,7 @@ export function createAudienceActions(set: SetState, get: GetState) {
         qrCode: makeCode(showId, get().seq),
         status: '예약',
         createdAt: get().demoNowIso,
+        refundAmount: null,
       }
       set((s) => {
         const shows = s.shows.map((sh) =>
@@ -94,26 +104,89 @@ export function createAudienceActions(set: SetState, get: GetState) {
       return reservation
     },
 
-    cancelReservation: (reservationId: string) =>
-      set((s) => {
-        const target = s.reservations.find((r) => r.id === reservationId)
-        if (!target) return {}
-        return {
-          reservations: s.reservations.map((r) =>
-            r.id === reservationId ? { ...r, status: '취소' as const } : r,
-          ),
-          shows: s.shows.map((sh) =>
-            sh.id === target.showId
-              ? { ...sh, reservedCount: Math.max(0, sh.reservedCount - target.headcount) }
-              : sh,
-          ),
-        }
-      }),
+    /** 성공하면 true. 이미 처리된 예약이거나 시작 3시간 이내면 취소를 막고 false를 반환합니다 */
+    cancelReservation: (reservationId: string): boolean => {
+      const state = get()
+      const target = state.reservations.find((r) => r.id === reservationId)
+      if (!target) return false
+      if (target.status !== '예약') {
+        toast('이미 처리된 예약입니다', 'warn')
+        return false
+      }
+      const show = state.shows.find((sh) => sh.id === target.showId)
+      if (show && new Date(show.startAt).getTime() - new Date(state.demoNowIso).getTime() < CANCEL_CUTOFF_MS) {
+        toast('공연 3시간 전부터는 취소할 수 없어요', 'warn', '스태프에게 문의해 주세요')
+        return false
+      }
+      const refundAmount = target.depositPaid
+      set((s) => ({
+        reservations: s.reservations.map((r) =>
+          r.id === reservationId ? { ...r, status: '취소' as const, refundAmount } : r,
+        ),
+        shows: s.shows.map((sh) =>
+          sh.id === target.showId
+            ? { ...sh, reservedCount: Math.max(0, sh.reservedCount - target.headcount) }
+            : sh,
+        ),
+      }))
+      if (show?.venueId) {
+        get().pushNotification({
+          role: 'owner',
+          type: '예약',
+          title: '예약이 취소되었습니다',
+          body: `‘${show.title}’ 예약 ${target.headcount}명이 취소되어 자리가 다시 열렸습니다.`,
+          link: '/owner/dashboard',
+        })
+      }
+      return true
+    },
+
+    /** 공간주가 QR을 스캔해 입장 처리합니다. 성공하면 true */
+    checkInReservation: (reservationId: string): boolean => {
+      const target = get().reservations.find((r) => r.id === reservationId)
+      if (!target) return false
+      if (target.status !== '예약') {
+        toast(target.status === '입장완료' ? '이미 입장 처리된 티켓입니다' : '취소된 예약입니다', 'warn')
+        return false
+      }
+      set((s) => ({
+        reservations: s.reservations.map((r) =>
+          r.id === reservationId ? { ...r, status: '입장완료' as const } : r,
+        ),
+      }))
+      return true
+    },
 
     addReview: (input: Omit<Review, 'id' | 'createdAt'>) => {
       const id = get().nextId('rv')
       const review: Review = { ...input, id, createdAt: get().demoNowIso }
-      set((s) => ({ reviews: [review, ...s.reviews] }))
+      set((s) => ({
+        reviews: [review, ...s.reviews],
+        venues:
+          input.targetType === 'venue'
+            ? s.venues.map((v) =>
+                v.id === input.targetId
+                  ? {
+                      ...v,
+                      rating: recomputeRating(v.rating, v.reviewCount, input.rating),
+                      reviewCount: v.reviewCount + 1,
+                    }
+                  : v,
+              )
+            : s.venues,
+        performers:
+          input.targetType === 'performer'
+            ? s.performers.map((p) =>
+                p.id === input.targetId
+                  ? {
+                      ...p,
+                      rating: recomputeRating(p.rating, p.reviewCount, input.rating),
+                      reviewCount: p.reviewCount + 1,
+                    }
+                  : p,
+              )
+            : s.performers,
+      }))
 
       if (input.targetType === 'venue') {
         get().pushNotification({

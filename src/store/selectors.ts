@@ -33,6 +33,21 @@ export function resolvePlace(show: Show, venues: Venue[]): ShowPlace | null {
   }
 }
 
+/**
+ * 실제 "지금"(demoNowIso) 기준으로 계산하는 공연 상태.
+ * `Show.status`는 확정 시점에 한 번만 기록되는 정적 필드라 시간이 지나도 저절로
+ * 바뀌지 않습니다 — 진행중/종료 여부가 필요하면 이 함수로 매번 다시 계산하세요.
+ */
+export function getShowStatus(show: Show, nowIso: string): Show['status'] {
+  if (show.status === '모집중' || show.status === '매칭완료') return show.status
+  const now = new Date(nowIso).getTime()
+  const start = new Date(show.startAt).getTime()
+  const end = start + show.durationMin * 60_000
+  if (now < start) return '공연확정'
+  if (now < end) return '진행중'
+  return '종료'
+}
+
 export interface ShowWithMeta {
   show: Show
   place: ShowPlace

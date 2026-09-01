@@ -71,7 +71,8 @@ export interface AppActions {
   addRecentlyViewedShow: (showId: string) => void
   toggleFollow: (performerId: string) => void
   createReservation: (showId: string, headcount: number) => Reservation
-  cancelReservation: (reservationId: string) => void
+  cancelReservation: (reservationId: string) => boolean
+  checkInReservation: (reservationId: string) => boolean
   addReview: (input: Omit<Review, 'id' | 'createdAt'>) => void
 
   /* 공간주 */

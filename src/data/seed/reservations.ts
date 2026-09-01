@@ -15,6 +15,7 @@ export const SEED_RESERVATIONS: Reservation[] = [
     qrCode: 'NST-S1-2ZK9',
     status: '입장완료',
     createdAt: kstIso(2026, 9, 2, 14, 20),
+    refundAmount: null,
   },
   {
     id: 'rs2',
@@ -24,6 +25,7 @@ export const SEED_RESERVATIONS: Reservation[] = [
     qrCode: 'NST-S10-7QW3',
     status: '예약',
     createdAt: kstIso(2026, 9, 5, 13, 5),
+    refundAmount: null,
   },
 ]
 

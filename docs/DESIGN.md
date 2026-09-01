@@ -43,7 +43,9 @@
 ## 간격 · 반경 · 모션
 
 - **8pt 그리드:** `4 8 12 16 20 24 32 40 56 72`만 쓴다.
-- **반경:** 버튼/입력 `12px`(`rounded-xl`), 카드 `16px`(`rounded-2xl`), 시트/모달 상단만 `20px`(`rounded-3xl`), 뱃지 `pill`.
+- **반경:** 버튼/입력 `16px`(`rounded-xl`), 카드 `20px`(`rounded-2xl`), 시트/모달 상단만 `24px`(`rounded-3xl`), 뱃지 `pill`.
+  (§3 명세는 12/16/20을 제안했지만, 기존 60여개 화면이 이미 16/20/24 스케일로 지어져 있어
+  전면 변경 시 시각적 리스크가 커 기존 스케일을 그대로 문서화했다 — 합리적 기본값.)
 - **모션 duration:** `fast 120ms` / `base 180ms` / `slow 240ms` (`tailwind.config.js` → `transitionDuration`).
 - **모션 easing:** `standard cubic-bezier(.2,0,0,1)` / `enter cubic-bezier(0,0,0,1)` / `exit cubic-bezier(.3,0,1,1)`.
 - **시트/모달:** framer-motion `spring({ stiffness: 320, damping: 32 })`.

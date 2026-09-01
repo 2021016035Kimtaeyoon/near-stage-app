@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { KpiCard, KpiGrid } from '@/components/ui/Kpi'
 import { humanDate, won } from '@/lib/datetime'
+import { getShowStatus } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
 
@@ -29,6 +30,11 @@ export function OwnerSettlementScreen() {
   const doneTotal = mine
     .filter((st) => st.status === '정산완료')
     .reduce((n, st) => n + st.net, 0)
+  // 공연이 끝나야 실제로 정산할 수 있습니다 — 대기 중이어도 진행 전 공연은 제외
+  const settleable = pending.filter((st) => {
+    const show = shows.find((s) => s.id === st.showId)
+    return show && getShowStatus(show, nowIso) === '종료'
+  })
 
   return (
     <Screen>
@@ -39,7 +45,7 @@ export function OwnerSettlementScreen() {
           <KpiCard icon={FileCheck} label="누적 정산 완료액" value={`${won(doneTotal)}원`} />
         </KpiGrid>
 
-        {pending.length > 0 && (
+        {settleable.length > 0 && (
           <Button
             full
             variant="brand"
@@ -49,7 +55,7 @@ export function OwnerSettlementScreen() {
               toast('정산이 완료되었습니다', 'success', `${won(total)}원이 정산 처리되었어요`)
             }}
           >
-            대기중인 정산 {pending.length}건 한 번에 처리하기
+            종료된 공연 정산 {settleable.length}건 한 번에 처리하기
           </Button>
         )}
 
@@ -62,15 +68,19 @@ export function OwnerSettlementScreen() {
               {mine.map((st) => {
                 const show = shows.find((s) => s.id === st.showId)
                 const alreadyIssued = issued.has(st.id)
+                const notYetEnded = st.status === '정산대기' && show && getShowStatus(show, nowIso) !== '종료'
                 return (
                   <div key={st.id} className="card p-3.5">
                     <div className="flex items-center justify-between gap-2">
                       <p className="truncate text-sm font-bold">{show?.title ?? '공연'}</p>
-                      <Tag tone={st.status === '정산완료' ? 'ok' : 'warn'}>{st.status}</Tag>
+                      <Tag tone={st.status === '정산완료' ? 'ok' : 'warn'}>
+                        {notYetEnded ? '공연 예정' : st.status}
+                      </Tag>
                     </div>
                     {show && (
                       <p className="tnum mt-0.5 text-2xs text-ink-3">
                         {humanDate(show.startAt, nowIso)} · 예약 {show.reservedCount}명
+                        {notYetEnded && ' · 공연 종료 후 정산 가능'}
                       </p>
                     )}
                     <div className="tnum mt-2.5 space-y-1 text-xs">

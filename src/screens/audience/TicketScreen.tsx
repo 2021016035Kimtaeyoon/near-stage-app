@@ -1,4 +1,5 @@
 import { Check, ChevronLeft, MapPin, Ticket } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Screen } from '@/components/shell/ScreenHeader'
 import { SourceBadge, Tag } from '@/components/ui/Badge'
@@ -8,6 +9,9 @@ import { QrCanvas } from '@/components/ui/QrCanvas'
 import { humanDateTime, won } from '@/lib/datetime'
 import { resolvePlace } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
+import { toast } from '@/store/useToast'
+
+const CANCEL_CUTOFF_HOURS = 3
 
 export function TicketScreen() {
   const { reservationId } = useParams<{ reservationId: string }>()
@@ -16,6 +20,8 @@ export function TicketScreen() {
   const shows = useAppStore((s) => s.shows)
   const venues = useAppStore((s) => s.venues)
   const nowIso = useAppStore((s) => s.demoNowIso)
+  const cancelReservation = useAppStore((s) => s.cancelReservation)
+  const [confirming, setConfirming] = useState(false)
 
   const reservation = reservations.find((r) => r.id === reservationId) ?? null
   const show = reservation ? shows.find((s) => s.id === reservation.showId) : null
@@ -35,6 +41,8 @@ export function TicketScreen() {
   }
 
   const cancelled = reservation.status === '취소'
+  const hoursUntilStart = (new Date(show.startAt).getTime() - new Date(nowIso).getTime()) / 3_600_000
+  const canCancel = reservation.status === '예약' && hoursUntilStart > CANCEL_CUTOFF_HOURS
 
   return (
     <Screen>
@@ -89,6 +97,12 @@ export function TicketScreen() {
                 <span className="text-ink-2">예약금 결제</span>
                 <span className="tnum font-semibold">{won(reservation.depositPaid)}원</span>
               </div>
+              {cancelled && reservation.refundAmount != null && (
+                <div className="flex items-center justify-between text-[13px]">
+                  <span className="text-ink-2">환불 금액</span>
+                  <span className="tnum font-semibold text-ok">{won(reservation.refundAmount)}원 환불 완료</span>
+                </div>
+              )}
               <div className="flex items-center justify-between text-[13px]">
                 <span className="text-ink-2">상태</span>
                 <Tag tone={cancelled ? 'danger' : reservation.status === '입장완료' ? 'ok' : 'default'}>
@@ -104,7 +118,34 @@ export function TicketScreen() {
           입장 시 이 QR 화면을 스태프에게 보여주세요. 예약금은 입장 시 전액 차감됩니다.
         </div>
 
-        <Button full variant="outline" className="mt-4" onClick={() => navigate('/audience/my')}>
+        {reservation.status === '예약' && (
+          <div className="mt-4">
+            {!canCancel && (
+              <p className="mb-2 text-center text-2xs text-ink-3">
+                공연 {CANCEL_CUTOFF_HOURS}시간 전부터는 예약을 취소할 수 없어요.
+              </p>
+            )}
+            <Button
+              full
+              variant={confirming ? 'danger' : 'outline'}
+              disabled={!canCancel}
+              onClick={() => {
+                if (!confirming) {
+                  setConfirming(true)
+                  return
+                }
+                if (cancelReservation(reservation.id)) {
+                  toast('예약이 취소되었습니다', 'success', `${won(reservation.depositPaid)}원이 환불됩니다`)
+                }
+                setConfirming(false)
+              }}
+            >
+              {confirming ? '한 번 더 눌러서 취소 확정' : '예약 취소'}
+            </Button>
+          </div>
+        )}
+
+        <Button full variant="outline" className="mt-3" onClick={() => navigate('/audience/my')}>
           마이 페이지로 돌아가기
         </Button>
       </div>

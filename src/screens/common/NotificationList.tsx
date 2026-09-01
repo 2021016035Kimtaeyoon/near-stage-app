@@ -33,12 +33,17 @@ const TYPE_ICON: Record<NotificationType, LucideIcon> = {
 export function NotificationList({ role, showHeader = true }: { role: Role; showHeader?: boolean }) {
   const navigate = useNavigate()
   const notifications = useAppStore((s) => s.notifications)
+  const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const nowIso = useAppStore((s) => s.demoNowIso)
   const markNotificationRead = useAppStore((s) => s.markNotificationRead)
   const markAllNotificationsRead = useAppStore((s) => s.markAllNotificationsRead)
 
   const mine = notifications
-    .filter((n) => n.role === role)
+    .filter(
+      (n) =>
+        n.role === role &&
+        (n.audienceScope !== 'followers' || followedPerformerIds.includes(n.performerId ?? '')),
+    )
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
   const unread = mine.filter((n) => !n.read).length
 
@@ -92,7 +97,7 @@ export function NotificationList({ role, showHeader = true }: { role: Role; show
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-1.5">
                   <span className="truncate text-[13px] font-bold">{n.title}</span>
-                  {!n.read && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#F0B429]" />}
+                  {!n.read && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />}
                 </span>
                 <span className="mt-0.5 block text-xs leading-snug text-ink-2">{n.body}</span>
                 <span className="tnum mt-1 block text-2xs text-ink-3">

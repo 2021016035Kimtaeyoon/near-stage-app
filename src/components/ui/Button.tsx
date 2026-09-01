@@ -14,7 +14,7 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  brand: 'bg-gold-500 text-gold-ink font-bold shadow-[0_6px_20px_rgba(240,180,41,.25)]',
+  brand: 'bg-gold-500 text-gold-ink font-bold shadow-[0_6px_20px_rgb(var(--color-gold-500)/0.25)]',
   solid: 'bg-surface-2 text-ink font-semibold border border-border-strong',
   ghost: 'bg-transparent text-ink-2 font-semibold',
   outline: 'bg-transparent text-ink font-semibold border border-border-strong',
@@ -43,8 +43,9 @@ export function Button({
       {...rest}
       disabled={disabled || loading}
       className={cn(
-        'inline-flex items-center justify-center gap-2 transition-all duration-150 active:scale-[0.98]',
+        'inline-flex items-center justify-center gap-2 transition-all duration-base ease-standard active:scale-[0.98]',
         'disabled:cursor-not-allowed disabled:opacity-45 disabled:active:scale-100',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500',
         VARIANTS[variant],
         SIZES[size],
         full && 'w-full',
@@ -70,6 +71,7 @@ export function IconButton({
       className={cn(
         'tap inline-flex items-center justify-center rounded-full border border-border bg-surface/80 text-ink-2 backdrop-blur',
         'transition-colors active:bg-surface-2',
+        'focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gold-500',
         className,
       )}
     >

@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 export type EmptyArt = 'stage' | 'search' | 'ticket' | 'chat' | 'chart'
 
 function Art({ kind }: { kind: EmptyArt }) {
-  const common = { fill: 'none', stroke: '#C7C7D1', strokeWidth: 1.6, strokeLinecap: 'round' as const }
+  const common = { fill: 'none', stroke: 'rgb(var(--color-text-dim))', strokeWidth: 1.6, strokeLinecap: 'round' as const }
   switch (kind) {
     case 'stage':
       return (
@@ -13,8 +13,8 @@ function Art({ kind }: { kind: EmptyArt }) {
           <path d="M28 72V44h64v28" {...common} />
           <path d="M22 44h76" {...common} />
           <path d="M38 44V26a22 22 0 0 1 44 0v18" {...common} strokeDasharray="4 5" />
-          <circle cx="60" cy="34" r="7" stroke="#F0B429" strokeWidth="1.8" fill="none" />
-          <path d="M60 41v10M53 51h14" stroke="#F0B429" strokeWidth="1.8" strokeLinecap="round" />
+          <circle cx="60" cy="34" r="7" stroke="rgb(var(--color-gold-500))" strokeWidth="1.8" fill="none" />
+          <path d="M60 41v10M53 51h14" stroke="rgb(var(--color-gold-500))" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
       )
     case 'search':
@@ -22,8 +22,8 @@ function Art({ kind }: { kind: EmptyArt }) {
         <svg viewBox="0 0 120 88" className="h-[88px] w-[120px]">
           <circle cx="54" cy="40" r="22" {...common} />
           <path d="M70 56l16 16" {...common} strokeWidth="2.2" />
-          <path d="M44 40h20M54 30v20" stroke="#C7C7D1" strokeWidth="1.4" strokeDasharray="3 4" />
-          <circle cx="54" cy="40" r="6" stroke="#F0B429" strokeWidth="1.8" fill="none" />
+          <path d="M44 40h20M54 30v20" stroke="rgb(var(--color-text-dim))" strokeWidth="1.4" strokeDasharray="3 4" />
+          <circle cx="54" cy="40" r="6" stroke="rgb(var(--color-gold-500))" strokeWidth="1.8" fill="none" />
         </svg>
       )
     case 'ticket':
@@ -33,8 +33,8 @@ function Art({ kind }: { kind: EmptyArt }) {
             d="M26 28h68v14a6 6 0 0 0 0 12v14H26V54a6 6 0 0 0 0-12V28Z"
             {...common}
           />
-          <path d="M60 30v6M60 42v6M60 54v6M60 66v-4" stroke="#C7C7D1" strokeWidth="1.4" strokeDasharray="3 4" />
-          <path d="M36 44h14M36 52h10" stroke="#F0B429" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M60 30v6M60 42v6M60 54v6M60 66v-4" stroke="rgb(var(--color-text-dim))" strokeWidth="1.4" strokeDasharray="3 4" />
+          <path d="M36 44h14M36 52h10" stroke="rgb(var(--color-gold-500))" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
       )
     case 'chat':
@@ -42,7 +42,7 @@ function Art({ kind }: { kind: EmptyArt }) {
         <svg viewBox="0 0 120 88" className="h-[88px] w-[120px]">
           <path d="M24 24h48v30H42l-12 10V54H24V24Z" {...common} />
           <path d="M60 40h36v26h-8l-8 8v-8H60" {...common} strokeDasharray="4 5" />
-          <path d="M34 34h26M34 42h18" stroke="#F0B429" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M34 34h26M34 42h18" stroke="rgb(var(--color-gold-500))" strokeWidth="1.8" strokeLinecap="round" />
         </svg>
       )
     case 'chart':
@@ -51,7 +51,7 @@ function Art({ kind }: { kind: EmptyArt }) {
           <path d="M24 68h72M24 68V20" {...common} />
           <rect x="36" y="50" width="10" height="18" {...common} />
           <rect x="54" y="40" width="10" height="28" {...common} />
-          <rect x="72" y="30" width="10" height="38" stroke="#F0B429" strokeWidth="1.8" fill="none" />
+          <rect x="72" y="30" width="10" height="38" stroke="rgb(var(--color-gold-500))" strokeWidth="1.8" fill="none" />
         </svg>
       )
   }

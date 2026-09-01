@@ -1,5 +1,7 @@
 import { PLATFORM_FEE } from '@/config/brand'
-import { hmToMin } from '@/lib/datetime'
+import { hmToMin, humanDateTime } from '@/lib/datetime'
+import { getShowStatus } from '../selectors'
+import { toast } from '../useToast'
 import type { Post, Settlement, Show, TimeSlot, Venue, Weekday } from '@/types'
 import type { AcceptResult, GetState, SetState } from '../types'
 
@@ -71,7 +73,7 @@ export function createOwnerActions(set: SetState, get: GetState) {
         role: 'performer',
         type: '시스템',
         title: '조건에 맞는 새 구인글',
-        body: `${get().venues.find((v) => v.id === input.venueId)?.name ?? '공간'}이(가) ${input.wantedGenres.join('·')} 공연자를 찾고 있습니다.`,
+        body: `${get().venues.find((v) => v.id === input.venueId)?.name ?? '공간'}이(가) ${input.wantedGenres.join('·')} 아티스트를 찾고 있습니다.`,
         link: '/performer/posts',
       })
       return post
@@ -87,9 +89,17 @@ export function createOwnerActions(set: SetState, get: GetState) {
       const post = state.posts.find((p) => p.id === postId)
       const application = post?.applications.find((a) => a.id === applicationId)
       if (!post || !application) return null
+      if (application.status !== '대기') {
+        toast('이미 처리된 지원입니다', 'warn')
+        return null
+      }
       const venue = state.venues.find((v) => v.id === post.venueId)
       const performer = state.performers.find((p) => p.id === application.performerId)
       if (!venue || !performer) return null
+
+      const siblings = post.applications.filter(
+        (a) => a.id !== applicationId && a.status === '대기',
+      )
 
       const showId = state.nextId('sh')
       const show: Show = {
@@ -134,9 +144,13 @@ export function createOwnerActions(set: SetState, get: GetState) {
             : {
                 ...p,
                 closed: true,
-                applications: p.applications.map((a) =>
-                  a.id === applicationId ? { ...a, status: '수락' as const } : a,
-                ),
+                applications: p.applications.map((a) => {
+                  if (a.id === applicationId) return { ...a, status: '수락' as const }
+                  if (a.status === '대기') {
+                    return { ...a, status: '거절' as const, rejectReason: '다른 지원자와 매칭되어 마감되었습니다' }
+                  }
+                  return a
+                }),
               },
         ),
         venues: s.venues.map((v) =>
@@ -158,6 +172,7 @@ export function createOwnerActions(set: SetState, get: GetState) {
         demo: { ...s.demo, highlightShowId: showId },
       }))
 
+      // 알림 ①: 수락된 공연자
       get().pushNotification({
         role: 'performer',
         type: '수락',
@@ -165,21 +180,53 @@ export function createOwnerActions(set: SetState, get: GetState) {
         body: `${venue.name}이(가) ${performer.teamName}의 지원을 수락했습니다. 공연이 확정되었어요.`,
         link: '/performer/activity',
       })
+      // 알림 ②: 공간주 자신 — 확정 처리 완료 확인용
       get().pushNotification({
-        role: 'audience',
+        role: 'owner',
         type: '확정',
-        title: '근처에 새 공연이 열렸어요',
-        body: `${venue.district} ${venue.name} · ${show.title}`,
-        link: '/audience/home',
+        title: '공연이 확정되었습니다',
+        body: `${performer.teamName} · ${humanDateTime(startAt, state.demoNowIso)}`,
+        link: '/owner/dashboard',
       })
+      // 알림 ③: 이 공연자를 팔로우하는 관객에게만 (전체 브로드캐스트 아님)
+      if (get().followedPerformerIds.includes(performer.id)) {
+        get().pushNotification({
+          role: 'audience',
+          type: '확정',
+          title: `팔로우한 ${performer.teamName}의 공연이 확정됐어요`,
+          body: `${venue.district} ${venue.name} · ${show.title}`,
+          link: '/audience/home',
+          audienceScope: 'followers',
+          performerId: performer.id,
+        })
+      }
+      // 같은 슬롯에 지원했던 다른 팀에게는 자동 거절을 알립니다
+      for (const sibling of siblings) {
+        const siblingPerformer = state.performers.find((p) => p.id === sibling.performerId)
+        get().pushNotification({
+          role: 'performer',
+          type: '거절',
+          title: '지원 결과 안내',
+          body: `${siblingPerformer?.teamName ?? '팀'}의 지원이 마감되었습니다. 사유: 다른 지원자와 매칭되어 마감되었습니다`,
+          link: '/performer/posts',
+        })
+      }
+      // 채팅 스레드 자동 생성 — 공연자가 바로 대화를 이어갈 수 있게
+      get().ensureThread(venue.id, performer.id)
 
       return { showId, startAt }
     },
 
     rejectApplication: (postId: string, applicationId: string, reason: string) => {
-      const performerId = get()
+      const application = get()
         .posts.find((p) => p.id === postId)
-        ?.applications.find((a) => a.id === applicationId)?.performerId
+        ?.applications.find((a) => a.id === applicationId)
+      if (!application) return
+      if (application.status !== '대기') {
+        toast('이미 처리된 지원입니다', 'warn')
+        return
+      }
+      const performerId = application.performerId
       set((s) => ({
         posts: s.posts.map((p) =>
           p.id !== postId
@@ -224,19 +271,25 @@ export function createOwnerActions(set: SetState, get: GetState) {
       return post.id
     },
 
-    /** 정산대기 건을 일괄 정산완료 처리하고 총액을 반환 */
+    /** 종료된 공연의 정산대기 건만 일괄 정산완료 처리하고 총액을 반환합니다 */
     settleAll: (venueId: string): number => {
       const state = get()
-      const myShowIds = new Set(
-        state.shows.filter((s) => s.venueId === venueId).map((s) => s.id),
+      const myEndedShowIds = new Set(
+        state.shows
+          .filter((s) => s.venueId === venueId && getShowStatus(s, state.demoNowIso) === '종료')
+          .map((s) => s.id),
       )
       const pending = state.settlements.filter(
-        (st) => myShowIds.has(st.showId) && st.status === '정산대기',
+        (st) => myEndedShowIds.has(st.showId) && st.status === '정산대기',
       )
+      if (pending.length === 0) {
+        toast('정산할 종료된 공연이 없습니다', 'warn')
+        return 0
+      }
       const total = pending.reduce((n, st) => n + st.net, 0)
       set((s) => ({
         settlements: s.settlements.map((st) =>
-          myShowIds.has(st.showId) && st.status === '정산대기'
+          myEndedShowIds.has(st.showId) && st.status === '정산대기'
             ? { ...st, status: '정산완료' as const, settledAt: s.demoNowIso }
             : st,
         ),

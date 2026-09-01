@@ -266,6 +266,8 @@ export interface Reservation {
   qrCode: string
   status: ReservationStatus
   createdAt: string
+  /** 취소 시 환불된 금액. 취소 전이거나 입장완료면 null */
+  refundAmount: number | null
 }
 
 /** ★ 공간 리뷰와 공연 리뷰를 분리해 저장 */
@@ -325,6 +327,12 @@ export interface AppNotification {
   read: boolean
   /** 탭했을 때 이동할 경로 */
   link?: string
+  /**
+   * 'followers'면 audienceScope와 무관하게 이 performerId를 팔로우하는 관객에게만 노출됩니다.
+   * (이 데모는 관객 계정이 하나뿐이라, followedPerformerIds에 포함될 때만 보여줍니다)
+   */
+  audienceScope?: 'all' | 'followers'
+  performerId?: string
 }
 
 export type SettlementStatus = '정산대기' | '정산완료'

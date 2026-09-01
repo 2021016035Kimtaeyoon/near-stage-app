@@ -86,20 +86,17 @@ export function Tag({
 
 export function StatusDot({ label, tone }: { label: string; tone: 'live' | 'soon' | 'done' }) {
   const map = {
-    live: { color: '#F0B429', text: 'text-[#F7C851]' },
-    soon: { color: '#4ED4A0', text: 'text-ok' },
-    done: { color: '#6B6B77', text: 'text-ink-3' },
+    live: { dot: 'bg-gold-400', text: 'text-gold-400' },
+    soon: { dot: 'bg-ok', text: 'text-ok' },
+    done: { dot: 'bg-text-dim', text: 'text-ink-3' },
   }[tone]
   return (
     <span className={cn('inline-flex items-center gap-1.5 text-2xs font-semibold', map.text)}>
       <span className="relative flex h-1.5 w-1.5">
         {tone === 'live' && (
-          <span
-            className="absolute inline-flex h-full w-full animate-pulse-ring rounded-full"
-            style={{ background: map.color }}
-          />
+          <span className={cn('absolute inline-flex h-full w-full animate-pulse-ring rounded-full', map.dot)} />
         )}
-        <span className="relative h-1.5 w-1.5 rounded-full" style={{ background: map.color }} />
+        <span className={cn('relative h-1.5 w-1.5 rounded-full', map.dot)} />
       </span>
       {label}
     </span>

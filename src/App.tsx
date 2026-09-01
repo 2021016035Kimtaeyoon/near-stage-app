@@ -10,7 +10,9 @@ import { AppRoutes } from '@/routes'
 import { DemoCaptionBar } from '@/screens/demo/DemoCaptionBar'
 import { DemoEngine } from '@/screens/demo/DemoEngine'
 import { DesktopHome } from '@/screens/desktop/DesktopHome'
+import { DevCheckScreen } from '@/screens/devcheck/DevCheckScreen'
 import { LandingPage } from '@/screens/landing/LandingPage'
+import { StyleguideScreen } from '@/screens/styleguide/StyleguideScreen'
 import { useAppStore } from '@/store/useAppStore'
 
 /**
@@ -38,6 +40,10 @@ function AppShell() {
 
   if (pathname.startsWith('/landing')) return <LandingPage />
   if (pathname.startsWith('/desktop')) return <DesktopHome />
+  // DEV 전용 QA 라우트 — 프로덕션 빌드에서는 import.meta.env.DEV가 정적으로 false가 되어
+  // 번들에서 완전히 제거됩니다 (dist/ 산출물에 StyleguideScreen/DevCheckScreen 코드 없음).
+  if (import.meta.env.DEV && pathname.startsWith('/styleguide')) return <StyleguideScreen />
+  if (import.meta.env.DEV && pathname.startsWith('/devcheck')) return <DevCheckScreen />
 
   return (
     <PhoneFrame side={<RoleSwitcherPanel />}>
