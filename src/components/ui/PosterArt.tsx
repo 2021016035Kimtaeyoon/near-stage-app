@@ -31,6 +31,7 @@ export function PosterArt({
   const mirror = rng() > 0.5
   const jitterX = -3 + rng() * 6
   const scale = 0.5 + (glyphScale - 1) * 0.15
+  const grainId = `pg-${seed.replace(/[^a-zA-Z0-9]/g, '')}`
 
   return (
     <div
@@ -42,13 +43,23 @@ export function PosterArt({
       <div
         className="absolute inset-0"
         style={{
-          background: `radial-gradient(60% 55% at ${g.glowX}% ${Math.max(8, g.glowY - 12)}%, rgba(255,242,210,.38), rgba(255,242,210,0) 68%)`,
+          background: `radial-gradient(60% 55% at ${g.glowX}% ${Math.max(8, g.glowY - 12)}%, rgba(255,242,210,.42), rgba(255,242,210,0) 68%)`,
+        }}
+      />
+      {/* 컬러 그레이딩 — 그림자는 살짝 청록, 하이라이트는 살짝 호박색으로 갈라 사진 보정 느낌을 냅니다 */}
+      <div
+        className="absolute inset-0 mix-blend-overlay"
+        style={{
+          background: [
+            `radial-gradient(70% 60% at ${g.glowX}% ${Math.max(8, g.glowY - 12)}%, rgba(255,196,120,.35), rgba(255,196,120,0) 60%)`,
+            'linear-gradient(180deg, rgba(20,40,48,0) 35%, rgba(15,32,38,.55) 100%)',
+          ].join(', '),
         }}
       />
       {/* 바닥 그림자 — 무대 바닥에 깔리는 어둠 */}
       <div
         className="absolute inset-x-0 bottom-0 h-[34%]"
-        style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.4) 100%)' }}
+        style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,.46) 100%)' }}
       />
       <svg
         viewBox="0 0 100 100"
@@ -62,17 +73,39 @@ export function PosterArt({
             <circle cx={d.x} cy={d.y * 0.62} r={d.r * 0.9} fill="#FFF3D9" opacity={Math.min(0.5, d.o * 1.8)} />
           </g>
         ))}
-        {/* 장르 실루엣 — 무대 바닥(y=82) 기준으로 축소해, 조명 아래 서 있는 작은 인물처럼 보이게 합니다 */}
+        {/* 장르 실루엣 — 무대 바닥(y=82) 기준으로 축소해, 조명 아래 서 있는 작은 인물처럼 보이게 합니다.
+            drop-shadow 두 겹으로 역광 림 라이트를 흉내내 오려낸 종이처럼 보이지 않게 합니다. */}
         <g
           transform={`translate(${jitterX} 0) ${mirror ? 'translate(100 0) scale(-1 1)' : ''} translate(50 82) scale(${scale}) translate(-50 -82)`}
+          style={{
+            filter:
+              'drop-shadow(0 0 0.9px rgba(255,238,205,.65)) drop-shadow(0 0 2.6px rgba(255,220,170,.35))',
+          }}
         >
           {POSTER_FIGURE[genre]}
         </g>
+        {/* 필름 그레인 — 평평한 벡터가 아니라 촬영된 사진처럼 보이도록 미세한 질감을 얹습니다 */}
+        <filter id={grainId}>
+          <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" stitchTiles="stitch" />
+          <feColorMatrix type="saturate" values="0" />
+          <feComponentTransfer>
+            <feFuncA type="linear" slope="0.5" intercept="0" />
+          </feComponentTransfer>
+        </filter>
+        <rect
+          x="0"
+          y="0"
+          width="100"
+          height="100"
+          filter={`url(#${grainId})`}
+          opacity={0.05}
+          className="mix-blend-overlay"
+        />
       </svg>
       {/* 비네트 — 가장자리를 살짝 눌러 사진처럼 */}
       <div
         className="absolute inset-0"
-        style={{ background: 'radial-gradient(120% 100% at 50% 42%, transparent 55%, rgba(0,0,0,.3) 100%)' }}
+        style={{ background: 'radial-gradient(120% 100% at 50% 42%, transparent 52%, rgba(0,0,0,.34) 100%)' }}
       />
       {overlay}
     </div>
