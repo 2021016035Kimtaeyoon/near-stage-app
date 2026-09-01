@@ -3,6 +3,7 @@ import { cn } from '@/lib/cn'
 import { seedDots, seedGradient, seedGradientDeep } from '@/lib/gradient'
 import { makeRng } from '@/lib/rng'
 import { GENRE_GLYPH } from '@/lib/theme'
+import { CrowdSilhouette, LightBeams, StageTruss } from './PosterAtmosphere'
 import { POSTER_FIGURE } from './PosterFigures'
 import type { Genre } from '@/types'
 
@@ -66,6 +67,10 @@ export function PosterArt({
         preserveAspectRatio="xMidYMax meet"
         className="absolute inset-0 h-full w-full"
       >
+        {/* 트러스 조명 리그 — 상단에 걸린 조명 기구 실루엣 */}
+        <StageTruss seed={seed} />
+        {/* 안개를 가르는 조명 빔 — 스포트라이트 원점에서 부채꼴로 퍼짐 */}
+        <LightBeams seed={seed} originX={g.glowX} />
         {/* 보케 — 흐릿한 조명 알갱이 */}
         {dots.map((d, i) => (
           <g key={i}>
@@ -73,10 +78,10 @@ export function PosterArt({
             <circle cx={d.x} cy={d.y * 0.62} r={d.r * 0.9} fill="#FFF3D9" opacity={Math.min(0.5, d.o * 1.8)} />
           </g>
         ))}
-        {/* 장르 실루엣 — 무대 바닥(y=82) 기준으로 축소해, 조명 아래 서 있는 작은 인물처럼 보이게 합니다.
+        {/* 장르 실루엣 — 무대 바닥(y=78) 기준으로 축소해, 조명 아래 서 있는 작은 인물처럼 보이게 합니다.
             drop-shadow 두 겹으로 역광 림 라이트를 흉내내 오려낸 종이처럼 보이지 않게 합니다. */}
         <g
-          transform={`translate(${jitterX} 0) ${mirror ? 'translate(100 0) scale(-1 1)' : ''} translate(50 82) scale(${scale}) translate(-50 -82)`}
+          transform={`translate(${jitterX} 0) ${mirror ? 'translate(100 0) scale(-1 1)' : ''} translate(50 78) scale(${scale}) translate(-50 -78)`}
           style={{
             filter:
               'drop-shadow(0 0 0.9px rgba(255,238,205,.65)) drop-shadow(0 0 2.6px rgba(255,220,170,.35))',
@@ -84,6 +89,8 @@ export function PosterArt({
         >
           {POSTER_FIGURE[genre]}
         </g>
+        {/* 앞줄 관객 실루엣 — 화면 맨 아래를 가로막아 "객석에서 찍은 사진" 시점을 만듭니다 */}
+        <CrowdSilhouette seed={seed} />
         {/* 필름 그레인 — 평평한 벡터가 아니라 촬영된 사진처럼 보이도록 미세한 질감을 얹습니다 */}
         <filter id={grainId}>
           <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" stitchTiles="stitch" />
