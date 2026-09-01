@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import { useEffect, useMemo } from 'react'
+import { createPortal } from 'react-dom'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { KopisCastBlock, PerformerBlock } from '@/screens/audience/PerformerBlock'
@@ -17,6 +18,10 @@ import { useAppStore } from '@/store/useAppStore'
  * 데스크톱 전용 공연 상세 — 모바일 화면(`/audience/show/:id`)으로 새 탭이 열리지 않고
  * 지금 보던 목록·지도 맥락 위에 모달로 뜹니다. 예약만은 아직 데스크톱 결제 플로우가
  * 없어 모바일 프로토타입을 새 탭으로 열어 이어갑니다(합리적 기본값).
+ *
+ * body에 포털로 렌더링합니다. 지도(Leaflet)가 내부 pane에 자체 z-index/스태킹 컨텍스트를
+ * 만들어서, 목록·지도 레이아웃 안쪽에 absolute로 얹으면 z-index를 아무리 올려도 지도한테
+ * 가려지는 경우가 있었습니다(모달 DOM은 있는데 화면엔 안 보이던 버그).
  */
 export function DesktopShowDetailModal({
   showId,
@@ -74,10 +79,10 @@ export function DesktopShowDetailModal({
 
   if (!open) return null
 
-  return (
+  return createPortal(
     <>
       {(
-        <div className="absolute inset-0 z-[85] flex items-center justify-center p-6" role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-[1000] flex items-center justify-center p-6" role="dialog" aria-modal="true">
           <motion.button
             aria-label="닫기"
             className="absolute inset-0 bg-black/60 backdrop-blur-[2px]"
@@ -168,6 +173,7 @@ export function DesktopShowDetailModal({
           </motion.div>
         </div>
       )}
-    </>
+    </>,
+    document.body,
   )
 }
