@@ -33,7 +33,7 @@ export const useAppStore = create<AppStore>()(
       return {
         ...createSeedData(),
         role: 'audience',
-        theme: 'dark',
+        theme: 'light',
         demoNowIso: DEMO_NOW_ISO,
         currentVenueId: DEMO_OWNER_VENUE_ID,
         currentPerformerId: DEMO_PERFORMER_ID,
