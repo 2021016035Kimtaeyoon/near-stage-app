@@ -17,10 +17,12 @@
     --color-text: 23 23 28;
     --color-text-muted: 91 91 102;
     --color-text-dim: 139 139 150;
-    --color-gold-400: 217 154 30;
-    --color-gold-500: 184 121 14;
-    --color-gold-600: 150 98 11;
-    --color-gold-ink: 255 255 255;
+    --color-gold-400: 255 218 107;
+    --color-gold-500: 255 196 46;
+    --color-gold-600: 233 166 0;
+    --color-gold-ink: 36 26 0;
+    /* 밝은 노랑은 흰 배경 위 '글자'로 쓰면 안 읽혀서, 글자·아이콘 전용 진한 금색을 따로 둡니다 */
+    --color-gold-text: 138 97 0;
     --color-ok: 61 190 122;
     --color-warn: 232 135 58;
     --color-danger: 229 72 77;
@@ -39,10 +41,12 @@
     --color-text: 23 23 28;
     --color-text-muted: 91 91 102;
     --color-text-dim: 139 139 150;
-    --color-gold-400: 217 154 30;
-    --color-gold-500: 184 121 14;
-    --color-gold-600: 150 98 11;
-    --color-gold-ink: 255 255 255;
+    --color-gold-400: 255 218 107;
+    --color-gold-500: 255 196 46;
+    --color-gold-600: 233 166 0;
+    --color-gold-ink: 36 26 0;
+    /* 밝은 노랑은 흰 배경 위 '글자'로 쓰면 안 읽혀서, 글자·아이콘 전용 진한 금색을 따로 둡니다 */
+    --color-gold-text: 138 97 0;
   }
 
   /* 다크 테마 — 마이페이지의 테마 토글에서 <html data-theme="dark">로 켜거나,
@@ -58,10 +62,12 @@
     --color-text: 245 245 247;
     --color-text-muted: 154 154 165;
     --color-text-dim: 110 110 122;
-    --color-gold-400: 247 200 81;
-    --color-gold-500: 240 180 41;
-    --color-gold-600: 216 154 30;
-    --color-gold-ink: 20 16 10;
+    --color-gold-400: 255 218 107;
+    --color-gold-500: 255 196 46;
+    --color-gold-600: 233 166 0;
+    --color-gold-ink: 36 26 0;
+    /* 어두운 배경에서는 밝은 노랑이 그대로 잘 읽힙니다 */
+    --color-gold-text: 255 196 46;
   }
 
   html,

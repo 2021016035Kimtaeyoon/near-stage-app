@@ -27,7 +27,7 @@ export function StatsBand() {
       <StaggerGroup className="mx-auto grid max-w-5xl grid-cols-2 gap-6 px-6 py-10 sm:grid-cols-4">
         {stats.map((s) => (
           <motion.div key={s.label} variants={staggerItem} className="text-center">
-            <p className="tnum text-gold-500 text-4xl font-extrabold">{s.value}</p>
+            <p className="tnum text-gold-text text-4xl font-extrabold">{s.value}</p>
             <p className="mt-1 text-xs font-semibold text-ink-2">{s.label}</p>
           </motion.div>
         ))}
@@ -46,7 +46,7 @@ export function DifferentiationSection() {
   return (
     <section id="differentiation" className="mx-auto max-w-5xl px-6 py-24">
       <ScrollReveal className="text-center">
-        <p className="text-xs font-bold uppercase tracking-widest text-[#F0B429]">핵심 차별점</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-[#FFC42E]">핵심 차별점</p>
         <h2 className="mt-3 text-3xl font-extrabold tracking-tight md:text-4xl">
           정식 공연장만 보여주던 지도에,
           <br />
@@ -200,11 +200,11 @@ export function ClosingSection() {
         </h2>
         <p className="mt-3 text-white/70">회원가입 없이 지금 바로 둘러볼 수 있어요.</p>
         <motion.button
-          whileHover={{ y: -4, boxShadow: '0 24px 56px rgba(240,180,41,.45)' }}
+          whileHover={{ y: -4, boxShadow: '0 24px 56px rgba(255,196,46,.45)' }}
           whileTap={{ scale: 0.97 }}
           onClick={() => navigate('/desktop')}
           className="bg-gold-500 mt-8 rounded-full px-8 py-4 text-[15px] font-bold text-gold-ink"
-          style={{ boxShadow: '0 16px 40px rgba(240,180,41,.35)' }}
+          style={{ boxShadow: '0 16px 40px rgba(255,196,46,.35)' }}
         >
           웹으로 둘러보기 →
         </motion.button>

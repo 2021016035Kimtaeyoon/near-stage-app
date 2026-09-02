@@ -1,8 +1,8 @@
 import type { Genre, VenueCategory } from '@/types'
 
 /** 브랜드 액센트 — 무대 조명을 닮은 코랄 레드 그라데이션 */
-export const BRAND_FROM = '#F0B429'
-export const BRAND_TO = '#F0B429'
+export const BRAND_FROM = '#FFC42E'
+export const BRAND_TO = '#FFC42E'
 export const BRAND_GRADIENT = `linear-gradient(135deg, ${BRAND_FROM} 0%, ${BRAND_TO} 100%)`
 
 /** 등록 공연(KOPIS) — 무채색 + 얇은 외곽선 */

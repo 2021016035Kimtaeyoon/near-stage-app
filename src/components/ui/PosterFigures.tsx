@@ -58,7 +58,7 @@ const MAGIC = (
     <Limb d="M57.4,53.5 Q65,47 69.5,40.5" />
     <path
       d="M70.5,36 L71.6,39.8 L75.5,40.8 L71.6,41.8 L70.5,45.6 L69.4,41.8 L65.5,40.8 L69.4,39.8 Z"
-      fill="rgba(247,200,81,.8)"
+      fill="rgba(255,218,107,.8)"
     />
     <path
       d="M33,40 h9.5 v1.8 h-9.5 Z M35,31 h5.5 v9.4 h-5.5 Z"
@@ -108,7 +108,7 @@ const PARTY = (
     <Limb d="M42.6,55 Q37,60 39,66" />
     <path d="M58.5,72 Q66,76 65,84" stroke={SIL} strokeWidth={4.6} strokeLinecap="round" fill="none" />
     <path d="M40.5,73 Q35,78 38,84.5" stroke={SIL} strokeWidth={4.6} strokeLinecap="round" fill="none" />
-    <g fill="rgba(247,200,81,.85)">
+    <g fill="rgba(255,218,107,.85)">
       <rect x="26" y="34" width="2.4" height="2.4" transform="rotate(20 27 35)" />
       <rect x="72" y="30" width="2.2" height="2.2" transform="rotate(-15 73 31)" />
       <rect x="64" y="24" width="2" height="2" transform="rotate(40 65 25)" />

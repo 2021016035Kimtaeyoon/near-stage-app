@@ -10,7 +10,7 @@ interface Props {
 }
 
 const FONT_FAMILY = 'Pretendard Variable, Pretendard, -apple-system, sans-serif'
-const GOLD = '#F0B429'
+const GOLD = '#FFC42E'
 const OUTLINE = '#1A1005'
 const SHADOW = '#C0271F'
 

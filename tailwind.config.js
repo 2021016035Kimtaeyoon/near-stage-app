@@ -37,7 +37,10 @@ export default {
           500: withOpacity('--color-gold-500'),
           600: withOpacity('--color-gold-600'),
           DEFAULT: withOpacity('--color-gold-500'),
+          // 금색 '채움' 위에 올리는 글자색 (밝은 노랑 위 어두운 잉크)
           ink: withOpacity('--color-gold-ink'),
+          // 배경 위에 금색 '글자·아이콘'으로 쓸 때 (라이트에선 진한 금색, 다크에선 밝은 노랑)
+          text: withOpacity('--color-gold-text'),
         },
         // 분위기 = 크림슨 (히어로·커튼 전용, 버튼 금지) — 테마와 무관하게 항상 어두운 무대 톤 고정
         crimson: { 700: '#8E1424', 600: '#C0271F' },

@@ -40,9 +40,9 @@ export function MyPage() {
         <div className="card mb-4 flex items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-2.5">
             {theme === 'light' ? (
-              <Sun size={17} className="text-gold-500" />
+              <Sun size={17} className="text-gold-text" />
             ) : (
-              <Moon size={17} className="text-gold-500" />
+              <Moon size={17} className="text-gold-text" />
             )}
             <div>
               <p className="text-[13px] font-bold">화면 테마</p>

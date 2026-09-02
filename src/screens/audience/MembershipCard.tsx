@@ -24,7 +24,7 @@ export function MembershipCard() {
     <div className="card-elevated mb-4 p-4">
       <div className="flex items-center gap-3">
         <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gold-500/15">
-          <Icon size={20} className="text-gold-500" />
+          <Icon size={20} className="text-gold-text" />
         </div>
         <div className="min-w-0 flex-1">
           <p className="text-[15px] font-extrabold">{status.tier.label}</p>

@@ -37,7 +37,12 @@ export function ShowDetailHero({
           className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
           style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,.5) 100%)' }}
         />
-        <div className="absolute inset-x-4 bottom-3 flex items-end justify-between gap-2">
+        {/* 이 배지 줄은 항상 어두운 사진 위에 올라가므로, 라이트 테마에서도 금색 토큰이
+            밝은 노랑으로 읽히도록 이 영역만 다크 팔레트로 고정합니다. */}
+        <div
+          data-theme="dark"
+          className="absolute inset-x-4 bottom-3 flex items-end justify-between gap-2"
+        >
           <div className="flex items-center gap-1.5">
             <SourceBadge source={show.source} />
             {live ? <StatusDot label="진행 중" tone="live" /> : <StatusDot label={countdown} tone="soon" />}
@@ -58,7 +63,7 @@ export function ShowDetailHero({
           >
             <Heart
               size={16}
-              className={liked ? 'fill-[#F0B429] text-[#F0B429]' : ''}
+              className={liked ? 'fill-[#FFC42E] text-[#FFC42E]' : ''}
               strokeWidth={liked ? 0 : 2}
             />
           </IconButton>

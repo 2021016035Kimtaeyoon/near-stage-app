@@ -18,7 +18,7 @@ export function TrendingSearchPanel({
   return (
     <div className="mx-4 mt-1.5 overflow-hidden rounded-2xl border border-border bg-surface shadow-lg">
       <div className="flex items-center gap-1.5 border-b border-border px-4 py-2.5">
-        <TrendingUp size={13} className="text-[#F0B429]" />
+        <TrendingUp size={13} className="text-[#FFC42E]" />
         <span className="text-xs font-bold">실시간 인기 검색어</span>
       </div>
       <ul>
@@ -31,7 +31,7 @@ export function TrendingSearchPanel({
               <span
                 className={cn(
                   'tnum w-4 shrink-0 text-sm font-extrabold',
-                  k.hot ? 'text-[#F0B429]' : 'text-ink-3',
+                  k.hot ? 'text-[#FFC42E]' : 'text-ink-3',
                 )}
               >
                 {k.rank}
@@ -39,7 +39,7 @@ export function TrendingSearchPanel({
               <span className="min-w-0 flex-1 truncate text-[13px] font-semibold text-ink">
                 {k.term}
               </span>
-              {k.hot && <Flame size={12} className="shrink-0 text-[#F0B429]" />}
+              {k.hot && <Flame size={12} className="shrink-0 text-[#FFC42E]" />}
             </button>
           </li>
         ))}

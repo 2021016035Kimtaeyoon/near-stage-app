@@ -64,7 +64,7 @@ export function RoleSwitcherFab() {
         aria-label="역할 전환"
         aria-expanded={open}
         className="bg-gold-500 flex h-14 w-14 items-center justify-center rounded-full text-gold-ink"
-        style={{ boxShadow: '0 10px 30px rgba(240,180,41,.35)' }}
+        style={{ boxShadow: '0 10px 30px rgba(255,196,46,.35)' }}
       >
         {open ? <X size={22} /> : <Repeat2 size={22} />}
       </button>
@@ -91,7 +91,7 @@ export function RoleSwitcherPanel() {
             className={cn(
               'w-full rounded-xl border px-3.5 py-3 text-left transition-colors',
               r === role
-                ? 'border-transparent bg-gradient-to-br from-[#F0B429] to-[#F0B429] text-white'
+                ? 'border-transparent bg-gradient-to-br from-[#FFC42E] to-[#FFC42E] text-white'
                 : 'border-border bg-surface-2 text-ink hover:border-border-strong',
             )}
           >

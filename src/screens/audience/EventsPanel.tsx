@@ -20,7 +20,7 @@ export function EventsPanel() {
         <div key={e.id} className="card p-3.5">
           <div className="flex items-start gap-2.5">
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gold-500/15">
-              <Gift size={16} className="text-gold-500" />
+              <Gift size={16} className="text-gold-text" />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-1.5">
@@ -41,7 +41,7 @@ export function EventsPanel() {
 
 function EventTagChip({ tag }: { tag: EventTag }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-gold-500/15 px-1.5 py-0.5 text-2xs font-bold text-gold-500">
+    <span className="inline-flex items-center rounded-full bg-gold-500/15 px-1.5 py-0.5 text-2xs font-bold text-gold-text">
       {tag}
     </span>
   )

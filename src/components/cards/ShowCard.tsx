@@ -35,11 +35,11 @@ export function ShowCard({
     <article
       className={cn(
         'card card-hover relative flex gap-3 p-3 text-left',
-        highlighted && 'border-[#F0B429]/70',
+        highlighted && 'border-[#FFC42E]/70',
       )}
       style={
         highlighted
-          ? { boxShadow: '0 0 0 1px rgba(240,180,41,.35), 0 8px 28px rgba(240,180,41,.18)' }
+          ? { boxShadow: '0 0 0 1px rgba(255,196,46,.35), 0 8px 28px rgba(255,196,46,.18)' }
           : undefined
       }
     >
@@ -97,7 +97,7 @@ export function ShowCard({
         >
           <Heart
             size={16}
-            className={liked ? 'fill-[#F0B429] text-[#F0B429]' : ''}
+            className={liked ? 'fill-[#FFC42E] text-[#FFC42E]' : ''}
             strokeWidth={liked ? 0 : 2}
           />
         </button>
