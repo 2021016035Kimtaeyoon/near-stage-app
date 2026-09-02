@@ -197,7 +197,10 @@ export interface Show {
 /** 지도/리스트에서 공연의 "장소"를 통일해 다루기 위한 정규화 타입 */
 export interface ShowPlace {
   name: string
+  /** 공간 카테고리(카페/바/공연장 …). 홀 이름을 여기 넣지 않습니다 — `hall`을 씁니다 */
   category: string
+  /** 등록 공연(KOPIS)의 홀 이름. 우리 무대는 없음 */
+  hall?: string
   address: string
   district: string
   lat: number

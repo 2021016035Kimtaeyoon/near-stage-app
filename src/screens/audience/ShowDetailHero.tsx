@@ -3,7 +3,7 @@ import { GenreTag, SourceBadge, StatusDot } from '@/components/ui/Badge'
 import { IconButton } from '@/components/ui/Button'
 import { PosterArt } from '@/components/ui/PosterArt'
 import { countdownLabel, humanDateTime } from '@/lib/datetime'
-import { toast } from '@/store/useToast'
+import { shareShow } from '@/lib/share'
 import type { Show } from '@/types'
 
 export function ShowDetailHero({
@@ -51,7 +51,7 @@ export function ShowDetailHero({
         <div className="absolute right-3 top-3 flex gap-2">
           <IconButton
             label="공유"
-            onClick={() => toast('링크가 복사되었습니다', 'success')}
+            onClick={() => void shareShow(show)}
             className="bg-black/35 text-white"
           >
             <Share2 size={16} />

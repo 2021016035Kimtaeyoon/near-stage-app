@@ -1,15 +1,17 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { TABS } from '@/config/nav'
 import { cn } from '@/lib/cn'
+import { unreadNotificationCount } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
 
 export function TabBar() {
   const role = useAppStore((s) => s.role)
   const notifications = useAppStore((s) => s.notifications)
+  const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
-  const unread = notifications.filter((n) => n.role === role && !n.read).length
+  const unread = unreadNotificationCount(notifications, role, followedPerformerIds)
   const tabs = TABS[role]
 
   return (

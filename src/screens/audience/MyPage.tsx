@@ -4,6 +4,7 @@ import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeade
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { Segmented } from '@/components/ui/Chip'
 import { DEMO_AUDIENCE_NAME } from '@/config/brand'
+import { unreadNotificationCount } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
 import { NotificationList } from '@/screens/common/NotificationList'
 import { EventsPanel } from './EventsPanel'
@@ -22,7 +23,7 @@ export function MyPage() {
   const theme = useAppStore((s) => s.theme)
   const setTheme = useAppStore((s) => s.setTheme)
 
-  const unread = notifications.filter((n) => n.role === 'audience' && !n.read).length
+  const unread = unreadNotificationCount(notifications, 'audience', followedPerformerIds)
 
   return (
     <Screen>

@@ -29,7 +29,10 @@ export function VenueBlock({
         <Tag>{place.category}</Tag>
         {own?.isContracted && <Tag tone="ok">계약 공간</Tag>}
       </div>
-      <h3 className="mt-1.5 text-[16px] font-extrabold">{place.name}</h3>
+      <h3 className="mt-1.5 text-[16px] font-extrabold">
+        {place.name}
+        {place.hall && <span className="ml-1.5 text-[13px] font-semibold text-ink-2">{place.hall}</span>}
+      </h3>
       {own && (
         <div className="mt-1">
           <Rating value={own.rating} count={own.reviewCount} />

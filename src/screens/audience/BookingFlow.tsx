@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { CheckCircle2, ChevronLeft, CreditCard, Info, Minus, Plus, ShieldAlert } from 'lucide-react'
-import { useState, type Dispatch, type SetStateAction } from 'react'
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Screen } from '@/components/shell/ScreenHeader'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -26,6 +26,16 @@ export function BookingFlow() {
   const [headcount, setHeadcount] = useState(1)
   const [reservationId, setReservationId] = useState<string | null>(null)
 
+  // 결제 연출 타이머는 언마운트 시 반드시 취소합니다 — 안 그러면 2초 안에 뒤로 갔을 때
+  // 사용자가 포기한 예약이 뒤늦게 생성되고 정원·정산액까지 바뀝니다.
+  // (아래 early return보다 위에 있어야 훅 순서가 항상 같습니다)
+  const payTimer = useRef<number | null>(null)
+  useEffect(() => {
+    return () => {
+      if (payTimer.current !== null) window.clearTimeout(payTimer.current)
+    }
+  }, [])
+
   const show = shows.find((s) => s.id === showId) ?? null
   const place = show ? resolvePlace(show, venues) : null
   const performer = show?.performerId ? performers.find((p) => p.id === show.performerId) : null
@@ -48,7 +58,8 @@ export function BookingFlow() {
 
   const handlePay = () => {
     setStep('paying')
-    window.setTimeout(() => {
+    payTimer.current = window.setTimeout(() => {
+      payTimer.current = null
       const reservation = createReservation(show.id, headcount)
       setReservationId(reservation.id)
       setStep('done')

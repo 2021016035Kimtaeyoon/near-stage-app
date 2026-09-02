@@ -6,6 +6,7 @@ import { LogoMark } from '@/components/shell/LogoMark'
 import { ROLE_DESCRIPTION, ROLE_LABEL, TABS } from '@/config/nav'
 import { cn } from '@/lib/cn'
 import { useIsDesktop } from '@/lib/useMediaQuery'
+import { unreadNotificationCount } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
 import type { Role } from '@/types'
 
@@ -21,9 +22,9 @@ export function DesktopShell({ children }: { children: ReactNode }) {
   const location = useLocation()
   const role = useAppStore((s) => s.role)
   const setRole = useAppStore((s) => s.setRole)
-  const unread = useAppStore((s) =>
-    s.notifications.filter((n) => n.role === s.role && !n.read).length,
-  )
+  const notifications = useAppStore((s) => s.notifications)
+  const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
+  const unread = unreadNotificationCount(notifications, role, followedPerformerIds)
   const isDesktop = useIsDesktop()
   const subPath = location.pathname.replace(/^\/desktop/, '') || '/'
 
