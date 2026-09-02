@@ -1,5 +1,6 @@
 import {
   Bell,
+  MessageSquare,
   CalendarCheck,
   Clapperboard,
   Compass,
@@ -49,6 +50,7 @@ export const TABS: Record<Role, TabItem[]> = {
       matches: ['/owner/recruit', '/owner/applicants'],
     },
     { to: '/owner/settlement', label: '정산', icon: Wallet, matches: ['/owner/settlement'] },
+    { to: '/chat', label: '채팅', icon: MessageSquare, matches: ['/chat'] },
   ],
   performer: [
     {
@@ -69,6 +71,7 @@ export const TABS: Record<Role, TabItem[]> = {
       icon: CalendarCheck,
       matches: ['/performer/activity'],
     },
+    { to: '/chat', label: '채팅', icon: MessageSquare, matches: ['/chat'] },
     { to: '/performer/profile', label: '프로필', icon: UserCircle, matches: ['/performer/profile'] },
   ],
 }

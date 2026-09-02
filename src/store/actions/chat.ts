@@ -28,7 +28,11 @@ export function createChatActions(set: SetState, get: GetState) {
       set((s) => ({
         chatMessages: [...s.chatMessages, message],
         chatThreads: s.chatThreads.map((t) =>
-          t.id === threadId ? { ...t, lastText: text, lastAt: message.createdAt } : t,
+          t.id === threadId
+            ? // 보낸 사람이 아니라 '받는 쪽'의 미읽음이 올라가야 합니다.
+              // 예전엔 아무도 안 올려서 채팅 목록의 미읽음 배지가 시드값에 고정돼 있었습니다.
+              { ...t, lastText: text, lastAt: message.createdAt, unread: t.unread + 1 }
+            : t,
         ),
       }))
     },

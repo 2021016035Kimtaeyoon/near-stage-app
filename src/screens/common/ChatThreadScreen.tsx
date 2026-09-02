@@ -41,9 +41,13 @@ export function ChatThreadScreen() {
   const counterpart = role === 'owner' ? performer.teamName : venue.name
   const counterpartGenre = performer.genre
 
+  // 이 스레드는 공간(호스트) ↔ 아티스트 대화라, 두 역할만 발신할 수 있습니다.
+  // 관객 역할로 들어오면 보낸 사람이 아티스트로 잘못 기록되던 문제가 있었습니다.
+  const canSend = role === 'owner' || role === 'performer'
+
   const submit = () => {
-    if (!text.trim() || !threadId) return
-    sendMessage(threadId, role === 'owner' ? 'owner' : 'performer', text.trim())
+    if (!text.trim() || !threadId || !canSend) return
+    sendMessage(threadId, role, text.trim())
     setText('')
   }
 
