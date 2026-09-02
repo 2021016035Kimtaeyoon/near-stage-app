@@ -14,11 +14,6 @@ import {
 } from './LandingSections'
 import { PhoneMockup } from './PhoneMockup'
 
-const NAV_LINKS = [
-  { href: '#differentiation', label: '차별점' },
-  { href: '#roles', label: '누구를 위한 서비스인가요' },
-]
-
 /**
  * 데스크톱 마케팅 랜딩페이지. 모바일 앱 프로토타입(`/`)과는 별개의 화면이며,
  * 이 페이지의 CTA는 실제 서비스 화면인 `/desktop`으로 연결됩니다.
@@ -51,21 +46,6 @@ export function LandingPage() {
         <div className="relative mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
           <LogoMark dark={overHero} className="w-[104px] transition-none" />
 
-          <nav className="hidden items-center gap-7 md:flex">
-            {NAV_LINKS.map((l) => (
-              <a
-                key={l.href}
-                href={l.href}
-                className={cn(
-                  'text-sm font-semibold transition-colors',
-                  overHero ? 'text-white/80 hover:text-white' : 'text-ink-2 hover:text-ink',
-                )}
-              >
-                {l.label}
-              </a>
-            ))}
-          </nav>
-
           <div className="hidden items-center gap-4 whitespace-nowrap md:flex">
             <button
               onClick={() => navigate('/')}
@@ -96,19 +76,9 @@ export function LandingPage() {
         {menuOpen && (
           <div className="relative border-t border-border bg-bg px-6 py-4 md:hidden">
             <div className="flex flex-col gap-3">
-              {NAV_LINKS.map((l) => (
-                <a
-                  key={l.href}
-                  href={l.href}
-                  onClick={() => setMenuOpen(false)}
-                  className="text-sm font-semibold text-ink-2"
-                >
-                  {l.label}
-                </a>
-              ))}
               <button
                 onClick={() => navigate('/')}
-                className="mt-1 rounded-full border border-border px-4 py-2.5 text-sm font-bold text-ink-2"
+                className="rounded-full border border-border px-4 py-2.5 text-sm font-bold text-ink-2"
               >
                 모바일 앱 체험
               </button>
