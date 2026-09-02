@@ -23,40 +23,46 @@ export function ShowDetailHero({
   const live = countdown === '진행 중'
 
   return (
-    <div className="relative">
-      <PosterArt seed={posterSeed} genre={show.genre} className="h-[260px] w-full" glyphScale={1.3} />
-      {/* 배지 가독성용 어둡게 처리 — 앞줄 관객 실루엣과 겹치는 영역이라 페이지 배경색으로
-          직접 블렌딩하지 않습니다(했더니 실루엣이 반쯤 지워져 사진이 잘려 겹쳐 보이는 것처럼
-          보였습니다). 순수 검정 단일 톤으로만 어둡게 해 사진 자체의 톤과 자연스럽게 이어집니다. */}
-      <div
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
-        style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,.5) 100%)' }}
-      />
-      <div className="absolute inset-x-4 bottom-3 flex items-end justify-between gap-2">
-        <div className="flex items-center gap-1.5">
-          <SourceBadge source={show.source} />
-          {live ? <StatusDot label="진행 중" tone="live" /> : <StatusDot label={countdown} tone="soon" />}
+    <div>
+      {/* 사진 위에 얹는 배지·버튼은 이 컨테이너에만 relative를 걸어 260px 안에서만
+          absolute로 자리잡게 합니다. 예전엔 아래 텍스트 블록까지 같은 relative 부모에
+          있어서, 배지가 사진이 아니라 "이미지+텍스트 전체 높이" 기준 bottom-3로 계산돼
+          본문 중간(설명 문단 근처)까지 밀려 내려가 텍스트와 겹쳐 보였습니다. */}
+      <div className="relative">
+        <PosterArt seed={posterSeed} genre={show.genre} className="h-[260px] w-full" glyphScale={1.3} />
+        {/* 배지 가독성용 어둡게 처리 — 앞줄 관객 실루엣과 겹치는 영역이라 페이지 배경색으로
+            직접 블렌딩하지 않습니다(했더니 실루엣이 반쯤 지워져 사진이 잘려 겹쳐 보이는 것처럼
+            보였습니다). 순수 검정 단일 톤으로만 어둡게 해 사진 자체의 톤과 자연스럽게 이어집니다. */}
+        <div
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-20"
+          style={{ background: 'linear-gradient(180deg, transparent 0%, rgba(0,0,0,.5) 100%)' }}
+        />
+        <div className="absolute inset-x-4 bottom-3 flex items-end justify-between gap-2">
+          <div className="flex items-center gap-1.5">
+            <SourceBadge source={show.source} />
+            {live ? <StatusDot label="진행 중" tone="live" /> : <StatusDot label={countdown} tone="soon" />}
+          </div>
         </div>
-      </div>
-      <div className="absolute right-3 top-3 flex gap-2">
-        <IconButton
-          label="공유"
-          onClick={() => toast('링크가 복사되었습니다', 'success')}
-          className="bg-black/35 text-white"
-        >
-          <Share2 size={16} />
-        </IconButton>
-        <IconButton
-          label={liked ? '좋아요 취소' : '좋아요'}
-          onClick={onToggleLike}
-          className="bg-black/35 text-white"
-        >
-          <Heart
-            size={16}
-            className={liked ? 'fill-[#F0B429] text-[#F0B429]' : ''}
-            strokeWidth={liked ? 0 : 2}
-          />
-        </IconButton>
+        <div className="absolute right-3 top-3 flex gap-2">
+          <IconButton
+            label="공유"
+            onClick={() => toast('링크가 복사되었습니다', 'success')}
+            className="bg-black/35 text-white"
+          >
+            <Share2 size={16} />
+          </IconButton>
+          <IconButton
+            label={liked ? '좋아요 취소' : '좋아요'}
+            onClick={onToggleLike}
+            className="bg-black/35 text-white"
+          >
+            <Heart
+              size={16}
+              className={liked ? 'fill-[#F0B429] text-[#F0B429]' : ''}
+              strokeWidth={liked ? 0 : 2}
+            />
+          </IconButton>
+        </div>
       </div>
 
       <div className="px-4 pt-4">
