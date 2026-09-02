@@ -1,8 +1,9 @@
-import { MapPin, QrCode } from 'lucide-react'
+import { Check, MapPin, QrCode } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Tag } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PosterArt } from '@/components/ui/PosterArt'
+import { DEMO_AUDIENCE_NAME } from '@/config/brand'
 import { humanDateTime, won } from '@/lib/datetime'
 import { resolvePlace } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
@@ -14,7 +15,13 @@ export function MyReservations() {
   const shows = useAppStore((s) => s.shows)
   const venues = useAppStore((s) => s.venues)
   const performers = useAppStore((s) => s.performers)
+  const reviews = useAppStore((s) => s.reviews)
   const nowIso = useAppStore((s) => s.demoNowIso)
+
+  // 내가 이미 후기를 남긴 공연 — 중복 작성 유도를 막습니다
+  const myReviewedShowIds = new Set(
+    reviews.filter((r) => r.authorName === DEMO_AUDIENCE_NAME).map((r) => r.showId),
+  )
 
   const rows = reservations
     .map((r) => {
@@ -48,11 +55,15 @@ export function MyReservations() {
         const place = resolvePlace(show, venues)
         const performer = performers.find((p) => p.id === show.performerId)
         const ended = new Date(show.startAt).getTime() + show.durationMin * 60_000 < new Date(nowIso).getTime()
+        // 리뷰는 우리 무대(공간·공연자가 실재하는 공연)에만 쓸 수 있습니다 — ReviewCompose와 같은 조건
+        const reviewable =
+          ended && reservation.status !== '취소' && show.source === 'own' && !!show.venueId && !!show.performerId
+        const alreadyReviewed = myReviewedShowIds.has(show.id)
         return (
+          <div key={reservation.id} className="card overflow-hidden">
           <button
-            key={reservation.id}
             onClick={() => navigate(`/audience/ticket/${reservation.id}`)}
-            className="card flex w-full gap-3 p-3 text-left"
+            className="flex w-full gap-3 p-3 text-left"
           >
             <PosterArt
               seed={show.id + (performer?.photoSeed ?? show.title)}
@@ -77,6 +88,29 @@ export function MyReservations() {
               <QrCode size={20} />
             </div>
           </button>
+
+          {/* 관람이 끝나면 여기서 바로 후기를 남깁니다 — 예전엔 리뷰 화면이 완성돼 있는데
+              진입 버튼이 없어 어디서도 도달할 수 없었습니다. */}
+          {reviewable && (
+            <div className="flex items-center justify-between gap-3 border-t border-border px-3 py-2.5">
+              <p className="text-2xs text-ink-2">
+                {alreadyReviewed ? '후기를 남겨주셔서 감사해요' : '공연은 어떠셨나요? 후기 30P'}
+              </p>
+              {alreadyReviewed ? (
+                <Tag tone="ok">
+                  <Check size={10} /> 후기 작성 완료
+                </Tag>
+              ) : (
+                <button
+                  onClick={() => navigate(`/audience/review/${show.id}`)}
+                  className="bg-gold-500 shrink-0 rounded-lg px-3 py-1.5 text-2xs font-bold text-gold-ink"
+                >
+                  후기 남기기
+                </button>
+              )}
+            </div>
+          )}
+          </div>
         )
       })}
     </div>
