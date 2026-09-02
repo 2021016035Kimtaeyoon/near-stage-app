@@ -27,7 +27,7 @@ export const DEPOSIT_AMOUNT = 1_000
 
 /** localStorage 키 & 스키마 버전 (버전이 바뀌면 자동 초기화) */
 export const STORAGE_KEY = 'oneul-mudae-store'
-export const STORAGE_VERSION = 3
+export const STORAGE_VERSION = 4
 
 /** 데모용 고정 주인공 */
 export const DEMO_OWNER_VENUE_ID = 'v1' // 카페 온화
