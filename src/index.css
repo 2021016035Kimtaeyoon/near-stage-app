@@ -23,6 +23,12 @@
     --color-gold-ink: 36 26 0;
     /* 밝은 노랑은 흰 배경 위 '글자'로 쓰면 안 읽혀서, 글자·아이콘 전용 진한 금색을 따로 둡니다 */
     --color-gold-text: 138 97 0;
+
+    /* 깊이감 — 라이트에서는 밝기 차이가 거의 안 보이므로 "진짜 그림자"가 카드를 띄웁니다 */
+    --shadow-card: 0 1px 2px rgba(17, 17, 26, 0.05), 0 4px 12px -6px rgba(17, 17, 26, 0.1);
+    --shadow-card-elevated: 0 2px 4px rgba(17, 17, 26, 0.05), 0 14px 30px -12px rgba(17, 17, 26, 0.18);
+    --shadow-card-hover: 0 2px 6px rgba(17, 17, 26, 0.07), 0 16px 32px -12px rgba(17, 17, 26, 0.16);
+    --shadow-float: 0 -4px 32px rgba(17, 17, 26, 0.14), 0 8px 32px rgba(17, 17, 26, 0.1);
     --color-ok: 61 190 122;
     --color-warn: 232 135 58;
     --color-danger: 229 72 77;
@@ -47,6 +53,12 @@
     --color-gold-ink: 36 26 0;
     /* 밝은 노랑은 흰 배경 위 '글자'로 쓰면 안 읽혀서, 글자·아이콘 전용 진한 금색을 따로 둡니다 */
     --color-gold-text: 138 97 0;
+
+    /* 깊이감 — 라이트에서는 밝기 차이가 거의 안 보이므로 "진짜 그림자"가 카드를 띄웁니다 */
+    --shadow-card: 0 1px 2px rgba(17, 17, 26, 0.05), 0 4px 12px -6px rgba(17, 17, 26, 0.1);
+    --shadow-card-elevated: 0 2px 4px rgba(17, 17, 26, 0.05), 0 14px 30px -12px rgba(17, 17, 26, 0.18);
+    --shadow-card-hover: 0 2px 6px rgba(17, 17, 26, 0.07), 0 16px 32px -12px rgba(17, 17, 26, 0.16);
+    --shadow-float: 0 -4px 32px rgba(17, 17, 26, 0.14), 0 8px 32px rgba(17, 17, 26, 0.1);
   }
 
   /* 다크 테마 — 마이페이지의 테마 토글에서 <html data-theme="dark">로 켜거나,
@@ -68,6 +80,12 @@
     --color-gold-ink: 36 26 0;
     /* 어두운 배경에서는 밝은 노랑이 그대로 잘 읽힙니다 */
     --color-gold-text: 255 196 46;
+
+    /* 다크에서는 그림자가 거의 안 보이므로, 상단 내부 하이라이트가 카드를 띄웁니다(§3) */
+    --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    --shadow-card-elevated: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 28px -14px rgba(0, 0, 0, 0.6);
+    --shadow-card-hover: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 16px 32px -16px rgba(0, 0, 0, 0.7);
+    --shadow-float: 0 -8px 40px rgba(0, 0, 0, 0.5);
   }
 
   html,
@@ -105,35 +123,43 @@
 }
 
 @layer components {
-  /* 다크 UI에서 box-shadow는 거의 안 보입니다 — 보더 + 상단 내부 하이라이트로 카드가 뜨 보이게(§3) */
+  /* 깊이감은 테마마다 다른 수단을 씁니다 — 라이트는 그림자, 다크는 상단 내부 하이라이트.
+     값은 :root / [data-theme='dark']의 --shadow-* 변수에 있습니다(§3). */
   .card {
     @apply rounded-2xl border border-border bg-surface-1;
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    box-shadow: var(--shadow-card);
   }
 
   /* 카드보다 한 단계 더 떠 보여야 하는 요소용 (히어로 지표, 강조 카드) */
   .card-elevated {
     @apply rounded-2xl border border-border-strong bg-surface-1;
-    box-shadow:
-      inset 0 1px 0 rgba(255, 255, 255, 0.06),
-      0 12px 28px -14px rgba(0, 0, 0, 0.6);
+    box-shadow: var(--shadow-card-elevated);
   }
 
   .card-hover {
-    @apply transition-all duration-base ease-standard active:scale-[0.985] active:bg-surface-2;
+    @apply transition-all duration-base ease-standard active:scale-[0.985];
   }
   @media (hover: hover) {
     .card-hover:hover {
       border-color: theme('colors.border-strong');
-      background-color: theme('colors.surface-2');
+      box-shadow: var(--shadow-card-hover);
       transform: translateY(-2px);
     }
   }
 
   /* 떠 있는 요소(시트·모달·토스트) 전용 — 이 경우에만 그림자 + 블러 배경 예외 허용 */
   .elevation-float {
-    box-shadow: 0 -8px 40px rgba(0, 0, 0, 0.5);
+    box-shadow: var(--shadow-float);
     backdrop-filter: blur(16px);
+  }
+
+  /* 장르 태그 — 라이트에서는 어둡게 낮춘 글자색, 다크에서는 원색을 씁니다.
+     (장르색 9종이 다크 기준 채도라 라이트에서 그대로 쓰면 대비가 1.5~2:1까지 떨어짐) */
+  .genre-tag {
+    color: var(--genre-ink);
+  }
+  [data-theme='dark'] .genre-tag {
+    color: var(--genre);
   }
 
   /* 터치 타겟 최소 44px */

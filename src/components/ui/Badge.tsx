@@ -1,7 +1,7 @@
 import { Landmark, Sparkles } from 'lucide-react'
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 import { cn } from '@/lib/cn'
-import { GENRE_COLOR, alpha } from '@/lib/theme'
+import { GENRE_COLOR, alpha, darken } from '@/lib/theme'
 import type { Genre, ShowSource } from '@/types'
 
 /**
@@ -48,10 +48,19 @@ export function GenreTag({ genre, size = 'md' }: { genre: Genre; size?: 'sm' | '
   return (
     <span
       className={cn(
-        'inline-flex items-center gap-1 rounded-full border font-semibold',
+        'genre-tag inline-flex items-center gap-1 rounded-full border font-semibold',
         sm ? 'px-1.5 py-0.5 text-2xs' : 'px-2 py-1 text-xs',
       )}
-      style={{ color, borderColor: alpha(color, 0.35), background: alpha(color, 0.12) }}
+      // 글자색은 테마에 따라 CSS가 고릅니다(.genre-tag) — 라이트는 어둡게, 다크는 원색.
+      // 점은 어느 쪽이든 원색이라 장르 구분이 유지됩니다.
+      style={
+        {
+          '--genre': color,
+          '--genre-ink': darken(color, 0.45),
+          borderColor: alpha(color, 0.35),
+          background: alpha(color, 0.12),
+        } as CSSProperties
+      }
     >
       <span className="h-1.5 w-1.5 rounded-full" style={{ background: color }} />
       {genre}

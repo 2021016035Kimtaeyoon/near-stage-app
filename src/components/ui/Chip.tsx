@@ -47,7 +47,7 @@ export function Segmented<T extends string>({
   return (
     <div
       role="tablist"
-      className={cn('flex gap-1 rounded-xl border border-border bg-surface p-1', className)}
+      className={cn('flex gap-1 rounded-xl border border-border bg-surface-2 p-1', className)}
     >
       {options.map((o) => (
         <button
@@ -56,8 +56,11 @@ export function Segmented<T extends string>({
           aria-selected={value === o.value}
           onClick={() => onChange(o.value)}
           className={cn(
-            'h-9 flex-1 rounded-lg text-xs font-semibold transition-colors',
-            value === o.value ? 'bg-surface-2 text-ink' : 'text-ink-3 active:text-ink-2',
+            // 선택 칩은 배경색 차이(라이트에서 7유닛뿐)가 아니라 "떠오른 알약"으로 구분합니다
+            'h-9 flex-1 rounded-lg text-xs font-semibold transition-all duration-base ease-standard',
+            value === o.value
+              ? 'bg-bg text-ink shadow-[var(--shadow-card)]'
+              : 'text-ink-3 active:text-ink-2',
           )}
         >
           {o.label}
@@ -93,12 +96,13 @@ export function Toggle({
       <span
         className={cn(
           'relative h-[30px] w-[52px] shrink-0 rounded-full transition-colors duration-200',
-          checked ? 'bg-gold-500' : 'bg-border-strong',
+          // OFF일 때 흰 노브 on border-strong은 라이트에서 대비 1.2:1이라 빈 알약처럼 보였습니다
+          checked ? 'bg-gold-500' : 'bg-surface-3 ring-1 ring-inset ring-border-strong',
         )}
       >
         <span
           className={cn(
-            'absolute top-[3px] h-6 w-6 rounded-full bg-white transition-all duration-200',
+            'absolute top-[3px] h-6 w-6 rounded-full bg-bg shadow-[0_1px_3px_rgba(17,17,26,.25)] transition-all duration-200',
             checked ? 'left-[25px]' : 'left-[3px]',
           )}
         />

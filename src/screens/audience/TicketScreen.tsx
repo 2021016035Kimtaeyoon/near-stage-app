@@ -66,7 +66,7 @@ export function TicketScreen() {
             <p className="tnum mt-1 text-sm opacity-90">{humanDateTime(show.startAt, nowIso)}</p>
           </div>
 
-          <div className="relative bg-white px-5 pb-6 pt-6">
+          <div className="relative bg-surface-1 px-5 pb-6 pt-6">
             {/* 절취선 느낌의 반원 노치 */}
             <span className="absolute -left-3 -top-3 h-6 w-6 rounded-full bg-bg" />
             <span className="absolute -right-3 -top-3 h-6 w-6 rounded-full bg-bg" />

@@ -57,6 +57,29 @@ export const CATEGORY_COLOR: Record<VenueCategory, string> = {
   스튜디오: '#6FE0D8',
 }
 
+/**
+ * hex를 검정 쪽으로 섞어 어둡게 만듭니다.
+ * 장르색 9종은 다크 배경 기준 채도라, 라이트 테마에서 12% 틴트 위에 그대로 쓰면
+ * 대비가 1.5~2:1까지 떨어집니다. 점(dot)은 원색을 쓰고 글자만 이 값으로 낮춥니다.
+ */
+export function darken(hex: string, amount: number): string {
+  const h = hex.replace('#', '')
+  const n = parseInt(
+    h.length === 3
+      ? h
+          .split('')
+          .map((c) => c + c)
+          .join('')
+      : h,
+    16,
+  )
+  const mix = (v: number) => Math.round(v * (1 - amount))
+  const r = mix((n >> 16) & 255)
+  const g = mix((n >> 8) & 255)
+  const b = mix(n & 255)
+  return `rgb(${r}, ${g}, ${b})`
+}
+
 /** hex → rgba 문자열 */
 export function alpha(hex: string, a: number): string {
   const h = hex.replace('#', '')
