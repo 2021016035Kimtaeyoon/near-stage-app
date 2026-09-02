@@ -1,6 +1,6 @@
 # 랜딩 히어로 애니메이션 (DarkStageHero)
 
-단일 pin 섹션(`h-[560dvh]`, 모바일 `h-[400dvh]`) 안에서 `useScroll({ offset: ['start start', 'end end'] })`로
+단일 pin 섹션(`h-[605dvh]`, 모바일 `h-[432dvh]`) 안에서 `useScroll({ offset: ['start start', 'end end'] })`로
 0→1 진행률(`p`)을 뽑아내고, 그 값 하나로 커튼·무대·조명·로고·2막 패널을 전부 구동합니다.
 모든 타이밍 상수는 [`heroTimeline.ts`](./heroTimeline.ts)에 있습니다 — 타이밍/강도를 바꾸려면
 컴포넌트가 아니라 이 파일의 숫자를 바꾸세요. 로고 좌표는 [`logoGeometry.ts`](../../components/shell/logoGeometry.ts)에서
@@ -10,25 +10,32 @@
 
 | 구간 | 무엇이 움직이나 | 관련 상수 |
 |---|---|---|
-| 0 ~ 0.02 | 커튼 완전히 닫힘, 스크롤 유도 표시 보임 | `CURTAIN_CUE_FADE_END` |
-| 0 ~ 0.06 | 스크롤 유도 표시 페이드아웃 | `CURTAIN_CUE_FADE_END` |
-| 0 ~ 0.12 | 커튼 중앙 금색 세로 각인 "NEAR:STAGE" 페이드아웃 | `CURTAIN_EMBLEM_FADE_END` |
-| 0.05 ~ 0.26 | **좌우 두 폭**이 각자 바깥쪽 끝을 축으로 scaleX `1→0.34` + x `∓6%`로 갈라져 열림 (`cubicBezier(.4,0,.2,1)`) | `CURTAIN_OPEN_START/END`, `PANEL_SCALE_END`, `PANEL_X_END` |
-| 0.05 ~ 0.26 | 중앙 이음새 그림자 opacity 1→0 (두 폭이 맞물린 것처럼 보이다가 열리며 사라짐) | 동일 |
-| 0.20 ~ 0.40 | 무대 전체 밝기 필터 0.28 → 1 | `STAGE_BRIGHTNESS_START/END` |
-| 0.29 ~ 0.35 / 0.33~0.39 / 0.34~0.40 | 좌(27%) → 우(73%) → 중앙(50%, 가장 큼) 조명 점등 플리커 | `LIGHT_*_RANGE` |
-| 0.38 ~ 0.50 | 로고 낙하 (y −118vh→0, rotate −3°→0, `cubicBezier(.55,.06,.68,.19)`) | `LOGO_FALL_START/END` |
-| 0.38 ~ 0.42 | 낙하 중 로고 페이드인 | `LOGO_FADE_IN_END` |
-| 0.50 ~ 0.545 | 착지 스쿼시(scaleY/scaleX 반대 방향 4단 오버슈트) | `LANDING_AT`, `LANDING_SQUASH_END` |
-| 0.50 ~ 0.54 | 무대 컨테이너 흔들림(y 0→4→−2→0) | `LANDING_SHAKE_END` |
-| 0.50 ~ 0.53 | 바닥 중앙 섬광(screen 블렌드) | `LANDING_FLASH_END` |
-| 0.50 ~ 0.60 | 착지 먼지 2겹 | `LANDING_DUST_END` |
-| 0.38 ~ 0.62 | 로고 바닥 반사 opacity 0→0.16(유지)→0(2막 축소 구간에서 소멸) | 낙하/2막 구간 상수 재사용 |
-| 0.50 ~ 0.60 | 로고+태그라인+CTA 정지(숨 고르기), 1막 텍스트 페이드인 — 넓혀서 2막 전환 전 더 오래 머무름 | `ACT1_HOLD_START/END` |
-| 0.60 ~ 0.66 | 로고 축소(scale 1→0.4) + 좌상단 이동(x 0→−38vw, y 0→−32vh) + opacity 1→0.5, **동시에** 1막 태그라인·CTA 페이드아웃 | `ACT2_LOGO_SHRINK_START/END`, `ACT1_TITLE_FADEOUT_START/END` |
-| 0.60 ~ 0.97 | 가로 트랙 `x: 100vw → -200vw` (패널 중앙 도달 시점 근사: 0.72 / 0.85 / 0.97) | `ACT2_START/END`, `TRACK_X_RANGE` |
+| 0 ~ 0.0185 | 커튼 완전히 닫힘, 스크롤 유도 표시 보임 | `CURTAIN_CUE_FADE_END` |
+| 0 ~ 0.0556 | 스크롤 유도 표시 페이드아웃 | `CURTAIN_CUE_FADE_END` |
+| 0 ~ 0.1111 | 커튼 중앙 금색 세로 각인 "NEAR:STAGE" 페이드아웃 | `CURTAIN_EMBLEM_FADE_END` |
+| 0.0463 ~ 0.2407 | **좌우 두 폭**이 각자 바깥쪽 끝을 축으로 scaleX `1→0.34` + x `∓6%`로 갈라져 열림 (`cubicBezier(.4,0,.2,1)`) | `CURTAIN_OPEN_START/END`, `PANEL_SCALE_END`, `PANEL_X_END` |
+| 0.0463 ~ 0.2407 | 중앙 이음새 그림자 opacity 1→0 (두 폭이 맞물린 것처럼 보이다가 열리며 사라짐) | 동일 |
+| 0.1852 ~ 0.3704 | 무대 전체 밝기 필터 0.28 → 1 | `STAGE_BRIGHTNESS_START/END` |
+| 0.2685~0.3241 / 0.3056~0.3611 / 0.3148~0.3704 | 좌(27%) → 우(73%) → 중앙(50%, 가장 큼) 조명 점등 플리커 | `LIGHT_*_RANGE` |
+| 0.3519 ~ 0.463 | 로고 낙하 (y −118vh→0, rotate −3°→0, `cubicBezier(.55,.06,.68,.19)`) | `LOGO_FALL_START/END` |
+| 0.3519 ~ 0.3889 | 낙하 중 로고 페이드인 | `LOGO_FADE_IN_END` |
+| 0.463 ~ 0.5046 | 착지 스쿼시(scaleY/scaleX 반대 방향 4단 오버슈트) | `LANDING_AT`, `LANDING_SQUASH_END` |
+| 0.463 ~ 0.5 | 무대 컨테이너 흔들림(y 0→4→−2→0) | `LANDING_SHAKE_END` |
+| 0.463 ~ 0.4907 | 바닥 중앙 섬광(screen 블렌드) | `LANDING_FLASH_END` |
+| 0.463 ~ 0.6296 | 착지 먼지 2겹 | `LANDING_DUST_END` |
+| 0.3519 ~ 0.6296 | 로고 바닥 반사 opacity 0→0.16(유지)→0(2막 축소 구간에서 소멸) | 낙하/2막 구간 상수 재사용 |
+| 0.463 ~ 0.6296 | 로고+태그라인+CTA 정지(숨 고르기), 1막 텍스트 페이드인 — 두 번째로 넓혀서 2막 전환 전 더 오래 머무름(절대 스크롤 거리 기준 약 80% 증가, 전체 높이도 ×1.08) | `ACT1_HOLD_START/END` |
+| 0.6296 ~ 0.6852 | 로고 축소(scale 1→0.4) + 좌상단 이동(x 0→−38vw, y 0→−32vh) + opacity 1→0.5, **동시에** 1막 태그라인·CTA 페이드아웃 | `ACT2_LOGO_SHRINK_START/END`, `ACT1_TITLE_FADEOUT_START/END` |
+| 0.6296 ~ 0.9722 | 가로 트랙 `x: 100vw → -200vw` (패널 중앙 도달 시점 근사: 0.74 / 0.86 / 0.97) | `ACT2_START/END`, `TRACK_X_RANGE` |
 | 각 패널 구간 | 패널 내부 텍스트가 패널 이동보다 살짝 늦게 opacity/y로 따라옴 | `PANEL_CONTENT_WINDOWS[0..2]` |
-| 0.97 ~ 1.00 | 마지막 패널(관객, CTA 포함) 유지 → pin 해제, 다음 섹션으로 이어짐 | `ACT2_END`, `ACT2_TAIL_END` |
+| 0.9722 ~ 1.00 | 마지막 패널(관객, CTA 포함) 유지 → pin 해제, 다음 섹션으로 이어짐 | `ACT2_END`, `ACT2_TAIL_END` |
+
+숨 고르기 구간을 늘릴 때는: ① `ACT1_HOLD_END`를 원하는 만큼 뒤로 밀고, ② `ACT1_HOLD_START` 이전 상수는
+전부 `x / (1+k)`로, `ACT1_HOLD_END` 이후(자신 포함) 상수는 전부 `(x+k) / (1+k)`로 다시 계산하고
+(`k`=추가한 절대 구간 크기를 옛 전체 대비 비율로 나타낸 값), ③ `heroHeightClass`(desktop/mobile 둘 다)와
+`LandingPage.tsx`의 `headerBgOpacity`/`setOverHero` 임계값도 같은 비율(`×(1+k)`)로 늘려야 나머지 구간의
+스크롤 체감 속도가 그대로 유지됩니다. `DarkStageHero.tsx`의 `dot0/dot1/dot2`(진행률 점 인디케이터)도
+`heroTimeline.ts`를 참조하지 않는 하드코딩된 값이라 잊지 말고 같이 바꿔야 합니다.
 
 ## ⚠️ 근본 원인이었던 offset 버그 (2막 도중 흰 배경으로 떨어지던 문제의 진짜 원인)
 

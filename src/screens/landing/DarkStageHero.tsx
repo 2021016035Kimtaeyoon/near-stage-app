@@ -228,12 +228,14 @@ export function DarkStageHero() {
     { opacity: panel2Opacity, y: panel2Y },
   ]
 
-  const dot0 = useTransform(p, [0.6, 0.723, 0.785], [0.3, 1, 0.3])
-  const dot1 = useTransform(p, [0.723, 0.847, 0.909], [0.3, 1, 0.3])
-  const dot2 = useTransform(p, [0.909, 0.97, 1], [0.3, 1, 1])
+  const dot0 = useTransform(p, [0.6296, 0.7435, 0.8009], [0.3, 1, 0.3])
+  const dot1 = useTransform(p, [0.7435, 0.8583, 0.9157], [0.3, 1, 0.3])
+  const dot2 = useTransform(p, [0.9157, 0.9722, 1], [0.3, 1, 1])
   const dots = [dot0, dot1, dot2]
 
-  const heroHeightClass = isMobile ? 'h-[400dvh]' : 'h-[560dvh]'
+  // 숨 고르기(ACT1_HOLD) 구간을 늘린 만큼(×1.08) 전체 높이도 함께 늘려야
+  // 다른 구간의 스크롤 체감 속도가 그대로 유지됩니다 — heroTimeline.ts 상단 설명 참고.
+  const heroHeightClass = isMobile ? 'h-[432dvh]' : 'h-[605dvh]'
 
   if (prefersReducedMotion) {
     return <StaticHeroFallback onNavigate={navigate} />

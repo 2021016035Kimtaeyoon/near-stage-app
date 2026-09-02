@@ -34,10 +34,10 @@ export function LandingPage() {
     target: heroWrapRef,
     offset: ['start start', 'end end'],
   })
-  const headerBgOpacity = useTransform(heroProgress, [0.94, 1], [0, 1])
+  const headerBgOpacity = useTransform(heroProgress, [0.9444, 1], [0, 1])
 
   useMotionValueEvent(heroProgress, 'change', (v) => {
-    setOverHero(v < 0.96)
+    setOverHero(v < 0.963)
   })
 
   return (
