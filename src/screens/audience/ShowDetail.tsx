@@ -114,7 +114,7 @@ export function ShowDetail() {
           own={venue ? { rating: venue.rating, reviewCount: venue.reviewCount, isContracted: venue.isContracted } : undefined}
         />
 
-        <section className="border-t border-border px-4 py-5">
+        <section className="px-4 py-5">
           <h2 className="mb-3 text-[15px] font-bold">리뷰</h2>
           <ReviewTabs
             venueReviews={venueReviews}

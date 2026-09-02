@@ -23,7 +23,7 @@ export function VenueBlock({
   own?: OwnDetail
 }) {
   return (
-    <section className="border-t border-border px-4 py-5">
+    <section className="px-4 py-5">
       <h2 className="mb-3 text-[15px] font-bold">공간</h2>
       <div className="flex items-center gap-1.5">
         <Tag>{place.category}</Tag>

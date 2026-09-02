@@ -18,7 +18,7 @@ export function PerformerBlock({
 }) {
   const navigate = useNavigate()
   return (
-    <section className="border-t border-border px-4 py-5">
+    <section className="px-4 py-5">
       <h2 className="mb-3 text-[15px] font-bold">아티스트</h2>
       <div className="flex items-start gap-3">
         <SeedAvatar seed={performer.photoSeed} genre={performer.genre} size={56} />
@@ -102,7 +102,7 @@ export function PerformerBlock({
 /** 등록 공연(KOPIS)의 출연진 표기 — 공연자 계정이 없어 클립·팔로우 없이 텍스트만 */
 export function KopisCastBlock({ cast, genreLabel }: { cast: string; genreLabel: string }) {
   return (
-    <section className="border-t border-border px-4 py-5">
+    <section className="px-4 py-5">
       <h2 className="mb-2 text-[15px] font-bold">출연진</h2>
       <p className="text-[13px] leading-relaxed text-ink-2">{cast}</p>
       <p className="mt-2 text-2xs text-ink-3">
