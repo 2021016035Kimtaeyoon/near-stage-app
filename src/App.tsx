@@ -1,5 +1,5 @@
-import { useEffect } from 'react'
-import { HashRouter, useLocation } from 'react-router-dom'
+import { useEffect, useRef } from 'react'
+import { HashRouter, Navigate, useLocation } from 'react-router-dom'
 import { DevPanel } from '@/components/shell/DevPanel'
 import { PhoneFrame } from '@/components/shell/PhoneFrame'
 import { RoleSwitcherFab, RoleSwitcherPanel } from '@/components/shell/RoleSwitcher'
@@ -38,8 +38,18 @@ function AppShell() {
   const demoActive = useAppStore((s) => s.demo.active)
   useThemeSync()
 
+  // 데스크톱 웹앱 안에 있는 동안에는, 화면 내부의 navigate()가 접두사 없는 경로
+  // (예: '/owner/recruit')로 빠져나가도 다시 '/desktop/...'으로 돌려보냅니다.
+  // 이 앱의 화면 60여 개는 전부 접두사 없는 실제 경로로 이동하기 때문에, 개별 화면을
+  // 고치는 대신 여기서 한 번에 막는 편이 확실합니다.
+  // '/' (모바일 앱 보기)와 '/landing'은 의도적인 이탈이라 예외로 두고 플래그를 끕니다.
+  const inDesktopShell = useRef(false)
+  if (pathname.startsWith('/desktop')) inDesktopShell.current = true
+  if (pathname === '/' || pathname.startsWith('/landing')) inDesktopShell.current = false
+
   if (pathname.startsWith('/landing')) return <LandingPage />
   if (pathname.startsWith('/desktop')) return <DesktopHome />
+  if (inDesktopShell.current) return <Navigate to={`/desktop${pathname}`} replace />
   // DEV 전용 QA 라우트 — 프로덕션 빌드에서는 import.meta.env.DEV가 정적으로 false가 되어
   // 번들에서 완전히 제거됩니다 (dist/ 산출물에 StyleguideScreen/DevCheckScreen 코드 없음).
   if (import.meta.env.DEV && pathname.startsWith('/styleguide')) return <StyleguideScreen />

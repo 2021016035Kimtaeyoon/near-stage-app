@@ -69,7 +69,7 @@ export function DesktopPerformerHome() {
               venue={venue}
               distanceKm={d}
               match={match}
-              onClick={() => navigate(`/performer/venue/${venue.id}`)}
+              onClick={() => navigate(`/desktop/performer/venue/${venue.id}`)}
             />
           ))}
         </div>
