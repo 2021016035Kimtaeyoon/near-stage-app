@@ -63,7 +63,7 @@ export function ClipCard({
           className="flex flex-col items-center gap-1 text-white"
         >
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/35">
-            <Heart size={22} className={liked ? 'fill-[#FFC42E] text-[#FFC42E]' : ''} />
+            <Heart size={22} className={liked ? 'fill-gold-500 text-gold-500' : ''} />
           </span>
           <span className="text-2xs font-bold drop-shadow">
             {(performer.followerCount / 10).toFixed(0)}
@@ -97,8 +97,12 @@ export function ClipCard({
         </button>
       </div>
 
-      {/* 하단 정보 */}
-      <div className="absolute inset-x-0 bottom-0 px-4 pb-4 text-white">
+      {/* 하단 정보 — 탭바(약 70px)가 이 영역 위에 겹쳐 뜨므로, 핵심 유입 배너가
+          가리지 않도록 탭바 높이 + 안전영역만큼 아래 여백을 둡니다. */}
+      <div
+        className="absolute inset-x-0 bottom-0 px-4 text-white"
+        style={{ paddingBottom: 'calc(var(--safe-bottom) + 84px)' }}
+      >
         <h2 className="text-lg font-extrabold drop-shadow">{performer.teamName}</h2>
         <p className="mt-0.5 flex items-center gap-1 text-[13px] font-semibold text-white/95 drop-shadow">
           <Clapperboard size={13} className="shrink-0" />
@@ -113,7 +117,7 @@ export function ClipCard({
               key={s}
               className="rounded-full bg-white/15 px-2 py-0.5 text-2xs font-semibold backdrop-blur-sm"
             >
-              🎵 {s}
+              {s}
             </span>
           ))}
         </div>
@@ -122,14 +126,14 @@ export function ClipCard({
         {upcomingShow && (
           <button
             onClick={() => onOpenShow(upcomingShow.id)}
-            className="bg-gold-500 mt-3 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left"
+            className="bg-gold-500 mt-3 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left text-gold-ink"
             style={{ boxShadow: '0 10px 28px rgba(255,196,46,.4)' }}
           >
             <span className="min-w-0">
               <span className="block text-[13px] font-extrabold leading-tight">
                 이번 주 이 팀 공연 있어요 →
               </span>
-              <span className="tnum mt-0.5 block text-2xs font-semibold text-white/90">
+              <span className="tnum mt-0.5 block text-2xs font-semibold text-gold-ink/75">
                 {humanDateTime(upcomingShow.startAt, nowIso)} · {upcomingShow.title}
               </span>
             </span>

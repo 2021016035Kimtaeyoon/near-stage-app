@@ -96,7 +96,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
           >
             <Bell size={18} />
             {unread > 0 && (
-              <span className="tnum absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-[#FFC42E] px-1 text-[9px] font-bold text-white">
+              <span className="tnum absolute right-1 top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-gold-500 px-1 text-[9px] font-bold text-gold-ink">
                 {unread}
               </span>
             )}
@@ -128,7 +128,7 @@ export function DesktopShell({ children }: { children: ReactNode }) {
               className={cn(
                 'flex items-center gap-1.5 border-b-2 px-3 py-2.5 text-[13px] font-bold transition-colors',
                 active
-                  ? 'border-[#FFC42E] text-ink'
+                  ? 'border-gold-600 text-ink'
                   : 'border-transparent text-ink-3 hover:text-ink-2',
               )}
             >

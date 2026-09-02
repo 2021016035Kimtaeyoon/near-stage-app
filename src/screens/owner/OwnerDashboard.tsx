@@ -66,7 +66,7 @@ export function OwnerDashboard() {
               <span className="block text-[13px] font-extrabold">
                 대기 중인 지원자 {pending.length}명
               </span>
-              <span className="mt-0.5 block text-2xs text-white/85">
+              <span className="mt-0.5 block text-2xs text-gold-ink/75">
                 지금 확인하고 매칭을 완료해보세요
               </span>
             </span>

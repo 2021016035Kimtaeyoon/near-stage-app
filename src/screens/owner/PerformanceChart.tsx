@@ -48,7 +48,7 @@ export function PerformanceChart({ stats }: { stats: WeeklyVisitStat[] }) {
   return (
     <div className="card p-4">
       <div className="mb-1 flex items-center gap-1.5">
-        <TrendingUp size={15} className="text-[#FFC42E]" />
+        <TrendingUp size={15} className="text-gold-text" />
         <h3 className="text-[15px] font-bold">주간 방문객 성과 리포트</h3>
       </div>
       <p className="mb-3 text-2xs text-ink-3">최근 8주 · 공연이 있던 주 vs 없던 주</p>
@@ -94,7 +94,7 @@ export function PerformanceChart({ stats }: { stats: WeeklyVisitStat[] }) {
       <div className="mt-3 rounded-xl bg-surface-2 p-3">
         <p className="text-[13px] font-semibold leading-relaxed">
           공연이 있던 주 평균 방문객이 없던 주보다{' '}
-          <span className="text-[#FFC42E]">{pct > 0 ? `${pct}%` : `${Math.abs(pct)}%`}</span>{' '}
+          <span className="text-gold-text">{pct > 0 ? `${pct}%` : `${Math.abs(pct)}%`}</span>{' '}
           {pct >= 0 ? '높습니다' : '낮습니다'}.
         </p>
       </div>

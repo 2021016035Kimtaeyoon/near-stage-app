@@ -35,7 +35,7 @@ export function ShowCard({
     <article
       className={cn(
         'card card-hover relative flex gap-3 p-3 text-left',
-        highlighted && 'border-[#FFC42E]/70',
+        highlighted && 'border-gold-600/70',
       )}
       style={
         highlighted
@@ -97,7 +97,7 @@ export function ShowCard({
         >
           <Heart
             size={16}
-            className={liked ? 'fill-[#FFC42E] text-[#FFC42E]' : ''}
+            className={liked ? 'fill-gold-text text-gold-text' : ''}
             strokeWidth={liked ? 0 : 2}
           />
         </button>

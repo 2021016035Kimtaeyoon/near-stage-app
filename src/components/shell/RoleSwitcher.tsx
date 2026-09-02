@@ -91,7 +91,7 @@ export function RoleSwitcherPanel() {
             className={cn(
               'w-full rounded-xl border px-3.5 py-3 text-left transition-colors',
               r === role
-                ? 'border-transparent bg-gradient-to-br from-[#FFC42E] to-[#FFC42E] text-white'
+                ? 'border-transparent bg-gold-500 text-gold-ink'
                 : 'border-border bg-surface-2 text-ink hover:border-border-strong',
             )}
           >
@@ -99,7 +99,7 @@ export function RoleSwitcherPanel() {
             <div
               className={cn(
                 'mt-0.5 text-[11px] leading-snug',
-                r === role ? 'text-white/85' : 'text-ink-3',
+                r === role ? 'text-gold-ink/75' : 'text-ink-3',
               )}
             >
               {ROLE_DESCRIPTION[r]}

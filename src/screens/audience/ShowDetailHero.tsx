@@ -63,7 +63,7 @@ export function ShowDetailHero({
           >
             <Heart
               size={16}
-              className={liked ? 'fill-[#FFC42E] text-[#FFC42E]' : ''}
+              className={liked ? 'fill-gold-500 text-gold-500' : ''}
               strokeWidth={liked ? 0 : 2}
             />
           </IconButton>

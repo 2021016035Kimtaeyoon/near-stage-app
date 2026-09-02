@@ -125,7 +125,7 @@ export function PerformerPostsScreen() {
                           <div key={i} className="rounded-lg bg-surface-2 p-2.5">
                             <div className="flex items-center justify-between">
                               <span className="text-xs font-bold">{venue?.name ?? '공간'}</span>
-                              <span className="tnum text-xs font-bold text-[#FFC42E]">
+                              <span className="tnum text-xs font-bold text-gold-text">
                                 {won(prop.fee)}원
                               </span>
                             </div>
