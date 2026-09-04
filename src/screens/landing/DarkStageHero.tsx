@@ -4,14 +4,6 @@ import { useNavigate } from 'react-router-dom'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import {
-  buildFolds,
-  buildHemPools,
-  FOLD_COUNT,
-  FOLD_COUNT_MOBILE,
-  type Fold,
-  type HemPool,
-} from './curtainFolds'
-import {
   ACT1_TITLE_FADEOUT_END,
   ACT1_TITLE_FADEOUT_START,
   ACT2_END,
@@ -49,6 +41,8 @@ import {
 const FALL_EASE = cubicBezier(0.55, 0.06, 0.68, 0.19)
 const CURTAIN_EASE = cubicBezier(0.4, 0, 0.2, 1)
 const DEBUG_STORAGE_KEY = 'ns-hero-debug'
+/** 실제 벨벳 커튼 사진 — public/ 에서 그대로 서빙합니다 */
+const CURTAIN_IMAGE = '/curtain-velvet.jpg'
 
 interface Panel {
   num: string
@@ -251,10 +245,6 @@ export function DarkStageHero() {
   const logoWidthClass = isMobile ? 'w-[220px]' : shortViewport ? 'w-[260px]' : 'w-[330px]'
   const gapClass = shortViewport ? 'gap-6' : 'gap-10'
   const ctaGapClass = shortViewport ? 'mt-4' : 'mt-7'
-  // 주름 20개(모바일 12개). 시드가 고정이라 새로고침해도 주름 모양이 그대로입니다
-  const foldCount = isMobile ? FOLD_COUNT_MOBILE : FOLD_COUNT
-  const folds = buildFolds(foldCount)
-  const hemPools = buildHemPools(foldCount)
 
   return (
     <section ref={ref} className={`relative ${heroHeightClass} bg-[#0A0A0D]`}>
@@ -401,14 +391,14 @@ export function DarkStageHero() {
             className="absolute left-0 top-0 h-full w-[52%] origin-left"
             style={{ scaleX: panelScaleX, x: leftPanelX, willChange: 'transform' }}
           >
-            <CurtainPanelSurface folds={folds} hemPools={hemPools} side="left" showVignette={!isMobile} />
+            <CurtainPanelSurface side="left" showVignette={!isMobile} />
           </motion.div>
           <motion.div
             aria-hidden
             className="absolute right-0 top-0 h-full w-[52%] origin-right"
             style={{ scaleX: panelScaleX, x: rightPanelX, willChange: 'transform' }}
           >
-            <CurtainPanelSurface folds={folds} hemPools={hemPools} side="right" showVignette={!isMobile} />
+            <CurtainPanelSurface side="right" showVignette={!isMobile} />
           </motion.div>
           {/* 중앙 이음새 — 닫혔을 때 두 폭이 맞물린 것처럼 보이게, 열리며 함께 사라짐 */}
           <motion.div
@@ -416,38 +406,38 @@ export function DarkStageHero() {
             className="absolute inset-y-0 left-1/2 w-[10px] -translate-x-1/2"
             style={{
               opacity: seamOpacity,
-              background: 'linear-gradient(90deg, transparent, rgba(0,0,0,.55), transparent)',
+              background: 'linear-gradient(90deg, transparent, rgba(0,0,0,.5), transparent)',
+              maskImage: 'linear-gradient(180deg, #000 0%, #000 62%, transparent 82%)',
+              WebkitMaskImage: 'linear-gradient(180deg, #000 0%, #000 62%, transparent 82%)',
             }}
           />
         </div>
 
-        {/* 밸런스 — 절대 px 스캘럽 (SVG pattern, 화면이 넓어지면 개수만 늘어남) */}
+        {/* 밸런스 — 커튼 사진 윗단을 스캘럽 마스크로 잘라 씁니다 (화면이 넓어지면 스캘럽 개수만 늘어남) */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-40" style={{ height: VALANCE_HEIGHT }}>
           <svg width="100%" height={VALANCE_HEIGHT} preserveAspectRatio="none" style={{ display: 'block' }}>
             <defs>
-              {/* 밸런스도 같은 천으로 보이도록 §2의 능선/골 그라데이션을 축소 적용 */}
-              <linearGradient id="valance-ridge" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#2A040A" />
-                <stop offset="52%" stopColor="#C4213A" />
-                <stop offset="100%" stopColor="#33050C" />
-              </linearGradient>
-              <linearGradient id="valance-valley" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#1E0308" />
-                <stop offset="55%" stopColor="#6E0C18" />
-                <stop offset="100%" stopColor="#24040A" />
-              </linearGradient>
-              <pattern id="ns-valance-fold" width="14" height={VALANCE_HEIGHT} patternUnits="userSpaceOnUse">
-                <rect x="0" width="7" height={VALANCE_HEIGHT} fill="url(#valance-ridge)" />
-                <rect x="7" width="7" height={VALANCE_HEIGHT} fill="url(#valance-valley)" />
-              </pattern>
+              {/* 스캘럽 실루엣을 마스크로 쓰고, 그 안을 같은 커튼 사진의 윗단으로 채웁니다 */}
               <pattern id="ns-scallop" width={SCALLOP_TILE} height={VALANCE_HEIGHT} patternUnits="userSpaceOnUse">
                 <path
                   d={`M0,0 H${SCALLOP_TILE} V${VALANCE_HEIGHT - SCALLOP_DEPTH} Q${SCALLOP_TILE / 2},${VALANCE_HEIGHT} 0,${VALANCE_HEIGHT - SCALLOP_DEPTH} Z`}
-                  fill="url(#ns-valance-fold)"
+                  fill="#fff"
                 />
               </pattern>
+              <mask id="ns-valance-mask">
+                <rect width="100%" height="100%" fill="url(#ns-scallop)" />
+              </mask>
+              {/* 밸런스는 조명보다 위라 커튼 본체보다 한 단계 어둡습니다 */}
+              <linearGradient id="ns-valance-shade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#000" stopOpacity="0.62" />
+                <stop offset="55%" stopColor="#000" stopOpacity="0.2" />
+                <stop offset="100%" stopColor="#000" stopOpacity="0.55" />
+              </linearGradient>
             </defs>
-            <rect width="100%" height="100%" fill="url(#ns-scallop)" />
+            <g mask="url(#ns-valance-mask)">
+              <image href={CURTAIN_IMAGE} width="100%" height="100%" preserveAspectRatio="xMidYMin slice" />
+              <rect width="100%" height="100%" fill="url(#ns-valance-shade)" />
+            </g>
           </svg>
           <div className="absolute inset-x-0 top-0 h-[3px] bg-[#C9A227]" style={{ boxShadow: '0 6px 18px rgba(0,0,0,.5)' }} />
           <motion.div
@@ -589,124 +579,41 @@ function SpotLight({
  * 그 위에 4겹 오버레이(세로 falloff·측면 조명·안쪽 선단 하이라이트·비네트)를 얹는다.
  * 이 컴포넌트 전체가 부모 motion.div의 scaleX/x와 함께 통째로 움직인다.
  */
-/** hex를 밝기 계수로 곱해 같은 색조의 밝고 어두운 변형을 만듭니다 */
-function shade(hex: string, factor: number): string {
-  const n = parseInt(hex.slice(1), 16)
-  const c = (v: number) => Math.max(0, Math.min(255, Math.round(v * factor)))
-  return `rgb(${c((n >> 16) & 255)}, ${c((n >> 8) & 255)}, ${c(n & 255)})`
-}
-
-/** 벨벳 기본 색 — 능선(빛 받는 곳) / 중간 / 골(접힌 곳) */
-const VELVET_CREST = '#D4333C'
-const VELVET_MID = '#93151F'
-const VELVET_CREASE = '#25040A'
-
+/**
+ * 커튼 한 폭. 실제 벨벳 커튼 사진(public/curtain-velvet.jpg)을 그대로 씁니다.
+ *
+ * 좌우 두 폭이 합쳐져 사진 한 장이 되도록, 각 폭은 사진의 왼쪽/오른쪽 절반만 보여줍니다
+ * (background-size: 200% → 폭 하나가 사진의 절반). 커튼이 열릴 때 부모의 scaleX가
+ * 줄어들면 배경도 같이 눌리는데, 이게 실제로 천이 주름지며 모이는 것처럼 보입니다.
+ */
 function CurtainPanelSurface({
-  folds,
   side,
   showVignette,
-  hemPools,
 }: {
-  folds: Fold[]
   side: 'left' | 'right'
   showVignette: boolean
-  hemPools: HemPool[]
 }) {
-  // 무대 조명은 안쪽(중앙 이음새 쪽)에서 옵니다 — 왼쪽 폭은 오른쪽 끝이, 오른쪽 폭은 왼쪽 끝이 밝음
-  const litAt = side === 'left' ? 100 : 0
-  const grainId = `curtain-grain-${side}`
-
   return (
-    <div className="relative h-full w-full">
-      <svg viewBox="0 0 100 200" preserveAspectRatio="none" className="h-full w-full" style={{ display: 'block' }}>
-        <defs>
-          {folds.map((f, i) => {
-            // 조명에서 멀수록 전체적으로 어둡게 — 한 폭 안에서도 명암이 흐르게 합니다
-            const dist = Math.abs((f.x0 + f.x1) / 2 - litAt) / 100
-            const lit = Math.min(1.05, (1 - dist * 0.72) * f.sheen)
-            // 주름이 깊을수록 골을 더 어둡게
-            const creaseF = lit * (1 - f.depth * 0.45)
-            const midF = lit * 0.82
-            const crestF = lit
-            const c = f.crest
-            return (
-              <linearGradient
-                key={i}
-                id={`fold-${side}-${i}`}
-                gradientUnits="userSpaceOnUse"
-                x1={f.x0}
-                y1="0"
-                x2={f.x1}
-                y2="0"
-              >
-                <stop offset="0%" stopColor={shade(VELVET_CREASE, creaseF)} />
-                <stop offset={`${(c * 45).toFixed(1)}%`} stopColor={shade(VELVET_MID, midF)} />
-                <stop offset={`${(c * 100).toFixed(1)}%`} stopColor={shade(VELVET_CREST, crestF)} />
-                <stop offset={`${(c * 100 + (100 - c * 100) * 0.5).toFixed(1)}%`} stopColor={shade(VELVET_MID, midF)} />
-                <stop offset="100%" stopColor={shade(VELVET_CREASE, creaseF)} />
-              </linearGradient>
-            )
-          })}
-          {/* 위·아래 명암 — 배튼 그늘과 바닥 그늘 */}
-          <linearGradient id={`curtain-vert-${side}`} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="rgba(0,0,0,.72)" />
-            <stop offset="9%" stopColor="rgba(0,0,0,.22)" />
-            <stop offset="42%" stopColor="rgba(0,0,0,0)" />
-            <stop offset="78%" stopColor="rgba(0,0,0,.08)" />
-            <stop offset="94%" stopColor="rgba(0,0,0,.3)" />
-            <stop offset="100%" stopColor="rgba(0,0,0,.52)" />
-          </linearGradient>
-          {/* 밑단 뭉침용 — 가장자리가 풀리는 음영. 단색 타원으로 칠하면 동그라미가 그대로 보입니다 */}
-          <radialGradient id={`hem-${side}`} cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(10,1,4,1)" />
-            <stop offset="55%" stopColor="rgba(10,1,4,.55)" />
-            <stop offset="100%" stopColor="rgba(10,1,4,0)" />
-          </radialGradient>
-          {/* 벨벳 결 — 가늘게 늘어난 노이즈가 천의 보풀처럼 보이게 */}
-          <filter id={grainId}>
-            <feTurbulence type="fractalNoise" baseFrequency="0.7 0.04" numOctaves="3" seed="11" stitchTiles="stitch" />
-            <feColorMatrix type="saturate" values="0" />
-          </filter>
-        </defs>
+    <div className="relative h-full w-full overflow-hidden">
+      <div
+        className="absolute inset-0"
+        style={{
+          backgroundImage: `url(${CURTAIN_IMAGE})`,
+          backgroundSize: '200% 100%',
+          // 왼쪽 폭은 사진 왼쪽 절반, 오른쪽 폭은 오른쪽 절반
+          backgroundPosition: side === 'left' ? 'left center' : 'right center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      />
 
-        {/* 바탕 — 주름 사이 미세한 틈으로 배경이 비치지 않도록 */}
-        <rect width="100" height="200" fill={shade(VELVET_CREASE, 0.9)} />
-
-        {/* 주름 — 각 주름을 가로지르는 그라데이션이 원통형 입체감을 만듭니다 */}
-        {folds.map((f, i) => (
-          <path key={i} d={f.d} fill={`url(#fold-${side}-${i})`} />
-        ))}
-
-        {/* 밑단에 뭉친 자락 — 바닥에 닿아 접히는 덩어리 */}
-        <g>
-          {hemPools.map((p, i) => (
-            <ellipse
-              key={i}
-              cx={p.cx}
-              cy={p.cy}
-              rx={p.rx * 1.7}
-              ry={p.ry * 1.8}
-              fill={`url(#hem-${side})`}
-              opacity={p.dark}
-            />
-          ))}
-        </g>
-
-        {/* 세로 명암 */}
-        <rect width="100" height="200" fill={`url(#curtain-vert-${side})`} />
-
-        {/* 결 노이즈 */}
-        <rect width="100" height="200" filter={`url(#${grainId})`} opacity="0.085" style={{ mixBlendMode: 'overlay' }} />
-      </svg>
-
-      {/* 안쪽에서 들어오는 무대 조명 — 넓고 부드럽게 감쌉니다 */}
+      {/* 무대 조명 — 안쪽(중앙 이음새 쪽)에서 천을 비춥니다 */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
           background:
             side === 'left'
-              ? 'radial-gradient(120% 85% at 100% 38%, rgba(255,150,120,.20) 0%, rgba(255,120,90,.06) 38%, transparent 72%)'
-              : 'radial-gradient(120% 85% at 0% 38%, rgba(255,150,120,.20) 0%, rgba(255,120,90,.06) 38%, transparent 72%)',
+              ? 'radial-gradient(115% 80% at 100% 34%, rgba(255,164,130,.20) 0%, rgba(255,120,90,.05) 40%, transparent 74%)'
+              : 'radial-gradient(115% 80% at 0% 34%, rgba(255,164,130,.20) 0%, rgba(255,120,90,.05) 40%, transparent 74%)',
         }}
       />
       {/* 안쪽 선단 — 빛이 천 앞단을 스치는 얇은 띠 */}
@@ -714,8 +621,8 @@ function CurtainPanelSurface({
         className="pointer-events-none absolute top-0 h-full w-[3px]"
         style={
           side === 'left'
-            ? { right: 0, background: 'linear-gradient(180deg, transparent 4%, rgba(255,214,178,.55) 46%, transparent 96%)' }
-            : { left: 0, background: 'linear-gradient(180deg, transparent 4%, rgba(255,214,178,.55) 46%, transparent 96%)' }
+            ? { right: 0, background: 'linear-gradient(180deg, transparent 4%, rgba(255,214,178,.4) 38%, rgba(255,214,178,.1) 64%, transparent 78%)' }
+            : { left: 0, background: 'linear-gradient(180deg, transparent 4%, rgba(255,214,178,.4) 38%, rgba(255,214,178,.1) 64%, transparent 78%)' }
         }
       />
       {/* 바깥쪽 끝 — 무대 밖으로 사라지듯 어둡게 */}
@@ -724,14 +631,22 @@ function CurtainPanelSurface({
         style={{
           background:
             side === 'left'
-              ? 'linear-gradient(90deg, rgba(0,0,0,.58) 0%, rgba(0,0,0,.14) 30%, transparent 62%)'
-              : 'linear-gradient(270deg, rgba(0,0,0,.58) 0%, rgba(0,0,0,.14) 30%, transparent 62%)',
+              ? 'linear-gradient(90deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.16) 28%, transparent 60%)'
+              : 'linear-gradient(270deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.16) 28%, transparent 60%)',
+        }}
+      />
+      {/* 위: 배튼 그늘 / 아래: 바닥 그늘 — 밸런스·무대 바닥과 이어지게 */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            'linear-gradient(180deg, rgba(0,0,0,.7) 0%, rgba(0,0,0,.2) 8%, transparent 38%, transparent 80%, rgba(0,0,0,.4) 96%, rgba(0,0,0,.6) 100%)',
         }}
       />
       {showVignette && (
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 70% 95% at 50% 45%, transparent 52%, rgba(0,0,0,.3) 100%)' }}
+          style={{ background: 'radial-gradient(ellipse 70% 95% at 50% 45%, transparent 52%, rgba(0,0,0,.28) 100%)' }}
         />
       )}
     </div>
