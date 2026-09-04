@@ -1,10 +1,12 @@
-import { Search } from 'lucide-react'
+import { BellPlus, Check, Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { ShowCard } from '@/components/cards/ShowCard'
 import { MapView } from '@/components/map/MapView'
 import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { SERVICE_NAME } from '@/config/brand'
+import { cn } from '@/lib/cn'
+import { sameSavedFilter, toSavedFilter } from '@/lib/savedSearch'
 import { computeTrendingKeywords } from '@/lib/trending'
 import { DEFAULT_FILTER, filterShows, withMeta } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
@@ -31,6 +33,9 @@ export function DesktopAudienceHome() {
   const filter = useAppStore((s) => s.audienceFilter)
   const setFilter = useAppStore((s) => s.setAudienceFilter)
   const highlightShowId = useAppStore((s) => s.demo.highlightShowId)
+  const savedSearches = useAppStore((s) => s.savedSearches)
+  const saveCurrentSearch = useAppStore((s) => s.saveCurrentSearch)
+  const applySavedSearch = useAppStore((s) => s.applySavedSearch)
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detailShowId, setDetailShowId] = useState<string | null>(null)
@@ -56,6 +61,8 @@ export function DesktopAudienceHome() {
   const trending = useMemo(() => computeTrendingKeywords(all), [all])
 
   const ownCount = results.filter((r) => r.show.source === 'own').length
+  // 지금 필터가 저장해 둔 조건과 같으면 저장 버튼을 "저장됨"으로 잠급니다
+  const savedMatch = savedSearches.find((s) => sameSavedFilter(s.filter, toSavedFilter(filter)))
   const kopisCount = results.length - ownCount
 
   return (
@@ -109,6 +116,31 @@ export function DesktopAudienceHome() {
             {SORT_OPTIONS.map((o) => (
               <Chip key={o.value} active={filter.sort === o.value} onClick={() => setFilter({ sort: o.value })}>
                 {o.label}
+              </Chip>
+            ))}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5 border-t border-border pt-3">
+            <button
+              onClick={() => saveCurrentSearch()}
+              disabled={!!savedMatch}
+              className={cn(
+                'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition-colors',
+                savedMatch
+                  ? 'border-border bg-surface-2 text-ink-3'
+                  : 'border-border-strong bg-surface text-ink active:bg-surface-2',
+              )}
+            >
+              {savedMatch ? <Check size={13} /> : <BellPlus size={13} />}
+              {savedMatch ? '관심 조건 저장됨' : '이 조건 저장'}
+            </button>
+            {savedSearches.map((s) => (
+              <Chip
+                key={s.id}
+                active={savedMatch?.id === s.id}
+                onClick={() => applySavedSearch(s.id)}
+              >
+                {s.name}
               </Chip>
             ))}
           </div>

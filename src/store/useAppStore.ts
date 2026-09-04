@@ -14,6 +14,7 @@ import { createChatActions } from './actions/chat'
 import { createCommonActions } from './actions/common'
 import { createOwnerActions } from './actions/owner'
 import { createPerformerActions } from './actions/performer'
+import { createSavedSearchActions } from './actions/savedSearch'
 import type { AppStore, DemoState, GetState, SetState } from './types'
 
 const INITIAL_DEMO: DemoState = {
@@ -46,6 +47,7 @@ export const useAppStore = create<AppStore>()(
         ...createOwnerActions(s, g),
         ...createPerformerActions(s, g),
         ...createChatActions(s, g),
+        ...createSavedSearchActions(s, g),
 
         setDemo: (patch: Partial<DemoState>) => set((st) => ({ demo: { ...st.demo, ...patch } })),
 

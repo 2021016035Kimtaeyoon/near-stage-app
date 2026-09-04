@@ -11,6 +11,7 @@ import { EventsPanel } from './EventsPanel'
 import { MembershipCard } from './MembershipCard'
 import { MyFollowedPerformers, MyLikedShows } from './MyLikesFollows'
 import { MyReservations } from './MyReservations'
+import { SavedSearchPanel } from './SavedSearchPanel'
 
 type Tab = 'reservation' | 'liked' | 'follow' | 'noti' | 'events'
 
@@ -37,6 +38,8 @@ export function MyPage() {
         </div>
 
         <MembershipCard />
+
+        <SavedSearchPanel />
 
         <div className="card mb-4 flex items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-2.5">

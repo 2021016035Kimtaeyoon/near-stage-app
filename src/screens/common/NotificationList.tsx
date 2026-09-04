@@ -2,6 +2,7 @@ import {
   Bell,
   Calendar,
   CheckCheck,
+  BellPlus,
   MessageSquareText,
   Megaphone,
   Star,
@@ -26,6 +27,7 @@ const TYPE_ICON: Record<NotificationType, LucideIcon> = {
   정산: Wallet,
   리뷰: Star,
   제안: MessageSquareText,
+  관심: BellPlus,
   시스템: Bell,
 }
 

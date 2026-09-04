@@ -11,6 +11,7 @@ import type {
   Review,
   ReverseBid,
   Role,
+  SavedSearch,
   TimeSlot,
   Venue,
 } from '@/types'
@@ -74,6 +75,16 @@ export interface AppActions {
   cancelReservation: (reservationId: string) => boolean
   checkInReservation: (reservationId: string) => boolean
   addReview: (input: Omit<Review, 'id' | 'createdAt'>) => void
+
+  /* 관심 조건 */
+  /** 지금 화면 필터를 관심 조건으로 저장. 같은 조건이 이미 있으면 그것을 그대로 돌려줍니다 */
+  saveCurrentSearch: (name?: string) => SavedSearch
+  removeSavedSearch: (id: string) => void
+  toggleSavedSearchAlert: (id: string) => void
+  renameSavedSearch: (id: string, name: string) => void
+  applySavedSearch: (id: string) => void
+  /** 새 공연이 열렸을 때 관심 조건과 대조해 관객 알림을 발송합니다 */
+  notifySavedSearchMatches: (showId: string) => void
 
   /* 공간주 */
   updateVenue: (venueId: string, patch: Partial<Venue>) => void

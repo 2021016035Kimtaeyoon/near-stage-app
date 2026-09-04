@@ -318,6 +318,7 @@ export type NotificationType =
   | '정산'
   | '리뷰'
   | '제안'
+  | '관심'
   | '시스템'
 
 export interface AppNotification {
@@ -392,6 +393,26 @@ export interface AudienceFilter {
   ownOnly: boolean
   query: string
   sort: SortKey
+}
+
+/**
+ * 관심 조건 — 관객이 저장해 둔 필터 스냅샷.
+ *
+ * `query`(검색어)와 `sort`(정렬)는 담지 않습니다. 둘 다 "무엇을 보고 싶은지"가 아니라
+ * "지금 화면을 어떻게 훑고 있는지"라서, 새 공연을 대조하는 조건으로는 의미가 없습니다.
+ */
+export type SavedFilter = Pick<AudienceFilter, 'when' | 'distance' | 'genres' | 'price' | 'ownOnly'>
+
+export interface SavedSearch {
+  id: string
+  /** 사용자가 붙인 이름. 비워두면 조건에서 자동으로 만들어 넣습니다 */
+  name: string
+  filter: SavedFilter
+  /** 조건에 맞는 새 공연이 열릴 때 알림을 받을지 */
+  alertOn: boolean
+  createdAt: string
+  /** 이미 알린 공연 id — 같은 공연으로 두 번 알리지 않기 위해 기록합니다 */
+  notifiedShowIds: string[]
 }
 
 /** 공연자 ↔ 공간 조건 대조 결과 */

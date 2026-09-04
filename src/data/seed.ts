@@ -15,6 +15,7 @@ import type {
   Reservation,
   ReverseBid,
   Review,
+  SavedSearch,
   Settlement,
   Show,
   Venue,
@@ -30,6 +31,7 @@ import {
   SEED_RESERVATIONS,
 } from './seed/reservations'
 import { SEED_REVIEWS } from './seed/reviews'
+import { SEED_SAVED_SEARCHES } from './seed/savedSearches'
 import {
   SEED_CHAT_MESSAGES,
   SEED_CHAT_THREADS,
@@ -52,6 +54,7 @@ export interface SeedData {
   chatMessages: ChatMessage[]
   settlements: Settlement[]
   weeklyStats: WeeklyVisitStat[]
+  savedSearches: SavedSearch[]
   likedShowIds: string[]
   followedPerformerIds: string[]
   recentlyViewedShowIds: string[]
@@ -72,6 +75,7 @@ export function createSeedData(): SeedData {
     chatMessages: SEED_CHAT_MESSAGES,
     settlements: SEED_SETTLEMENTS,
     weeklyStats: SEED_WEEKLY_STATS,
+    savedSearches: SEED_SAVED_SEARCHES,
     likedShowIds: SEED_LIKED_SHOW_IDS,
     followedPerformerIds: SEED_FOLLOWED_PERFORMER_IDS,
     recentlyViewedShowIds: [],
@@ -91,6 +95,7 @@ export {
   SEED_REVERSE_BIDS,
   SEED_REVIEWS,
   SEED_NOTIFICATIONS,
+  SEED_SAVED_SEARCHES,
   SEED_SETTLEMENTS,
   SEED_WEEKLY_STATS,
 }
