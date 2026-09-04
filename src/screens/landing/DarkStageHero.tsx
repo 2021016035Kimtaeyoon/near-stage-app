@@ -42,7 +42,7 @@ const FALL_EASE = cubicBezier(0.55, 0.06, 0.68, 0.19)
 const CURTAIN_EASE = cubicBezier(0.4, 0, 0.2, 1)
 const DEBUG_STORAGE_KEY = 'ns-hero-debug'
 /** 실제 벨벳 커튼 사진 — public/ 에서 그대로 서빙합니다 */
-const CURTAIN_IMAGE = '/curtain-velvet.jpg'
+const CURTAIN_IMAGE = `${import.meta.env.BASE_URL}curtain-velvet.jpg`
 
 interface Panel {
   num: string
