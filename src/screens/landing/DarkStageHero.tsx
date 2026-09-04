@@ -1,9 +1,16 @@
 import { cubicBezier, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from 'framer-motion'
-import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { useMediaQuery } from '@/lib/useMediaQuery'
-import { buildFolds, FOLD_TYPES, FOLD_WIDTHS, type Fold } from './curtainFolds'
+import {
+  buildFolds,
+  buildHemPools,
+  FOLD_COUNT,
+  FOLD_COUNT_MOBILE,
+  type Fold,
+  type HemPool,
+} from './curtainFolds'
 import {
   ACT1_TITLE_FADEOUT_END,
   ACT1_TITLE_FADEOUT_START,
@@ -244,11 +251,10 @@ export function DarkStageHero() {
   const logoWidthClass = isMobile ? 'w-[220px]' : shortViewport ? 'w-[260px]' : 'w-[330px]'
   const gapClass = shortViewport ? 'gap-6' : 'gap-10'
   const ctaGapClass = shortViewport ? 'mt-4' : 'mt-7'
-  // 주름 16개(모바일 10개) — 폭 배열을 잘라서 넘기면 buildFolds가 다시 100 단위로 정규화한다
-  const folds = buildFolds(
-    isMobile ? FOLD_WIDTHS.slice(0, 10) : FOLD_WIDTHS,
-    isMobile ? FOLD_TYPES.slice(0, 10) : FOLD_TYPES,
-  )
+  // 주름 20개(모바일 12개). 시드가 고정이라 새로고침해도 주름 모양이 그대로입니다
+  const foldCount = isMobile ? FOLD_COUNT_MOBILE : FOLD_COUNT
+  const folds = buildFolds(foldCount)
+  const hemPools = buildHemPools(foldCount)
 
   return (
     <section ref={ref} className={`relative ${heroHeightClass} bg-[#0A0A0D]`}>
@@ -395,14 +401,14 @@ export function DarkStageHero() {
             className="absolute left-0 top-0 h-full w-[52%] origin-left"
             style={{ scaleX: panelScaleX, x: leftPanelX, willChange: 'transform' }}
           >
-            <CurtainPanelSurface folds={folds} side="left" showVignette={!isMobile} />
+            <CurtainPanelSurface folds={folds} hemPools={hemPools} side="left" showVignette={!isMobile} />
           </motion.div>
           <motion.div
             aria-hidden
             className="absolute right-0 top-0 h-full w-[52%] origin-right"
             style={{ scaleX: panelScaleX, x: rightPanelX, willChange: 'transform' }}
           >
-            <CurtainPanelSurface folds={folds} side="right" showVignette={!isMobile} />
+            <CurtainPanelSurface folds={folds} hemPools={hemPools} side="right" showVignette={!isMobile} />
           </motion.div>
           {/* 중앙 이음새 — 닫혔을 때 두 폭이 맞물린 것처럼 보이게, 열리며 함께 사라짐 */}
           <motion.div
@@ -583,67 +589,149 @@ function SpotLight({
  * 그 위에 4겹 오버레이(세로 falloff·측면 조명·안쪽 선단 하이라이트·비네트)를 얹는다.
  * 이 컴포넌트 전체가 부모 motion.div의 scaleX/x와 함께 통째로 움직인다.
  */
+/** hex를 밝기 계수로 곱해 같은 색조의 밝고 어두운 변형을 만듭니다 */
+function shade(hex: string, factor: number): string {
+  const n = parseInt(hex.slice(1), 16)
+  const c = (v: number) => Math.max(0, Math.min(255, Math.round(v * factor)))
+  return `rgb(${c((n >> 16) & 255)}, ${c((n >> 8) & 255)}, ${c(n & 255)})`
+}
+
+/** 벨벳 기본 색 — 능선(빛 받는 곳) / 중간 / 골(접힌 곳) */
+const VELVET_CREST = '#D4333C'
+const VELVET_MID = '#93151F'
+const VELVET_CREASE = '#25040A'
+
 function CurtainPanelSurface({
   folds,
   side,
   showVignette,
+  hemPools,
 }: {
   folds: Fold[]
   side: 'left' | 'right'
   showVignette: boolean
+  hemPools: HemPool[]
 }) {
-  const ridgeId = `fold-ridge-${side}`
-  const valleyId = `fold-valley-${side}`
-  const sideLightStyle: CSSProperties = {
-    background:
-      side === 'left'
-        ? 'linear-gradient(90deg, rgba(0,0,0,.42) 0%, transparent 60%, rgba(255,190,160,.07) 100%)'
-        : 'linear-gradient(270deg, rgba(0,0,0,.42) 0%, transparent 60%, rgba(255,190,160,.07) 100%)',
-  }
-  const leadingEdgeStyle: CSSProperties =
-    side === 'left'
-      ? { right: 0, background: 'linear-gradient(180deg, transparent 5%, rgba(255,225,190,.45) 50%, transparent 95%)' }
-      : { left: 0, background: 'linear-gradient(180deg, transparent 5%, rgba(255,225,190,.45) 50%, transparent 95%)' }
+  // 무대 조명은 안쪽(중앙 이음새 쪽)에서 옵니다 — 왼쪽 폭은 오른쪽 끝이, 오른쪽 폭은 왼쪽 끝이 밝음
+  const litAt = side === 'left' ? 100 : 0
+  const grainId = `curtain-grain-${side}`
 
   return (
     <div className="relative h-full w-full">
       <svg viewBox="0 0 100 200" preserveAspectRatio="none" className="h-full w-full" style={{ display: 'block' }}>
         <defs>
-          <linearGradient id={ridgeId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#2A040A" />
-            <stop offset="14%" stopColor="#8E1424" />
-            <stop offset="52%" stopColor="#C4213A" />
-            <stop offset="78%" stopColor="#8E1424" />
-            <stop offset="100%" stopColor="#33050C" />
+          {folds.map((f, i) => {
+            // 조명에서 멀수록 전체적으로 어둡게 — 한 폭 안에서도 명암이 흐르게 합니다
+            const dist = Math.abs((f.x0 + f.x1) / 2 - litAt) / 100
+            const lit = Math.min(1.05, (1 - dist * 0.72) * f.sheen)
+            // 주름이 깊을수록 골을 더 어둡게
+            const creaseF = lit * (1 - f.depth * 0.45)
+            const midF = lit * 0.82
+            const crestF = lit
+            const c = f.crest
+            return (
+              <linearGradient
+                key={i}
+                id={`fold-${side}-${i}`}
+                gradientUnits="userSpaceOnUse"
+                x1={f.x0}
+                y1="0"
+                x2={f.x1}
+                y2="0"
+              >
+                <stop offset="0%" stopColor={shade(VELVET_CREASE, creaseF)} />
+                <stop offset={`${(c * 45).toFixed(1)}%`} stopColor={shade(VELVET_MID, midF)} />
+                <stop offset={`${(c * 100).toFixed(1)}%`} stopColor={shade(VELVET_CREST, crestF)} />
+                <stop offset={`${(c * 100 + (100 - c * 100) * 0.5).toFixed(1)}%`} stopColor={shade(VELVET_MID, midF)} />
+                <stop offset="100%" stopColor={shade(VELVET_CREASE, creaseF)} />
+              </linearGradient>
+            )
+          })}
+          {/* 위·아래 명암 — 배튼 그늘과 바닥 그늘 */}
+          <linearGradient id={`curtain-vert-${side}`} x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="rgba(0,0,0,.72)" />
+            <stop offset="9%" stopColor="rgba(0,0,0,.22)" />
+            <stop offset="42%" stopColor="rgba(0,0,0,0)" />
+            <stop offset="78%" stopColor="rgba(0,0,0,.08)" />
+            <stop offset="94%" stopColor="rgba(0,0,0,.3)" />
+            <stop offset="100%" stopColor="rgba(0,0,0,.52)" />
           </linearGradient>
-          <linearGradient id={valleyId} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#1E0308" />
-            <stop offset="16%" stopColor="#4A0810" />
-            <stop offset="55%" stopColor="#6E0C18" />
-            <stop offset="100%" stopColor="#24040A" />
-          </linearGradient>
+          {/* 밑단 뭉침용 — 가장자리가 풀리는 음영. 단색 타원으로 칠하면 동그라미가 그대로 보입니다 */}
+          <radialGradient id={`hem-${side}`} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="rgba(10,1,4,1)" />
+            <stop offset="55%" stopColor="rgba(10,1,4,.55)" />
+            <stop offset="100%" stopColor="rgba(10,1,4,0)" />
+          </radialGradient>
+          {/* 벨벳 결 — 가늘게 늘어난 노이즈가 천의 보풀처럼 보이게 */}
+          <filter id={grainId}>
+            <feTurbulence type="fractalNoise" baseFrequency="0.7 0.04" numOctaves="3" seed="11" stitchTiles="stitch" />
+            <feColorMatrix type="saturate" values="0" />
+          </filter>
         </defs>
+
+        {/* 바탕 — 주름 사이 미세한 틈으로 배경이 비치지 않도록 */}
+        <rect width="100" height="200" fill={shade(VELVET_CREASE, 0.9)} />
+
+        {/* 주름 — 각 주름을 가로지르는 그라데이션이 원통형 입체감을 만듭니다 */}
         {folds.map((f, i) => (
-          <path key={i} d={f.d} fill={`url(#${f.type === 'ridge' ? ridgeId : valleyId})`} />
+          <path key={i} d={f.d} fill={`url(#fold-${side}-${i})`} />
         ))}
+
+        {/* 밑단에 뭉친 자락 — 바닥에 닿아 접히는 덩어리 */}
+        <g>
+          {hemPools.map((p, i) => (
+            <ellipse
+              key={i}
+              cx={p.cx}
+              cy={p.cy}
+              rx={p.rx * 1.7}
+              ry={p.ry * 1.8}
+              fill={`url(#hem-${side})`}
+              opacity={p.dark}
+            />
+          ))}
+        </g>
+
+        {/* 세로 명암 */}
+        <rect width="100" height="200" fill={`url(#curtain-vert-${side})`} />
+
+        {/* 결 노이즈 */}
+        <rect width="100" height="200" filter={`url(#${grainId})`} opacity="0.085" style={{ mixBlendMode: 'overlay' }} />
       </svg>
 
-      {/* ① 세로 명암 falloff */}
+      {/* 안쪽에서 들어오는 무대 조명 — 넓고 부드럽게 감쌉니다 */}
       <div
         className="pointer-events-none absolute inset-0"
         style={{
-          background: 'linear-gradient(180deg, rgba(0,0,0,.55) 0%, transparent 20%, transparent 76%, rgba(0,0,0,.45) 100%)',
+          background:
+            side === 'left'
+              ? 'radial-gradient(120% 85% at 100% 38%, rgba(255,150,120,.20) 0%, rgba(255,120,90,.06) 38%, transparent 72%)'
+              : 'radial-gradient(120% 85% at 0% 38%, rgba(255,150,120,.20) 0%, rgba(255,120,90,.06) 38%, transparent 72%)',
         }}
       />
-      {/* ② 측면 조명 — 중앙(안쪽)이 밝고 바깥쪽 끝이 어둡게 */}
-      <div className="pointer-events-none absolute inset-0" style={sideLightStyle} />
-      {/* ③ 안쪽 선단 하이라이트 — 조명이 천 앞단을 스치는 4px 띠 */}
-      <div className="pointer-events-none absolute top-0 h-full w-1" style={leadingEdgeStyle} />
-      {/* ④ 옅은 비네트 (모바일에서는 생략) */}
+      {/* 안쪽 선단 — 빛이 천 앞단을 스치는 얇은 띠 */}
+      <div
+        className="pointer-events-none absolute top-0 h-full w-[3px]"
+        style={
+          side === 'left'
+            ? { right: 0, background: 'linear-gradient(180deg, transparent 4%, rgba(255,214,178,.55) 46%, transparent 96%)' }
+            : { left: 0, background: 'linear-gradient(180deg, transparent 4%, rgba(255,214,178,.55) 46%, transparent 96%)' }
+        }
+      />
+      {/* 바깥쪽 끝 — 무대 밖으로 사라지듯 어둡게 */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            side === 'left'
+              ? 'linear-gradient(90deg, rgba(0,0,0,.58) 0%, rgba(0,0,0,.14) 30%, transparent 62%)'
+              : 'linear-gradient(270deg, rgba(0,0,0,.58) 0%, rgba(0,0,0,.14) 30%, transparent 62%)',
+        }}
+      />
       {showVignette && (
         <div
           className="pointer-events-none absolute inset-0"
-          style={{ background: 'radial-gradient(ellipse 65% 90% at 50% 50%, transparent 55%, rgba(0,0,0,.22) 100%)' }}
+          style={{ background: 'radial-gradient(ellipse 70% 95% at 50% 45%, transparent 52%, rgba(0,0,0,.3) 100%)' }}
         />
       )}
     </div>
