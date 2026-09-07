@@ -11,9 +11,9 @@ import { useMyVenues, type MyVenue } from '@/hooks/useMyResources'
 /**
  * 내 공간 목록 — 심사 상태를 보여주는 화면 (§8-1).
  *
- * 승인 전에는 지도에 보이지 않습니다. 그 사실을 사장님에게 분명히 알려야, "등록했는데
- * 왜 안 보이냐"는 오해가 생기지 않습니다. 반려된 경우에는 사유를 그대로 보여주고
- * 고쳐서 다시 낼 수 있게 합니다.
+ * 주소와 필수 항목이 확인되면 등록 즉시 공개됩니다. 확인이 안 된 경우에만 심사
+ * 대기로 남고, 그때 "왜 대기인지"와 "무엇을 고치면 되는지"를 적어줍니다. 상태만
+ * 보여주고 다음 행동을 알려주지 않으면 사장님이 할 수 있는 게 없습니다.
  */
 export function MyVenuesScreen() {
   const navigate = useNavigate()
@@ -25,7 +25,7 @@ export function MyVenuesScreen() {
 
   return (
     <Screen>
-      <ScreenHeader title="내 공간" subtitle="등록한 공간과 심사 상태를 봅니다" />
+      <ScreenHeader title="내 공간" subtitle="등록한 공간과 공개 상태를 봅니다" />
       <ScreenBody>
         <FreeTrialNotice className="mb-4" />
 
@@ -93,7 +93,8 @@ function VenueRow({ venue, onOpen }: { venue: MyVenue; onOpen: () => void }) {
       icon: Clock,
       label: '심사 중',
       cls: 'bg-warn/15 text-warn border-warn/35',
-      note: '운영자가 확인하는 중입니다. 승인되면 지도에 공개됩니다 (보통 하루 안에 끝납니다).',
+      note:
+        '주소나 필수 항목을 자동으로 확인하지 못해 운영자 확인을 기다립니다. 주소를 다시 검색하고 지도에서 위치를 정확히 찍어주시면 대개 바로 공개됩니다.',
     },
     approved: {
       icon: MapPin,

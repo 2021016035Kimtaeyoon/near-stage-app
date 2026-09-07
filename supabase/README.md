@@ -18,6 +18,7 @@ SQL Editor에 `APPLY_ALL.sql` 전체를 붙여넣고 Run.
 | `0006_show_media.sql` | shows 에 포스터·가격안내 컬럼 추가 + 뷰 갱신 |
 | `0007_genre_raw.sql` | 등록 공연의 원본 장르 표기 컬럼 + 뷰 갱신 |
 | `0008_storage.sql` | 사진 저장소 버킷 2개 + 폴더 단위 접근 정책 |
+| `0009_venue_auto_approve.sql` | 주소·필수항목이 확인되면 공간 등록 즉시 공개 |
 
 ## 이미 적용한 뒤 다시 실행하면
 

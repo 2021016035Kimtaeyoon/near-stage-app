@@ -20,7 +20,8 @@ const STEPS = ['기본 정보', '규모·조건', '장비', '사진·소개'] as
  * 않습니다. 각 스텝은 "지금 답할 수 있는 질문"만 묻고, 모르는 항목은 비울 수 있게
  * 했습니다. 필수는 이름·주소·좌표·수용인원 넷뿐입니다.
  *
- * 제출하면 status='pending' 으로 들어가고 운영자 승인 전에는 지도에 보이지 않습니다.
+ * 제출하면 DB 트리거가 주소·필수 항목을 확인해 즉시 공개할지 심사 대기로 둘지
+ * 판정합니다(0009_venue_auto_approve.sql). 클라이언트는 status 를 정하지 않습니다.
  */
 export function VenueRegisterScreen() {
   const navigate = useNavigate()
@@ -58,32 +59,37 @@ export function VenueRegisterScreen() {
       const uid = useAuthStore.getState().userId
       if (!uid) return
       setSubmitting(true)
-      const { error } = await supabase.from('venues').insert({
-        owner_id: uid,
-        name: draft.name.trim(),
-        category: draft.category,
-        address: [draft.address, draft.addressDetail].filter(Boolean).join(' ').trim(),
-        lat: draft.lat,
-        lng: draft.lng,
-        capacity: numOrNull(draft.capacity, LIMITS.capacity),
-        rental_fee: Math.max(0, Number(draft.rentalFee) || 0),
-        preferred_genres: draft.preferredGenres,
-        description: draft.description.trim(),
-        photos: draft.photos,
-        equipment: {
-          sound: draft.sound,
-          mic: numOrNull(draft.mic, LIMITS.mic) ?? 0,
-          piano: draft.piano,
-          projector: draft.projector,
-          stageWidthM: numOrNull(draft.stageWidthM, LIMITS.stageWidthM),
-          ceilingHeightM: numOrNull(draft.ceilingHeightM, LIMITS.ceilingHeightM),
-          powerKw: numOrNull(draft.powerKw, LIMITS.powerKw),
-          soundproof: draft.soundproof,
-          rehearsalAllowed: draft.rehearsalAllowed,
-        },
-        // status 는 기본값 'pending' 입니다. 여기서 보내지 않습니다 —
-        // 보내도 트리거가 막지만, 애초에 클라이언트가 정할 값이 아닙니다.
-      })
+      const { data, error } = await supabase
+        .from('venues')
+        .insert({
+          owner_id: uid,
+          name: draft.name.trim(),
+          category: draft.category,
+          address: [draft.address, draft.addressDetail].filter(Boolean).join(' ').trim(),
+          lat: draft.lat,
+          lng: draft.lng,
+          capacity: numOrNull(draft.capacity, LIMITS.capacity),
+          rental_fee: Math.max(0, Number(draft.rentalFee) || 0),
+          preferred_genres: draft.preferredGenres,
+          description: draft.description.trim(),
+          photos: draft.photos,
+          equipment: {
+            sound: draft.sound,
+            mic: numOrNull(draft.mic, LIMITS.mic) ?? 0,
+            piano: draft.piano,
+            projector: draft.projector,
+            stageWidthM: numOrNull(draft.stageWidthM, LIMITS.stageWidthM),
+            ceilingHeightM: numOrNull(draft.ceilingHeightM, LIMITS.ceilingHeightM),
+            powerKw: numOrNull(draft.powerKw, LIMITS.powerKw),
+            soundproof: draft.soundproof,
+            rehearsalAllowed: draft.rehearsalAllowed,
+          },
+          // status 는 보내지 않습니다. DB 트리거가 조건을 보고 즉시 공개할지
+          // 심사 대기로 둘지 판정합니다(0009_venue_auto_approve.sql).
+          // 클라이언트가 정할 값이 아닙니다.
+        })
+        .select('status')
+        .single()
       setSubmitting(false)
 
       if (error) {
@@ -91,7 +97,12 @@ export function VenueRegisterScreen() {
         return
       }
       clear()
-      toast('등록을 접수했어요', 'success', '운영자 확인 후 지도에 공개됩니다')
+      // 판정 결과를 읽어와 안내합니다 — 추측해서 말하면 화면과 실제가 어긋납니다
+      if (data?.status === 'approved') {
+        toast('등록됐어요', 'success', '지금부터 지도에 공개됩니다')
+      } else {
+        toast('등록을 접수했어요', 'success', '확인이 필요해 잠시 심사 대기로 들어갔어요')
+      }
       navigate('/host/venue', { replace: true })
     })
   }
@@ -183,7 +194,7 @@ export function VenueRegisterScreen() {
             </Button>
           ) : (
             <Button variant="brand" full loading={submitting} onClick={submit}>
-              등록 신청하기
+              등록하기
             </Button>
           )}
         </div>
