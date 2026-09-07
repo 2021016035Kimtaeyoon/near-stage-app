@@ -33,6 +33,9 @@ export function ShowCard({
   const seatsLeft = Math.max(0, show.capacity - show.reservedCount)
   // 등록 공연은 우리가 정원을 모릅니다. capacity 0 을 "매진"으로 표시하면 거짓이 됩니다.
   const hasSeatInfo = show.source === 'own' && show.capacity > 0
+  // ticketPrice 는 모든 공연이 0 이라 색 판정에 쓸 수 없습니다. 우리 무대는 참가비가
+  // 없고, 등록 공연은 원본 안내 문장에 '무료'가 있을 때만 무료입니다.
+  const isFree = show.source === 'own' || /무료/.test(show.priceNote ?? '')
 
   return (
     <article
@@ -79,7 +82,7 @@ export function ShowCard({
             <span
               className={cn(
                 'tnum text-sm font-bold',
-                show.ticketPrice === 0 ? 'text-ok' : 'text-ink',
+                isFree ? 'text-ok' : 'text-ink',
               )}
             >
               {showPriceLabel(show.source, show.priceNote)}
