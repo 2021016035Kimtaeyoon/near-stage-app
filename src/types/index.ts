@@ -193,8 +193,13 @@ export interface Show {
   source: ShowSource
   tags: string[]
   description: string
-  /** 장르 (우리 무대는 performer에서 파생, 등록 공연은 분류 매핑) */
-  genre: Genre
+  /**
+   * 우리 장르 목록에 있는 장르. 등록 공연은 목록 밖 분류가 많아 null 일 수 있습니다.
+   * null 이면 장르 태그를 달지 말고 genreLabel 을 그대로 보여주세요.
+   */
+  genre: Genre | null
+  /** 원본 장르 표기 (등록 공연의 '서양음악(클래식)' 등). 우리 목록에 맞추지 않습니다 */
+  genreLabel?: string
   /** KOPIS 오픈API 공연 ID (source==='kopis'일 때) */
   kopisId?: string
   /** 등록 공연의 원본 예매처 링크 (source==='kopis'일 때) */

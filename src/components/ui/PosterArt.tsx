@@ -20,7 +20,7 @@ export function PosterArt({
   overlay,
 }: {
   seed: string
-  genre: Genre
+  genre: Genre | null
   className?: string
   deep?: boolean
   glyphScale?: number
@@ -87,7 +87,7 @@ export function PosterArt({
               'drop-shadow(0 0 0.9px rgba(255,238,205,.65)) drop-shadow(0 0 2.6px rgba(255,220,170,.35))',
           }}
         >
-          {POSTER_FIGURE[genre]}
+          {POSTER_FIGURE[genre ?? '연극']}
         </g>
         {/* 앞줄 관객 실루엣 — 화면 맨 아래를 가로막아 "객석에서 찍은 사진" 시점을 만듭니다 */}
         <CrowdSilhouette seed={seed} />
@@ -126,7 +126,7 @@ export function GenreGlyph({
   color = 'currentColor',
   strokeWidth = 1.6,
 }: {
-  genre: Genre
+  genre: Genre | null
   size?: number
   color?: string
   strokeWidth?: number
@@ -143,7 +143,7 @@ export function GenreGlyph({
       strokeLinejoin="round"
       aria-hidden
     >
-      <path d={GENRE_GLYPH[genre]} />
+      <path d={GENRE_GLYPH[genre ?? '연극']} />
     </svg>
   )
 }
@@ -156,7 +156,7 @@ export function SeedAvatar({
   className,
 }: {
   seed: string
-  genre: Genre
+  genre: Genre | null
   size?: number
   className?: string
 }) {

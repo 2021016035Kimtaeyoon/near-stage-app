@@ -7,7 +7,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
 import { ChevronLeft } from 'lucide-react'
 import { DEFAULT_USER_LOCATION } from '@/config/brand'
-import { priceLabel } from '@/lib/datetime'
+import { showPriceLabel } from '@/lib/datetime'
 import { distanceKm as calcDistance } from '@/lib/geo'
 import { resolvePlace } from '@/store/selectors'
 import { useAuthStore } from '@/hooks/useAuth'
@@ -81,7 +81,9 @@ export function ShowDetail() {
   const liked = likedShowIds.includes(show.id)
   const following = performer ? followedPerformerIds.includes(performer.id) : false
   const seatsLeft = Math.max(0, show.capacity - show.reservedCount)
-  const soldOut = seatsLeft <= 0
+  // 등록 공연은 정원 개념이 없고 예매도 원본 예매처에서 합니다
+  const isKopis = show.source === 'kopis'
+  const soldOut = !isKopis && seatsLeft <= 0
 
   return (
     <Screen>
@@ -107,7 +109,7 @@ export function ShowDetail() {
             onToggleFollow={() => toggleFollow(performer.id)}
           />
         ) : (
-          <KopisCastBlock cast={show.kopisCast ?? '출연진 정보 없음'} genreLabel={show.kopisGenreLabel ?? show.genre} />
+          <KopisCastBlock cast={show.kopisCast ?? '출연진 정보 없음'} genreLabel={show.genreLabel ?? show.kopisGenreLabel ?? show.genre ?? '분류 정보 없음'} />
         )}
 
         <VenueBlock
@@ -134,20 +136,34 @@ export function ShowDetail() {
         <FreeTrialNotice className="mb-2.5" />
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
-            <p className="tnum text-lg font-extrabold">{priceLabel(show.ticketPrice)}</p>
+            <p className="tnum text-lg font-extrabold">{showPriceLabel(show.source, show.priceNote)}</p>
             <p className="tnum text-2xs text-ink-3">
-              {soldOut ? '정원 마감' : `${seatsLeft}석 남음`} · 참가비 없음
+              {isKopis ? '공연예술통합전산망(KOPIS) 제공' : soldOut ? '정원 마감' : `${seatsLeft}석 남음`}
             </p>
           </div>
-          <Button
-            variant="brand"
-            size="lg"
-            disabled={soldOut}
-            onClick={() => requireAuth(() => navigate(`/audience/book/${show.id}`))}
-            className="shrink-0"
-          >
-            {soldOut ? '정원이 마감되었어요' : '참석 예정'}
-          </Button>
+          {isKopis ? (
+            // 등록 공연은 우리가 예매를 받지 않습니다. 원본 예매처로 보냅니다 —
+            // 여기서 참석 예정을 받으면 실제 좌석과 어긋나 관객이 헛걸음합니다.
+            <Button
+              variant="brand"
+              size="lg"
+              disabled={!show.externalUrl}
+              onClick={() => show.externalUrl && window.open(show.externalUrl, '_blank', 'noopener')}
+              className="shrink-0"
+            >
+              예매처에서 보기
+            </Button>
+          ) : (
+            <Button
+              variant="brand"
+              size="lg"
+              disabled={soldOut}
+              onClick={() => requireAuth(() => navigate(`/audience/book/${show.id}`))}
+              className="shrink-0"
+            >
+              {soldOut ? '정원이 마감되었어요' : '참석 예정'}
+            </Button>
+          )}
         </div>
       </div>
     </Screen>

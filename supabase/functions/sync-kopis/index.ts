@@ -188,7 +188,13 @@ Deno.serve(async () => {
         }
 
         const t = firstTime(guidance)
-        const startsAt = toIsoKst(item.prfpdfrom, t?.hour, t?.minute)
+        // ★ 이미 시작된 장기공연(대학로 연극 등)은 prfpdfrom 이 과거입니다. 그대로 쓰면
+        //   "끝난 공연"으로 걸러져 오늘 저녁에 하는 공연이 지도에서 사라집니다.
+        //   그래서 시작일이 지났으면 오늘로 당깁니다 — 다음 회차가 오늘이니까요.
+        const runStart = item.prfpdfrom.replace(/./g, '-')
+        const today = new Date().toISOString().slice(0, 10)
+        const showDate = runStart < today ? today.replace(/-/g, '.') : item.prfpdfrom
+        const startsAt = toIsoKst(showDate, t?.hour, t?.minute)
         if (!startsAt) {
           stats.failed++
           continue
@@ -207,6 +213,7 @@ Deno.serve(async () => {
             external_url: `https://www.kopis.or.kr/por/db/pblprfr/pblprfrView.do?menuId=MNU_000020&mt20Id=${item.mt20id}`,
             poster_url: item.poster || null,
             price_note: priceNote || null,
+            genre_raw: item.genrenm || null,
             venue_name_raw: item.fcltynm,
             venue_addr_raw: address,
             lat: coords.lat,

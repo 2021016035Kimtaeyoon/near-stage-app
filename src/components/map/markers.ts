@@ -10,21 +10,21 @@ import type { Genre, ShowSource } from '@/types'
  */
 
 interface Options {
-  genre: Genre
+  genre: Genre | null
   source: ShowSource
   selected: boolean
   /** 데모에서 방금 생성된 핀 — 팝 애니메이션 */
   popped?: boolean
 }
 
-function glyphSvg(genre: Genre, size: number, color: string, width: number): string {
-  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"><path d="${GENRE_GLYPH[genre]}"/></svg>`
+function glyphSvg(genre: Genre | null, size: number, color: string, width: number): string {
+  return `<svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"><path d="${GENRE_GLYPH[genre ?? '연극']}"/></svg>`
 }
 
 export function showMarkerIcon({ genre, source, selected, popped = false }: Options): L.DivIcon {
   const own = source === 'own'
   const size = own ? (selected ? 44 : 38) : selected ? 38 : 32
-  const genreColor = GENRE_COLOR[genre]
+  const genreColor = GENRE_COLOR[genre ?? '연극']
 
   const body = own
     ? `background-image:linear-gradient(135deg,${BRAND_FROM} 0%,${BRAND_TO} 100%);border:2px solid rgba(255,255,255,.9);box-shadow:0 6px 18px rgba(255,196,46,.45)`
@@ -66,7 +66,7 @@ export function userMarkerIcon(): L.DivIcon {
 }
 
 /** 공간(공연자 화면 장소 탐색용) 마커 */
-export function venueMarkerIcon(genre: Genre, selected: boolean, satisfied: boolean): L.DivIcon {
+export function venueMarkerIcon(genre: Genre | null, selected: boolean, satisfied: boolean): L.DivIcon {
   const size = selected ? 38 : 32
   const color = satisfied ? '#4ED4A0' : '#7C8AA5'
   const html = `

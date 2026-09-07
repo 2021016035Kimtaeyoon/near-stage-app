@@ -2,7 +2,7 @@ import { Heart, MapPin, Users } from 'lucide-react'
 import { GenreTag, SourceBadge, StatusDot } from '@/components/ui/Badge'
 import { PosterArt, Rating } from '@/components/ui/PosterArt'
 import { cn } from '@/lib/cn'
-import { countdownLabel, humanDateTime, priceLabel } from '@/lib/datetime'
+import { countdownLabel, humanDateTime, showPriceLabel } from '@/lib/datetime'
 import { distanceLabel } from '@/lib/geo'
 import type { ShowWithMeta } from '@/store/selectors'
 
@@ -30,6 +30,8 @@ export function ShowCard({
   const countdown = countdownLabel(show.startAt, nowIso, show.durationMin)
   const live = countdown === '진행 중'
   const seatsLeft = Math.max(0, show.capacity - show.reservedCount)
+  // 등록 공연은 우리가 정원을 모릅니다. capacity 0 을 "매진"으로 표시하면 거짓이 됩니다.
+  const hasSeatInfo = show.source === 'own' && show.capacity > 0
 
   return (
     <article
@@ -78,11 +80,11 @@ export function ShowCard({
                 show.ticketPrice === 0 ? 'text-ok' : 'text-ink',
               )}
             >
-              {priceLabel(show.ticketPrice)}
+              {showPriceLabel(show.source, show.priceNote)}
             </span>
             <span className="tnum flex items-center gap-1 text-2xs text-ink-3">
               <Users size={11} />
-              {seatsLeft > 0 ? `${seatsLeft}석 남음` : '매진'}
+              {hasSeatInfo ? (seatsLeft > 0 ? `${seatsLeft}석 남음` : '정원 마감') : '예매처 예매'}
             </span>
           </div>
         </div>
@@ -135,7 +137,7 @@ export function ShowMiniCard({
           {humanDateTime(show.startAt, nowIso)} · {place.name}
         </div>
         <div className="tnum mt-0.5 text-2xs text-ink-3">
-          {distanceLabel(d)} · {priceLabel(show.ticketPrice)}
+          {distanceLabel(d)} · {showPriceLabel(show.source, show.priceNote)}
         </div>
       </div>
     </button>

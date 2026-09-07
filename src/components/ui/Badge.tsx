@@ -42,7 +42,37 @@ export function SourceBadge({
   )
 }
 
-export function GenreTag({ genre, size = 'md' }: { genre: Genre; size?: 'sm' | 'md' }) {
+/**
+ * 장르 배지.
+ *
+ * `genre` 가 null 이면 우리 장르 목록에 없는 분류입니다(등록 공연의 '서양음악(클래식)' 등).
+ * 그때는 색을 억지로 배정하지 않고 원본 표기를 중립 배지로 보여줍니다 —
+ * 틀린 장르 라벨을 붙이는 것보다 낫습니다.
+ */
+export function GenreTag({
+  genre,
+  label,
+  size = 'md',
+}: {
+  genre: Genre | null
+  /** genre 가 null 일 때 보여줄 원본 표기 */
+  label?: string
+  size?: 'sm' | 'md'
+}) {
+  const sm0 = size === 'sm'
+  if (!genre) {
+    if (!label) return null
+    return (
+      <span
+        className={cn(
+          'inline-flex items-center rounded-full border border-border bg-surface-2 font-semibold text-ink-2',
+          sm0 ? 'px-1.5 py-0.5 text-2xs' : 'px-2 py-1 text-xs',
+        )}
+      >
+        {label}
+      </span>
+    )
+  }
   const color = GENRE_COLOR[genre]
   const sm = size === 'sm'
   return (

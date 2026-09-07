@@ -158,7 +158,9 @@ export function filterShows(
       if (start < range.from || start > range.to) return false
     }
     if (filter.distance !== 0 && d > filter.distance) return false
-    if (filter.genres.length > 0 && !filter.genres.includes(show.genre)) return false
+    // 장르를 모르는 공연(등록 공연의 목록 밖 분류)은 장르 필터에 걸리지 않습니다
+    if (filter.genres.length > 0 && (!show.genre || !filter.genres.includes(show.genre)))
+      return false
     if (filter.price === 'free' && show.ticketPrice !== 0) return false
     if (filter.price === 'under10k' && show.ticketPrice > 10_000) return false
     if (filter.ownOnly && show.source !== 'own') return false

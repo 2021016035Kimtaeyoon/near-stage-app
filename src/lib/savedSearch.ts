@@ -72,7 +72,9 @@ export function showMatchesSavedFilter(
   const end = new Date(show.startAt).getTime() + show.durationMin * 60_000
   if (end < new Date(nowIso).getTime()) return false
   if (f.ownOnly && show.source !== 'own') return false
-  if (f.genres.length > 0 && !f.genres.includes(show.genre)) return false
+  // 장르를 모르는 공연(등록 공연의 목록 밖 분류)은 장르 조건에 걸리지 않습니다.
+  // 밴드를 찾는 사람에게 분류 불명 공연을 밀어넣지 않기 위함입니다.
+  if (f.genres.length > 0 && (!show.genre || !f.genres.includes(show.genre))) return false
   if (f.price === 'free' && show.ticketPrice !== 0) return false
   if (f.price === 'under10k' && show.ticketPrice > 10_000) return false
 

@@ -120,3 +120,16 @@ export function won(n: number): string {
 export function priceLabel(n: number): string {
   return n === 0 ? '무료' : `${won(n)}원`
 }
+
+/**
+ * 공연의 가격 표기.
+ *
+ * ★ 등록 공연(KOPIS)에 priceLabel(0) 을 쓰면 3만원짜리 공연이 "무료"로 표시됩니다.
+ *   우리 스키마에는 가격 숫자 컬럼이 없고(플랫폼이 대금에 관여하지 않으므로),
+ *   등록 공연은 원본이 준 안내 문장을 그대로 보여주는 것이 유일하게 정확합니다.
+ */
+export function showPriceLabel(source: 'own' | 'kopis', priceNote?: string): string {
+  if (source === 'kopis') return priceNote?.trim() || '예매처에서 확인'
+  // 우리 무대는 플랫폼을 통한 결제가 없습니다. 티켓이 있으면 현장에서 냅니다.
+  return '참가비 없음'
+}

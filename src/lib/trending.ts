@@ -20,7 +20,7 @@ export function computeTrendingKeywords(items: ShowWithMeta[], limit = 10): Tren
   }
 
   for (const { show, place, performer } of items) {
-    bump(show.genre, show.likes * 2 + show.reservedCount)
+    if (show.genre) bump(show.genre, show.likes * 2 + show.reservedCount)
     bump(place.district, show.likes + show.reservedCount * 0.5)
     if (performer) {
       bump(performer.teamName, show.likes * 3 + performer.followerCount * 0.04)

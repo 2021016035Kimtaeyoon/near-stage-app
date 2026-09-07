@@ -18,7 +18,7 @@ export function VenueBlock({
   own,
 }: {
   place: ShowPlace
-  genre: Genre
+  genre: Genre | null
   distanceKm: number
   own?: OwnDetail
 }) {

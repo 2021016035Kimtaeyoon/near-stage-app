@@ -24,6 +24,7 @@ export interface PublicShowRow {
   external_url: string | null
   poster_url: string | null
   price_note: string | null
+  genre_raw: string | null
   created_at: string
   venue_name: string | null
   venue_address: string | null
@@ -48,11 +49,16 @@ const STATUS_LABEL: Record<PublicShowRow['status'], Show['status']> = {
   canceled: '종료',
 }
 
-function toGenre(raw: string | null): Genre {
+/**
+ * 우리 장르 목록에 있는 값만 Genre 로 인정합니다.
+ *
+ * ★ 예전에는 목록에 없는 값을 '연극'으로 끼워 넣었는데, 그래서 오케스트라
+ *   정기연주회가 '연극'으로 표시됐습니다. 틀린 라벨을 붙이는 것보다 라벨을
+ *   달지 않고 원본 표기(genreLabel)를 보여주는 게 맞습니다.
+ */
+function toGenre(raw: string | null): Genre | null {
   if (raw && (GENRES as readonly string[]).includes(raw)) return raw as Genre
-  // 등록 공연(KOPIS)의 원본 분류는 우리 장르 목록에 없을 수 있습니다.
-  // 임의로 다른 장르에 끼워 넣지 않고 '연극'을 기본 표기로 씁니다.
-  return '연극'
+  return null
 }
 
 /**
@@ -85,6 +91,8 @@ export function rowToShow(row: PublicShowRow): Show {
     tags: [],
     description: row.description,
     genre: toGenre(row.artist_genre),
+    // 등록 공연은 KOPIS 원본 표기('서양음악(클래식)' 등)를 그대로 보여줍니다
+    ...(row.genre_raw ? { genreLabel: row.genre_raw } : {}),
     ...(row.kopis_id ? { kopisId: row.kopis_id } : {}),
     ...(row.external_url ? { externalUrl: row.external_url } : {}),
     ...(row.poster_url ? { posterUrl: row.poster_url } : {}),
@@ -109,7 +117,7 @@ export function rowToPlace(row: PublicShowRow): ShowPlace | null {
 /** v_public_shows 에서 항상 이 컬럼 목록으로 조회합니다 */
 export const PUBLIC_SHOW_COLUMNS =
   'id,venue_id,artist_id,slot_id,title,description,starts_at,duration_min,capacity,' +
-  'status,source,kopis_id,external_url,poster_url,price_note,created_at,' +
+  'status,source,kopis_id,external_url,poster_url,price_note,genre_raw,created_at,' +
   'venue_name,venue_address,lat,lng,' +
   'venue_category,venue_rating,artist_name,artist_genre,artist_photos,' +
   'going_count,like_count,avg_rating,review_count'

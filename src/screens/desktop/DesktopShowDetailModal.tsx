@@ -126,7 +126,7 @@ export function DesktopShowDetailModal({
                       onToggleFollow={() => toggleFollow(performer.id)}
                     />
                   ) : (
-                    <KopisCastBlock cast={show.kopisCast ?? '출연진 정보 없음'} genreLabel={show.kopisGenreLabel ?? show.genre} />
+                    <KopisCastBlock cast={show.kopisCast ?? '출연진 정보 없음'} genreLabel={show.genreLabel ?? show.kopisGenreLabel ?? show.genre ?? '분류 정보 없음'} />
                   )}
 
                   <VenueBlock

@@ -12,7 +12,7 @@ export function MiniMap({
 }: {
   lat: number
   lng: number
-  genre: Genre
+  genre: Genre | null
   className?: string
 }) {
   return (
