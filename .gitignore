@@ -6,3 +6,7 @@ dist-ssr
 .DS_Store
 .vercel
 *.log
+
+# Claude Code 로컬 설정 — 저장소에 넣지 않습니다
+.claude/
+skills-lock.json

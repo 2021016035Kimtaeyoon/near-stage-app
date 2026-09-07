@@ -8,6 +8,7 @@ import { isFullscreenRoute } from '@/lib/routeUtils'
 import { AppRoutes } from '@/routes'
 import { DesktopHome } from '@/screens/desktop/DesktopHome'
 import { LandingPage } from '@/screens/landing/LandingPage'
+import { PitchPage } from '@/screens/landing/PitchPage'
 import { StyleguideScreen } from '@/screens/styleguide/StyleguideScreen'
 import { useAppStore } from '@/store/useAppStore'
 
@@ -40,8 +41,11 @@ function AppShell() {
   // '/' (모바일 앱 보기)와 '/landing'은 의도적인 이탈이라 예외로 두고 플래그를 끕니다.
   const inDesktopShell = useRef(false)
   if (pathname.startsWith('/desktop')) inDesktopShell.current = true
-  if (pathname === '/' || pathname.startsWith('/landing')) inDesktopShell.current = false
+  if (pathname === '/' || pathname.startsWith('/landing') || pathname.startsWith('/pitch'))
+    inDesktopShell.current = false
 
+  // 발표 전용 페이지 — 사이트 안에서 링크하지 않고 URL로만 들어옵니다
+  if (pathname.startsWith('/pitch')) return <PitchPage />
   if (pathname.startsWith('/landing')) return <LandingPage />
   if (pathname.startsWith('/desktop')) return <DesktopHome />
   if (inDesktopShell.current) return <Navigate to={`/desktop${pathname}`} replace />

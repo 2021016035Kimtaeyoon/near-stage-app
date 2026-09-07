@@ -1,11 +1,11 @@
 /**
- * 랜딩 히어로(DarkStageHero) 스크롤 타임라인 상수.
+ * 랜딩 히어로(FullCurtainHero) 스크롤 타임라인 상수.
  * 전부 0~1 사이의 "히어로 섹션 스크롤 진행률" 기준값입니다.
  * 값을 바꾸면 타이밍이 바뀝니다 — 자세한 설명은 ANIMATION.md 참고.
  *
  * 로고가 가운데서 정지해 있는 "숨 고르기" 구간(ACT1_HOLD_*)을 한 번 더 늘리면서,
  * 그 뒤로 오는 모든 값을 같은 비율로 다시 계산했습니다(절대 스크롤 거리는 유지한 채
- * 숨 고르기 구간만 더 길어지도록). DarkStageHero.tsx의 heroHeightClass도 같은 비율로
+ * 숨 고르기 구간만 더 길어지도록). hero/FullCurtainHero.tsx의 heroHeightClass도 같은 비율로
  * 늘려야 실제 스크롤 체감 속도가 유지됩니다.
  */
 

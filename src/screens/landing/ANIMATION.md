@@ -1,4 +1,4 @@
-# 랜딩 히어로 애니메이션 (DarkStageHero)
+# 랜딩 히어로 애니메이션 (hero/FullCurtainHero — /#/pitch 전용)
 
 단일 pin 섹션(`h-[605dvh]`, 모바일 `h-[432dvh]`) 안에서 `useScroll({ offset: ['start start', 'end end'] })`로
 0→1 진행률(`p`)을 뽑아내고, 그 값 하나로 커튼·무대·조명·로고·2막 패널을 전부 구동합니다.
@@ -34,7 +34,7 @@
 전부 `x / (1+k)`로, `ACT1_HOLD_END` 이후(자신 포함) 상수는 전부 `(x+k) / (1+k)`로 다시 계산하고
 (`k`=추가한 절대 구간 크기를 옛 전체 대비 비율로 나타낸 값), ③ `heroHeightClass`(desktop/mobile 둘 다)와
 `LandingPage.tsx`의 `headerBgOpacity`/`setOverHero` 임계값도 같은 비율(`×(1+k)`)로 늘려야 나머지 구간의
-스크롤 체감 속도가 그대로 유지됩니다. `DarkStageHero.tsx`의 `dot0/dot1/dot2`(진행률 점 인디케이터)도
+스크롤 체감 속도가 그대로 유지됩니다. `hero/FullCurtainHero.tsx`의 `dot0/dot1/dot2`(진행률 점 인디케이터)도
 `heroTimeline.ts`를 참조하지 않는 하드코딩된 값이라 잊지 말고 같이 바꿔야 합니다.
 
 ## ⚠️ 근본 원인이었던 offset 버그 (2막 도중 흰 배경으로 떨어지던 문제의 진짜 원인)
@@ -47,7 +47,7 @@ sectionHeight - viewportHeight`입니다. 그래서 progress가 항상 실제 pi
 뒤처져 있었고, 2막 뒷부분(패널2~3, 0.82~1.00 근방)이 이미 pin이 풀려 일반 스크롤이 된
 상태에서 재생되며 화면이 흰 배경으로 뚝 떨어졌습니다.
 
-**수정**: `offset: ['start start', 'end end']`로 교체(`DarkStageHero.tsx`, `LandingPage.tsx`
+**수정**: `offset: ['start start', 'end end']`로 교체(`hero/FullCurtainHero.tsx`, `LandingPage.tsx`
 둘 다). `'end end'`는 섹션 바닥이 뷰포트 **바닥**에 닿는 순간 progress=1이 되므로
 `scrollY = sectionTop + sectionHeight - viewportHeight`와 정확히 일치합니다 — 이게
 `position: sticky`가 풀리는 지점 그 자체입니다. 실제로 `scrollY=4130`(직전)에서
@@ -108,7 +108,7 @@ CTA·패널 3개를 세로로 쌓은 정적 화면입니다.
 축으로 `scaleX: 1 → PANEL_SCALE_END(0.34)` + `x: 0 → ∓PANEL_X_END(6%)`로 오그라들며 물러납니다.
 `x`만 쓰면 판자가 미끄러지듯 보이므로 `scaleX` 축소가 핵심입니다 — 사진 배경도 같이 가로로 눌리기
 때문에, 천이 바깥쪽으로 뭉치며 주름이 촘촘해지는 실제 커튼의 모습이 공짜로 나옵니다
-(`heroTimeline.ts`의 `PANEL_SCALE_END`/`PANEL_X_END`, `DarkStageHero.tsx`의 `CURTAIN_EASE`).
+(`heroTimeline.ts`의 `PANEL_SCALE_END`/`PANEL_X_END`, `hero/FullCurtainHero.tsx`의 `CURTAIN_EASE`).
 
 **두 폭이 사진 한 장으로 이어지는 원리** (`CurtainPanelSurface`): 각 폭은 `background-size: 200% 100%`로
 사진을 2배 확대해 두고, 왼쪽 폭은 `background-position: left center`(사진의 왼쪽 절반), 오른쪽 폭은

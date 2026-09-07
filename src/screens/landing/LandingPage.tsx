@@ -1,121 +1,100 @@
-import { motion, useMotionValueEvent, useScroll, useTransform } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
-import { useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { CalendarClock, MapPinned, Users2 } from 'lucide-react'
 import { LogoMark } from '@/components/shell/LogoMark'
-import { cn } from '@/lib/cn'
-import { DarkStageHero } from './DarkStageHero'
-import {
-  ClosingSection,
-  DifferentiationSection,
-  FeaturesSection,
-  RolesSection,
-  StatsBand,
-} from './LandingSections'
-import { PhoneMockup } from './PhoneMockup'
+import { SERVICE_NAME } from '@/config/brand'
+import { CurtainHero } from './hero/CurtainHero'
+import { LandingCtaRow } from './LandingCtaRow'
+import { LandingFaq } from './LandingFaq'
+import { UpcomingShowsPreview } from './UpcomingShowsPreview'
+import { ScrollReveal } from './ScrollReveal'
 
 /**
- * 데스크톱 마케팅 랜딩페이지. 모바일 앱 프로토타입(`/`)과는 별개의 화면이며,
- * 이 페이지의 CTA는 실제 서비스 화면인 `/desktop`으로 연결됩니다.
+ * 실서비스 랜딩 (/#/landing).
+ *
+ * 유일한 목표는 방문자를 3초 안에 다음 행동으로 보내는 것입니다. 그래서
+ * - 히어로는 스크롤 0에서 로고·한 줄·CTA 3개가 전부 보이는 한 장짜리이고,
+ * - 전체 높이는 스크롤 3~4회 안에 끝나며,
+ * - 섹션마다 같은 CTA 3개를 다시 깔아둡니다.
+ *
+ * 발표용 605dvh 커튼 연출은 /#/pitch 로 옮겼습니다.
  */
+const ROLES = [
+  {
+    icon: MapPinned,
+    title: '공연 보러 오신 분',
+    desc: '오늘 밤 걸어갈 수 있는 거리에 어떤 무대가 있는지 지도 하나로 봅니다. 회원가입 없이 둘러볼 수 있어요.',
+  },
+  {
+    icon: CalendarClock,
+    title: '가게를 하시는 분',
+    desc: '한가한 시간대를 공연으로 채웁니다. 가진 장비를 등록해두면 그 조건에 맞는 팀만 지원합니다.',
+  },
+  {
+    icon: Users2,
+    title: '공연하시는 분',
+    desc: '설 무대를 찾습니다. 조건이 맞는 동네 공간에 바로 지원하고, 확정되면 지도에 공연이 올라갑니다.',
+  },
+]
+
 export function LandingPage() {
-  const navigate = useNavigate()
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [overHero, setOverHero] = useState(true)
-
-  const heroWrapRef = useRef<HTMLDivElement>(null)
-  // DarkStageHero와 동일하게 'end end'를 써야 실제 pin 해제 시점과 맞습니다.
-  const { scrollYProgress: heroProgress } = useScroll({
-    target: heroWrapRef,
-    offset: ['start start', 'end end'],
-  })
-  const headerBgOpacity = useTransform(heroProgress, [0.9444, 1], [0, 1])
-
-  useMotionValueEvent(heroProgress, 'change', (v) => {
-    setOverHero(v < 0.963)
-  })
-
   return (
-    <div data-theme="dark" className="min-h-screen w-full bg-bg text-ink">
-      <header className="fixed inset-x-0 top-0 z-50">
-        <motion.div
-          aria-hidden
-          className="absolute inset-0 border-b border-border bg-bg/90 backdrop-blur"
-          style={{ opacity: overHero ? headerBgOpacity : 1 }}
-        />
-        <div className="relative mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
-          <LogoMark dark={overHero} className="w-[104px] transition-none" />
+    <div className="min-h-screen w-full bg-bg text-ink">
+      <CurtainHero mode="compact" />
 
-          <div className="hidden items-center gap-4 whitespace-nowrap md:flex">
-            <button
-              onClick={() => navigate('/')}
-              className={cn(
-                'hidden rounded-full border px-4 py-2 text-sm font-bold transition-colors lg:inline-flex',
-                overHero ? 'border-white/30 text-white' : 'border-border text-ink-2',
-              )}
-            >
-              모바일 앱 체험
-            </button>
-            <button
-              onClick={() => navigate('/desktop')}
-              className="bg-gold-500 rounded-full px-4 py-2 text-sm font-bold text-gold-ink"
-            >
-              웹으로 시작하기
-            </button>
-          </div>
-
-          <button
-            onClick={() => setMenuOpen((v) => !v)}
-            aria-label="메뉴"
-            className={cn('tap flex items-center justify-center md:hidden', overHero ? 'text-white' : 'text-ink')}
-          >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
-        </div>
-
-        {menuOpen && (
-          <div className="relative border-t border-border bg-bg px-6 py-4 md:hidden">
-            <div className="flex flex-col gap-3">
-              <button
-                onClick={() => navigate('/')}
-                className="rounded-full border border-border px-4 py-2.5 text-sm font-bold text-ink-2"
-              >
-                모바일 앱 체험
-              </button>
-              <button
-                onClick={() => navigate('/desktop')}
-                className="bg-gold-500 rounded-full px-4 py-2.5 text-sm font-bold text-gold-ink"
-              >
-                웹으로 시작하기
-              </button>
-            </div>
-          </div>
-        )}
-      </header>
-
-      <div ref={heroWrapRef}>
-        <DarkStageHero />
-      </div>
-
-      <section className="mx-auto flex max-w-5xl justify-center px-6 py-20">
-        <motion.div
-          initial={{ opacity: 0, y: 24 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: '-80px' }}
-          transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-        >
-          <PhoneMockup />
-          <p className="mt-6 text-center text-xs text-ink-3">
-            회원가입 없이 바로 둘러볼 수 있는 심사용 프로토타입입니다.
+      {/* 차별점 — 한 문장 */}
+      <section className="mx-auto max-w-3xl px-6 py-20 text-center">
+        <ScrollReveal>
+          <p className="text-gold-text text-xs font-bold uppercase tracking-widest">
+            {SERVICE_NAME}가 다른 점
           </p>
-        </motion.div>
+          <h2 className="mt-3 text-2xl font-extrabold leading-snug tracking-tight md:text-3xl">
+            정식 공연장만 보여주던 지도에,
+            <br />
+            동네 카페·바의 무대를 더했습니다.
+          </h2>
+          <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-ink-2">
+            공연할 곳이 없는 팀과 손님이 필요한 가게를 직접 연결해 무대를 만들고, 그렇게
+            생긴 공연을 지도에 올립니다.
+          </p>
+        </ScrollReveal>
+        <LandingCtaRow className="mt-9" />
       </section>
 
-      <StatsBand />
-      <DifferentiationSection />
-      <RolesSection />
-      <FeaturesSection />
-      <ClosingSection />
+      {/* 임박한 공연 — DB에 공연이 없으면 섹션 자체가 사라집니다 */}
+      <UpcomingShowsPreview />
+
+      {/* 3역할 */}
+      <section className="border-y border-border bg-surface-2/60 py-20">
+        <div className="mx-auto max-w-5xl px-6">
+          <h2 className="text-center text-2xl font-extrabold tracking-tight md:text-3xl">
+            세 사람이 만나 하나의 무대가 됩니다
+          </h2>
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            {ROLES.map((r) => (
+              <div key={r.title} className="card p-7">
+                <span className="bg-gold-500 flex h-11 w-11 items-center justify-center rounded-xl text-gold-ink">
+                  <r.icon size={20} />
+                </span>
+                <h3 className="mt-4 text-lg font-extrabold">{r.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-ink-2">{r.desc}</p>
+              </div>
+            ))}
+          </div>
+          <LandingCtaRow className="mt-10" />
+        </div>
+      </section>
+
+      <LandingFaq />
+
+      {/* 마무리 */}
+      <section className="border-t border-border px-6 py-16">
+        <div className="mx-auto max-w-3xl text-center">
+          <LogoMark className="mx-auto w-[150px]" />
+          <p className="mt-5 text-[15px] font-semibold">
+            당신의 가게가 이 동네 첫 무대가 될 수 있습니다.
+          </p>
+          <LandingCtaRow className="mt-7" />
+        </div>
+      </section>
     </div>
   )
 }
