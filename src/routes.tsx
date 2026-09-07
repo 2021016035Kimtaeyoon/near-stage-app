@@ -13,6 +13,8 @@ import { ShowDetail } from '@/screens/audience/ShowDetail'
 import { ChatListScreen } from '@/screens/common/ChatListScreen'
 import { ChatThreadScreen } from '@/screens/common/ChatThreadScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
+import { MyVenuesScreen } from '@/screens/host/MyVenuesScreen'
+import { VenueRegisterScreen } from '@/screens/host/VenueRegisterScreen'
 import { OwnerApplicantsScreen } from '@/screens/owner/OwnerApplicantsScreen'
 import { OwnerDashboard } from '@/screens/owner/OwnerDashboard'
 import { OwnerRecruitScreen } from '@/screens/owner/OwnerRecruitScreen'
@@ -90,6 +92,24 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           element={
             <PageTransition>
               <MyPage />
+            </PageTransition>
+          }
+        />
+
+        {/* 호스트 — 공간 등록 (§8-1) */}
+        <Route
+          path="/host/venue/new"
+          element={
+            <PageTransition>
+              <VenueRegisterScreen />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/host/venue"
+          element={
+            <PageTransition>
+              <MyVenuesScreen />
             </PageTransition>
           }
         />
