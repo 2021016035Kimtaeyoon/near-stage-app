@@ -29,7 +29,7 @@ export function AccountCard() {
           <LogIn size={18} />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-[14px] font-bold">카카오로 시작하기</span>
+          <span className="block text-[14px] font-bold">로그인 / 시작하기</span>
           <span className="mt-0.5 block text-2xs leading-snug text-ink-3">
             참석 예정·좋아요·알림을 쓰려면 로그인이 필요해요
           </span>

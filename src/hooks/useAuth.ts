@@ -122,25 +122,40 @@ export function useAuthSync(): void {
   }, [setSession, setProfile, runPending])
 }
 
-/** 카카오 로그인 — 현재 화면으로 되돌아옵니다 */
-export async function signInWithKakao(): Promise<{ error: string | null }> {
+/**
+ * 소셜 로그인.
+ *
+ * ★ 카카오는 지금 쓸 수 없습니다.
+ *   Supabase 의 카카오 provider 가 scope 에 account_email 을 하드코딩해 넣고,
+ *   options.scopes 는 그것을 대체하지 않고 뒤에 덧붙이기만 합니다. authorize
+ *   엔드포인트를 직접 호출해 확인한 결과입니다.
+ *
+ *     scopes 지정 없음 → account_email profile_image profile_nickname
+ *     scopes 지정      → account_email profile_image profile_nickname (+지정값 중복)
+ *
+ *   한편 카카오는 동의항목에 설정되지 않은 항목을 요청하면 KOE205 로 거부하고,
+ *   '카카오계정(이메일)'은 비즈 앱으로 전환하지 않은 개인 앱에서는 설정 자체가
+ *   불가능합니다. 즉 양쪽 다 우리가 손댈 수 없어서 지금은 막혀 있습니다.
+ *
+ *   카카오 코드는 그대로 둡니다 — 비즈 앱 전환이 끝나고 동의항목에서 이메일을
+ *   선택 동의로 열면 아무 수정 없이 바로 동작합니다.
+ */
+export type AuthProvider = 'kakao' | 'google'
+
+export const PROVIDER_LABEL: Record<AuthProvider, string> = {
+  kakao: '카카오',
+  google: '구글',
+}
+
+export async function signInWith(provider: AuthProvider): Promise<{ error: string | null }> {
   if (!isSupabaseConfigured) {
     return { error: 'Supabase 설정이 없어 로그인할 수 없습니다.' }
   }
   const { error } = await supabase.auth.signInWithOAuth({
-    provider: 'kakao',
+    provider,
     options: {
       // HashRouter 라 해시까지 포함해 돌려보내야 원래 보던 화면으로 복귀합니다
       redirectTo: window.location.href,
-      // ★ scopes 를 여기서 줄일 수 없습니다.
-      //   Supabase 의 카카오 provider 는 'account_email profile_image profile_nickname'
-      //   을 기본으로 붙이고, options.scopes 는 그 뒤에 "덧붙입니다"(대체가 아닙니다).
-      //   실제로 확인한 요청: scope="account_email profile_image profile_nickname ..."
-      //
-      //   그래서 account_email 을 요청에서 뺄 방법이 없고, 카카오 콘솔의 동의항목에서
-      //   '카카오계정(이메일)'을 최소 **선택 동의**로 열어두어야 KOE205 가 나지 않습니다.
-      //   우리는 이메일을 저장하지도 쓰지도 않습니다 — profiles 에 이메일 컬럼이 없고,
-      //   사용자가 동의를 거부해도 모든 기능이 그대로 동작합니다.
     },
   })
   return { error: error?.message ?? null }
