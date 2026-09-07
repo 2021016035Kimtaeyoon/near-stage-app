@@ -35,7 +35,18 @@ export function OwnerDashboard() {
     return (
       <Screen>
         <ScreenHeader title="대시보드" />
-        <EmptyState art="stage" title="공간 정보를 찾을 수 없어요" />
+        <ScreenBody>
+          <EmptyState
+            art="stage"
+            title="아직 등록한 공간이 없어요"
+            description="가게를 등록하면 여기에서 예약 현황과 집객 효과를 봅니다."
+            action={
+              <Button variant="brand" onClick={() => navigate('/host/venue/new')}>
+                우리 가게 등록하기
+              </Button>
+            }
+          />
+        </ScreenBody>
       </Screen>
     )
   }

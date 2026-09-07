@@ -35,13 +35,20 @@ export const TABS: Record<Role, TabItem[]> = {
     },
   ],
   owner: [
+    // ★ 호스트의 첫 화면은 "내 공간"입니다. 공간을 등록하기 전에는 대시보드가
+    //   보여줄 게 없어서, 예전에는 "공간 정보를 찾을 수 없어요"만 떴습니다.
+    {
+      to: '/host/venue',
+      label: '내 공간',
+      icon: Store,
+      matches: ['/host/venue', '/owner/venue'],
+    },
     {
       to: '/owner/dashboard',
       label: '대시보드',
       icon: LayoutDashboard,
       matches: ['/owner/dashboard'],
     },
-    { to: '/owner/venue', label: '공간', icon: Store, matches: ['/owner/venue'] },
     {
       to: '/owner/recruit',
       label: '구인',
@@ -86,8 +93,21 @@ export const ROLE_DESCRIPTION: Record<Role, string> = {
   performer: '설 무대를 찾습니다',
 }
 
-export const ROLE_HOME: Record<Role, string> = {
+/**
+ * 데스크톱 2단 레이아웃(지도+목록, 대시보드)을 쓰는 경로.
+ *
+ * ROLE_HOME 과 분리한 이유: 호스트의 첫 화면은 "내 공간"인데 그건 2단 레이아웃이
+ * 아니라 모바일과 같은 화면을 재사용합니다. 둘을 같은 값으로 두면 /desktop/host/venue
+ * 에서 대시보드가 떠버립니다.
+ */
+export const ROLE_DESKTOP_HOME: Record<Role, string> = {
   audience: '/audience/home',
   owner: '/owner/dashboard',
+  performer: '/performer/explore',
+}
+
+export const ROLE_HOME: Record<Role, string> = {
+  audience: '/audience/home',
+  owner: '/host/venue',
   performer: '/performer/explore',
 }

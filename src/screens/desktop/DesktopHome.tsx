@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import { ROLE_HOME } from '@/config/nav'
+import { ROLE_DESKTOP_HOME } from '@/config/nav'
 import { AppRoutes } from '@/routes'
 import { useAppStore } from '@/store/useAppStore'
 import { DesktopAudienceHome } from './DesktopAudienceHome'
@@ -20,7 +20,7 @@ export function DesktopHome() {
   const role = useAppStore((s) => s.role)
   const location = useLocation()
   const subPath = location.pathname.replace(/^\/desktop/, '') || '/'
-  const isHome = subPath === '/' || subPath === ROLE_HOME[role]
+  const isHome = subPath === '/' || subPath === ROLE_DESKTOP_HOME[role]
 
   return (
     <DesktopShell>

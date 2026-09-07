@@ -27,7 +27,19 @@ export function DesktopOwnerHome() {
   if (!venue) {
     return (
       <div className="flex h-full items-center justify-center">
-        <EmptyState art="stage" title="공간 정보를 찾을 수 없어요" />
+        <EmptyState
+          art="stage"
+          title="아직 등록한 공간이 없어요"
+          description="가게를 등록하면 여기에서 예약 현황과 집객 효과를 봅니다."
+          action={
+            <button
+              onClick={() => navigate('/desktop/host/venue/new')}
+              className="bg-gold-500 rounded-xl px-4 py-2.5 text-xs font-bold text-gold-ink"
+            >
+              우리 가게 등록하기
+            </button>
+          }
+        />
       </div>
     )
   }
