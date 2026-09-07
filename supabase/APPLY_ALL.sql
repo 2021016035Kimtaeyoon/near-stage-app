@@ -814,9 +814,16 @@ create policy messages_update_parties on public.messages
 -- 좋아하는지 알 수 없죠. 그런데 화면에는 "이 공연 좋아요 N개"가 필요합니다.
 -- 뷰는 security_invoker = false 라 뷰 소유자 권한으로 집계하므로, 개별 행을
 -- 노출하지 않고 합계만 공개할 수 있습니다.
+--
+-- 공간 평점도 함께 넣습니다. venues 에 평점 컬럼을 두지 않고 리뷰에서 계산합니다 —
+-- 하드코딩된 숫자를 만들지 않기 위함입니다.
 -- ============================================================
 
-create or replace view public.v_public_shows
+-- create or replace 는 컬럼을 맨 뒤에만 추가할 수 있습니다. venue_rating 을 중간에
+-- 끼워 넣으므로 지우고 새로 만듭니다. 이 뷰에 의존하는 객체는 없습니다.
+drop view if exists public.v_public_shows;
+
+create view public.v_public_shows
 with (security_invoker = false)
 as
 select
