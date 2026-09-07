@@ -197,6 +197,8 @@ export interface Show {
   genre: Genre
   /** KOPIS 오픈API 공연 ID (source==='kopis'일 때) */
   kopisId?: string
+  /** 등록 공연의 원본 예매처 링크 (source==='kopis'일 때) */
+  externalUrl?: string
   /** KOPIS 공연장 정보 (source==='kopis'일 때) */
   kopisVenue?: KopisVenueInfo
   /** 등록 공연의 출연진 표기 (공연자 계정이 없으므로) */

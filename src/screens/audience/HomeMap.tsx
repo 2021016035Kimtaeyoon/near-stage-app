@@ -11,7 +11,8 @@ import { SnapSheet, type SnapIndex } from '@/components/ui/SnapSheet'
 import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
 import { computeTrendingKeywords } from '@/lib/trending'
-import { DEFAULT_FILTER, filterShows, withMeta } from '@/store/selectors'
+import { usePublicShows } from '@/hooks/usePublicShows'
+import { DEFAULT_FILTER, filterShows } from '@/store/selectors'
 import { useAppStore, useNow } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
 import { FilterChips } from './FilterChips'
@@ -29,9 +30,7 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
 
 export function HomeMap() {
   const navigate = useNavigate()
-  const shows = useAppStore((s) => s.shows)
-  const venues = useAppStore((s) => s.venues)
-  const performers = useAppStore((s) => s.performers)
+  const { data: all, loading, error, refresh } = usePublicShows()
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const toggleLike = useAppStore((s) => s.toggleLike)
   const recentlyViewedShowIds = useAppStore((s) => s.recentlyViewedShowIds)
@@ -47,7 +46,6 @@ export function HomeMap() {
   const [filterOpen, setFilterOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
 
-  const all = useMemo(() => withMeta(shows, venues, performers), [shows, venues, performers])
   const results = useMemo(() => filterShows(all, filter, nowIso), [all, filter, nowIso])
   const trending = useMemo(() => computeTrendingKeywords(all), [all])
 
@@ -105,6 +103,10 @@ export function HomeMap() {
             onOpen={openShow}
             highlightShowId={highlightShowId}
             onReset={() => setFilter(DEFAULT_FILTER)}
+            loading={loading}
+            error={error}
+            onRetry={refresh}
+            hasAnyShow={all.length > 0}
           />
           <TabBarSpacer />
         </div>
@@ -252,6 +254,10 @@ export function HomeMap() {
               onOpen={openShow}
               highlightShowId={highlightShowId}
               onReset={() => setFilter(DEFAULT_FILTER)}
+              loading={loading}
+              error={error}
+              onRetry={refresh}
+              hasAnyShow={all.length > 0}
             />
           </div>
         </SnapSheet>
@@ -276,6 +282,10 @@ function ResultList({
   onOpen,
   highlightShowId,
   onReset,
+  loading,
+  error,
+  onRetry,
+  hasAnyShow,
 }: {
   results: ReturnType<typeof filterShows>
   nowIso: string
@@ -284,7 +294,46 @@ function ResultList({
   onOpen: (id: string) => void
   highlightShowId: string | null
   onReset: () => void
+  loading: boolean
+  error: string | null
+  onRetry: () => void
+  /** 필터를 걷어내면 공연이 하나라도 있는지 — 빈 상태 문구를 가르는 기준 */
+  hasAnyShow: boolean
 }) {
+  if (loading) {
+    return (
+      <div className="space-y-2.5 py-2">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-[104px] animate-pulse rounded-2xl bg-surface-2" />
+        ))}
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <EmptyState
+        art="search"
+        title="공연을 불러오지 못했어요"
+        description={error}
+        action={
+          <button
+            onClick={onRetry}
+            className="rounded-xl border border-border-strong px-4 py-2.5 text-xs font-bold"
+          >
+            다시 시도
+          </button>
+        }
+      />
+    )
+  }
+
+  // 데이터가 정말 하나도 없는 것과, 필터가 좁아서 0건인 것은 다른 상황입니다.
+  // 오픈 직후에는 전자가 정상 상태이므로 다음 행동(공간 등록)으로 안내합니다.
+  if (results.length === 0 && !hasAnyShow) {
+    return <NoStagesYet />
+  }
+
   if (results.length === 0) {
     return (
       <EmptyState
@@ -316,5 +365,31 @@ function ResultList({
         />
       ))}
     </div>
+  )
+}
+
+/**
+ * 우리 무대가 아직 0건일 때.
+ *
+ * 데이터 0건은 예외가 아니라 오픈 직후의 정상 상태입니다. "없다"고만 말하지 않고
+ * 다음 행동(공간 등록)으로 보냅니다. 등록 공연(KOPIS)은 계속 보이므로 지도가
+ * 완전히 비지는 않습니다.
+ */
+function NoStagesYet() {
+  const navigate = useNavigate()
+  return (
+    <EmptyState
+      art="stage"
+      title="아직 우리 동네 무대가 없어요"
+      description="당신의 가게가 이 동네 첫 무대가 될 수 있습니다."
+      action={
+        <button
+          onClick={() => navigate('/desktop/host/venue/new')}
+          className="bg-gold-500 rounded-xl px-4 py-2.5 text-xs font-bold text-gold-ink"
+        >
+          공간 등록하기
+        </button>
+      }
+    />
   )
 }

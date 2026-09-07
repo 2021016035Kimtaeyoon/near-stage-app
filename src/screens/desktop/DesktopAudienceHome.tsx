@@ -1,5 +1,6 @@
 import { BellPlus, Check, Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { ShowCard } from '@/components/cards/ShowCard'
 import { MapView } from '@/components/map/MapView'
 import { Chip } from '@/components/ui/Chip'
@@ -8,7 +9,8 @@ import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
 import { sameSavedFilter, toSavedFilter } from '@/lib/savedSearch'
 import { computeTrendingKeywords } from '@/lib/trending'
-import { DEFAULT_FILTER, filterShows, withMeta } from '@/store/selectors'
+import { usePublicShows } from '@/hooks/usePublicShows'
+import { DEFAULT_FILTER, filterShows } from '@/store/selectors'
 import { useAppStore, useNow } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
 import { TrendingSearchPanel } from '../audience/TrendingSearchPanel'
@@ -24,9 +26,8 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
 
 /** 데스크톱 홈 — 관객용. 좌측 리스트 + 우측 대형 지도의 2단 레이아웃 */
 export function DesktopAudienceHome() {
-  const shows = useAppStore((s) => s.shows)
-  const venues = useAppStore((s) => s.venues)
-  const performers = useAppStore((s) => s.performers)
+  const navigate = useNavigate()
+  const { data: all, loading, error, refresh } = usePublicShows()
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const toggleLike = useAppStore((s) => s.toggleLike)
   const nowIso = useNow()
@@ -56,7 +57,6 @@ export function DesktopAudienceHome() {
     return () => document.removeEventListener('pointerdown', handlePointerDown)
   }, [searchOpen])
 
-  const all = useMemo(() => withMeta(shows, venues, performers), [shows, venues, performers])
   const results = useMemo(() => filterShows(all, filter, nowIso), [all, filter, nowIso])
   const trending = useMemo(() => computeTrendingKeywords(all), [all])
 
@@ -156,7 +156,41 @@ export function DesktopAudienceHome() {
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
-          {results.length === 0 ? (
+          {loading ? (
+            <div className="space-y-2.5">
+              {[0, 1, 2, 3].map((i) => (
+                <div key={i} className="h-[104px] animate-pulse rounded-2xl bg-surface-2" />
+              ))}
+            </div>
+          ) : error ? (
+            <EmptyState
+              art="search"
+              title="공연을 불러오지 못했어요"
+              description={error}
+              action={
+                <button
+                  onClick={refresh}
+                  className="rounded-xl border border-border-strong px-4 py-2.5 text-xs font-bold"
+                >
+                  다시 시도
+                </button>
+              }
+            />
+          ) : results.length === 0 && all.length === 0 ? (
+            <EmptyState
+              art="stage"
+              title="아직 우리 동네 무대가 없어요"
+              description="당신의 가게가 이 동네 첫 무대가 될 수 있습니다."
+              action={
+                <button
+                  onClick={() => navigate('/desktop/host/venue/new')}
+                  className="bg-gold-500 rounded-xl px-4 py-2.5 text-xs font-bold text-gold-ink"
+                >
+                  공간 등록하기
+                </button>
+              }
+            />
+          ) : results.length === 0 ? (
             <EmptyState
               art="search"
               title="조건에 맞는 공연이 없어요"

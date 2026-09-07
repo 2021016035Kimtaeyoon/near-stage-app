@@ -1,9 +1,9 @@
 import { MapPin } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { PosterArt } from '@/components/ui/PosterArt'
-import { humanDateTime, priceLabel } from '@/lib/datetime'
-import { resolvePlace } from '@/store/selectors'
-import { useAppStore, useNow } from '@/store/useAppStore'
+import { usePublicShows } from '@/hooks/usePublicShows'
+import { humanDateTime } from '@/lib/datetime'
+import { useNow } from '@/store/useAppStore'
 import { ScrollReveal } from './ScrollReveal'
 
 /**
@@ -12,23 +12,21 @@ import { ScrollReveal } from './ScrollReveal'
  * ★ 목데이터가 아니라 실제 DB에서 옵니다. 공연이 한 건도 없으면 섹션 자체를 숨깁니다 —
  * 오픈 직후에는 그게 정상 상태이고, 빈 카드 네 개를 보여주는 것보다 없는 편이 낫습니다.
  *
- * 지금은 스토어가 비어 있어 아무것도 렌더되지 않습니다. 5단계에서 데이터 훅을 붙이면
- * 이 컴포넌트는 그대로 두고 읽는 곳만 바뀝니다.
+ * v_public_shows 만 읽으므로 승인 안 된 공간·아티스트의 공연은 애초에 오지 않습니다.
  */
 export function UpcomingShowsPreview() {
   const navigate = useNavigate()
-  const shows = useAppStore((s) => s.shows)
-  const venues = useAppStore((s) => s.venues)
-  const performers = useAppStore((s) => s.performers)
+  const { data, loading } = usePublicShows()
   const nowIso = useNow()
 
   const now = new Date(nowIso).getTime()
-  const upcoming = shows
-    .filter((s) => new Date(s.startAt).getTime() + s.durationMin * 60_000 >= now)
-    .sort((a, b) => new Date(a.startAt).getTime() - new Date(b.startAt).getTime())
+  const upcoming = data
+    .filter((x) => new Date(x.show.startAt).getTime() + x.show.durationMin * 60_000 >= now)
     .slice(0, 4)
 
-  if (upcoming.length === 0) return null
+  // 불러오는 중이거나 공연이 없으면 섹션 자체를 숨깁니다.
+  // 랜딩에 빈 카드 네 개를 두는 것보다 없는 편이 낫습니다.
+  if (loading || upcoming.length === 0) return null
 
   return (
     <section className="mx-auto max-w-5xl px-6 py-20">
@@ -38,9 +36,7 @@ export function UpcomingShowsPreview() {
       </ScrollReveal>
 
       <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {upcoming.map((show) => {
-          const place = resolvePlace(show, venues)
-          const performer = performers.find((p) => p.id === show.performerId)
+        {upcoming.map(({ show, place, performer }) => {
           return (
             <button
               key={show.id}
@@ -59,7 +55,7 @@ export function UpcomingShowsPreview() {
                   {place?.name ?? '장소 미정'}
                 </p>
                 <p className="tnum mt-1.5 text-2xs font-semibold text-ink-3">
-                  {humanDateTime(show.startAt, nowIso)} · {priceLabel(show.ticketPrice)}
+                  {humanDateTime(show.startAt, nowIso)}
                 </p>
               </div>
             </button>

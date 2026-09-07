@@ -13,6 +13,7 @@ SQL Editor에 `APPLY_ALL.sql` 전체를 붙여넣고 Run.
 | `0001_init.sql` | 테이블 15개 + 제약 |
 | `0002_functions.sql` | 프로필 자동생성 트리거, 승인상태 가드, `v_public_shows`, `fn_accept_application` |
 | `0003_rls.sql` | RLS 정책 39개 |
+| `0004_view_counts.sql` | v_public_shows 에 좋아요 수·공간 평점 추가 (create or replace 라 몇 번을 돌려도 안전) |
 
 ## 이미 적용한 뒤 다시 실행하면
 
