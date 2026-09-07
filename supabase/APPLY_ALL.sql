@@ -1260,7 +1260,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = public
-as $
+as $$
 begin
   if new.status is distinct from old.status then
     -- 서버측(service_role·SQL Editor·cron)에는 auth.uid() 가 없습니다
@@ -1277,7 +1277,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 
 create or replace function public.fn_venue_auto_approve()
 returns trigger
