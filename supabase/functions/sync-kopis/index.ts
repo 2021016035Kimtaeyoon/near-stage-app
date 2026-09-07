@@ -84,6 +84,17 @@ function firstTime(guidance: string): { hour: number; minute: number } | null {
   return { hour: Number(m[1]), minute: Number(m[2]) }
 }
 
+/**
+ * 'prfruntime' 은 "1시간", "2시간 30분", "100분" 같은 자유 문장입니다.
+ * 못 읽으면 120분으로 둡니다 — 목록에서 "진행 중" 판정에만 쓰이는 값입니다.
+ */
+function parseRuntime(raw: string): number {
+  const h = raw.match(/(\d+)\s*시간/)
+  const m = raw.match(/(\d+)\s*분/)
+  const total = (h ? Number(h[1]) * 60 : 0) + (m ? Number(m[1]) : 0)
+  return total > 0 ? total : 120
+}
+
 async function fetchText(url: string): Promise<string> {
   const res = await fetch(url)
   if (!res.ok) throw new Error(`KOPIS 응답 오류 ${res.status}`)
@@ -104,7 +115,7 @@ async function geocode(address: string, kakaoKey: string): Promise<{ lat: number
   return { lat: Number(doc.y), lng: Number(doc.x) }
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async () => {
   const kopisKey = Deno.env.get('KOPIS_API_KEY')
   const kakaoKey = Deno.env.get('KAKAO_REST_API_KEY')
   if (!kopisKey) {
@@ -149,6 +160,8 @@ Deno.serve(async (req) => {
         const facilityId = tagText(detailXml, 'mt10id')
         const guidance = tagText(detailXml, 'dtguidance')
         const story = tagText(detailXml, 'sty')
+        const runtime = parseRuntime(tagText(detailXml, 'prfruntime'))
+        const priceNote = tagText(detailXml, 'pcseguidance')
 
         // 공연장 — 주소와 좌표
         let address = ''
@@ -188,10 +201,12 @@ Deno.serve(async (req) => {
             title: item.prfnm,
             description: story || `${item.genrenm} · ${item.prfpdfrom} ~ ${item.prfpdto}`,
             starts_at: startsAt,
-            duration_min: 120,
+            duration_min: runtime,
             capacity: 0,
             status: 'confirmed',
             external_url: `https://www.kopis.or.kr/por/db/pblprfr/pblprfrView.do?menuId=MNU_000020&mt20Id=${item.mt20id}`,
+            poster_url: item.poster || null,
+            price_note: priceNote || null,
             venue_name_raw: item.fcltynm,
             venue_addr_raw: address,
             lat: coords.lat,

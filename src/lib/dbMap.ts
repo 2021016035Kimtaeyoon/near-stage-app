@@ -22,6 +22,8 @@ export interface PublicShowRow {
   source: 'own' | 'kopis'
   kopis_id: string | null
   external_url: string | null
+  poster_url: string | null
+  price_note: string | null
   created_at: string
   venue_name: string | null
   venue_address: string | null
@@ -72,7 +74,8 @@ export function rowToShow(row: PublicShowRow): Show {
     durationMin: row.duration_min,
     title: row.title,
     // 이 서비스는 대금에 관여하지 않습니다. 우리 무대는 참가비가 없고(현장에서 호스트가
-    // 정함), 등록 공연은 원본 예매처에서 결제합니다. 그래서 0으로 둡니다.
+    // 정함), 등록 공연은 원본 예매처에서 결제합니다. 그래서 숫자로는 0이고,
+    // 등록 공연의 가격은 원본 안내 문장(priceNote)을 그대로 보여줍니다.
     ticketPrice: 0,
     capacity: row.capacity,
     reservedCount: row.going_count,
@@ -84,6 +87,8 @@ export function rowToShow(row: PublicShowRow): Show {
     genre: toGenre(row.artist_genre),
     ...(row.kopis_id ? { kopisId: row.kopis_id } : {}),
     ...(row.external_url ? { externalUrl: row.external_url } : {}),
+    ...(row.poster_url ? { posterUrl: row.poster_url } : {}),
+    ...(row.price_note ? { priceNote: row.price_note } : {}),
   }
 }
 
@@ -104,6 +109,7 @@ export function rowToPlace(row: PublicShowRow): ShowPlace | null {
 /** v_public_shows 에서 항상 이 컬럼 목록으로 조회합니다 */
 export const PUBLIC_SHOW_COLUMNS =
   'id,venue_id,artist_id,slot_id,title,description,starts_at,duration_min,capacity,' +
-  'status,source,kopis_id,external_url,created_at,venue_name,venue_address,lat,lng,' +
+  'status,source,kopis_id,external_url,poster_url,price_note,created_at,' +
+  'venue_name,venue_address,lat,lng,' +
   'venue_category,venue_rating,artist_name,artist_genre,artist_photos,' +
   'going_count,like_count,avg_rating,review_count'
