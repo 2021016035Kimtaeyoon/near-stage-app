@@ -10,3 +10,7 @@ dist-ssr
 # Claude Code 로컬 설정 — 저장소에 넣지 않습니다
 .claude/
 skills-lock.json
+
+# 환경변수 — 실제 키가 들어갑니다
+.env.local
+.env
