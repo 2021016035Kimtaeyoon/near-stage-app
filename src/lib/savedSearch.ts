@@ -9,7 +9,6 @@ export function toSavedFilter(filter: AudienceFilter): SavedFilter {
     when: filter.when,
     distance: filter.distance,
     genres: [...filter.genres].sort(),
-    price: filter.price,
     ownOnly: filter.ownOnly,
   }
 }
@@ -19,7 +18,6 @@ export function sameSavedFilter(a: SavedFilter, b: SavedFilter): boolean {
   return (
     a.when === b.when &&
     a.distance === b.distance &&
-    a.price === b.price &&
     a.ownOnly === b.ownOnly &&
     a.genres.length === b.genres.length &&
     a.genres.every((g, i) => g === b.genres[i])
@@ -32,18 +30,11 @@ const WHEN_LABEL: Record<SavedFilter['when'], string> = {
   all: '전체 기간',
 }
 
-const PRICE_LABEL: Record<SavedFilter['price'], string> = {
-  all: '가격 전체',
-  free: '무료',
-  under10k: '1만원 이하',
-}
-
 /** 조건을 사람이 읽는 한 줄로 — 목록·알림 본문에 그대로 씁니다 */
 export function describeSavedFilter(f: SavedFilter): string {
   const parts: string[] = [WHEN_LABEL[f.when]]
   parts.push(f.distance === 0 ? '거리 전체' : `${f.distance}km 이내`)
   if (f.genres.length > 0) parts.push(f.genres.join('·'))
-  if (f.price !== 'all') parts.push(PRICE_LABEL[f.price])
   if (f.ownOnly) parts.push('우리 무대만')
   return parts.join(' · ')
 }
@@ -75,8 +66,6 @@ export function showMatchesSavedFilter(
   // 장르를 모르는 공연(등록 공연의 목록 밖 분류)은 장르 조건에 걸리지 않습니다.
   // 밴드를 찾는 사람에게 분류 불명 공연을 밀어넣지 않기 위함입니다.
   if (f.genres.length > 0 && (!show.genre || !f.genres.includes(show.genre))) return false
-  if (f.price === 'free' && show.ticketPrice !== 0) return false
-  if (f.price === 'under10k' && show.ticketPrice > 10_000) return false
 
   const place = resolvePlace(show, venues)
   if (!place) return false

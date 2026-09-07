@@ -17,7 +17,7 @@ import { useAppStore, useNow } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
 import { FilterChips } from './FilterChips'
 import { FilterSheet } from './FilterSheet'
-import { FreeShowsBanner, RecentlyViewedRow, TrendingRow } from './HomeFeedSections'
+import { OwnShowsBanner, RecentlyViewedRow, TrendingRow } from './HomeFeedSections'
 import { TrendingSearchPanel } from './TrendingSearchPanel'
 
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
@@ -62,8 +62,11 @@ export function HomeMap() {
     () => [...upcoming].sort((a, b) => b.show.likes - a.show.likes).slice(0, 8),
     [upcoming],
   )
-  const freeCount = useMemo(
-    () => upcoming.filter((a) => a.show.ticketPrice === 0).length,
+  // ★ ticketPrice 는 이제 모든 공연이 0 입니다(플랫폼이 대금에 관여하지 않으므로).
+  //   그걸로 "무료 공연"을 세면 3만원 공연까지 무료로 집계됩니다. 대신 "우리가
+  //   참석 예정을 받는 공연"(우리 무대)을 셉니다 — 배너의 실제 의미가 그것입니다.
+  const ownUpcomingCount = useMemo(
+    () => upcoming.filter((a) => a.show.source === 'own').length,
     [upcoming],
   )
   const showDiscoveryFeed = view === 'list' && !filter.query.trim()
@@ -89,7 +92,7 @@ export function HomeMap() {
         <div className="absolute inset-0 overflow-y-auto px-4 pt-[132px]">
           {showDiscoveryFeed && (
             <>
-              <FreeShowsBanner count={freeCount} onClick={() => setFilter({ price: 'free' })} />
+              <OwnShowsBanner count={ownUpcomingCount} onClick={() => setFilter({ ownOnly: true })} />
               <RecentlyViewedRow items={recentlyViewed} nowIso={nowIso} onOpen={openShow} />
               <TrendingRow items={trendingShows} nowIso={nowIso} onOpen={openShow} />
               <h2 className="mb-2.5 text-[15px] font-bold">내 주변 공연</h2>
@@ -160,7 +163,7 @@ export function HomeMap() {
                   aria-label="필터 열기"
                   className={cn(
                     'flex h-10 w-10 shrink-0 items-center justify-center rounded-full border',
-                    filter.genres.length > 0 || filter.price !== 'all' || filter.ownOnly
+                    filter.genres.length > 0 || filter.ownOnly
                       ? 'border-transparent bg-ink text-bg'
                       : 'border-border bg-surface text-ink-2',
                   )}

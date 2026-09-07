@@ -1,7 +1,7 @@
 import { Heart, Share2 } from 'lucide-react'
 import { GenreTag, SourceBadge, StatusDot } from '@/components/ui/Badge'
 import { IconButton } from '@/components/ui/Button'
-import { PosterArt } from '@/components/ui/PosterArt'
+import { ShowPoster } from '@/components/ui/ShowPoster'
 import { countdownLabel, humanDateTime } from '@/lib/datetime'
 import { shareShow } from '@/lib/share'
 import type { Show } from '@/types'
@@ -29,7 +29,8 @@ export function ShowDetailHero({
           있어서, 배지가 사진이 아니라 "이미지+텍스트 전체 높이" 기준 bottom-3로 계산돼
           본문 중간(설명 문단 근처)까지 밀려 내려가 텍스트와 겹쳐 보였습니다. */}
       <div className="relative">
-        <PosterArt seed={posterSeed} genre={show.genre} className="h-[260px] w-full" glyphScale={1.3} />
+        <ShowPoster
+            eager posterUrl={show.posterUrl} seed={posterSeed} genre={show.genre} className="h-[260px] w-full" />
         {/* 배지 가독성용 어둡게 처리 — 앞줄 관객 실루엣과 겹치는 영역이라 페이지 배경색으로
             직접 블렌딩하지 않습니다(했더니 실루엣이 반쯤 지워져 사진이 잘려 겹쳐 보이는 것처럼
             보였습니다). 순수 검정 단일 톤으로만 어둡게 해 사진 자체의 톤과 자연스럽게 이어집니다. */}

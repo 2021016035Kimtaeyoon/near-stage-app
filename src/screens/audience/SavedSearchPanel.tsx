@@ -29,7 +29,7 @@ export function SavedSearchPanel({ compact = false }: { compact?: boolean }) {
             관심 조건
           </h2>
           <p className="mt-0.5 text-2xs leading-snug text-ink-3">
-            조건에 맞는 공연이 새로 열리면 알려드려요. 기간은 빼고 거리·장르·가격만 대조합니다.
+            조건에 맞는 공연이 새로 열리면 알려드려요. 기간은 빼고 거리·장르만 대조합니다.
           </p>
         </div>
         {savedSearches.length > 0 && (

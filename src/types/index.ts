@@ -392,7 +392,6 @@ export interface WeeklyVisitStat {
 /* ────────────────────────── 필터 ────────────────────────── */
 
 export type WhenFilter = 'tonight' | 'weekend' | 'all'
-export type PriceFilter = 'free' | 'under10k' | 'all'
 /** 0 = 전체(거리 무제한) */
 export type DistanceFilter = 1 | 2 | 5 | 0
 export type SortKey = 'soon' | 'near' | 'rating' | 'likes' | 'recommend'
@@ -401,7 +400,6 @@ export interface AudienceFilter {
   when: WhenFilter
   distance: DistanceFilter
   genres: Genre[]
-  price: PriceFilter
   ownOnly: boolean
   query: string
   sort: SortKey
@@ -413,7 +411,7 @@ export interface AudienceFilter {
  * `query`(검색어)와 `sort`(정렬)는 담지 않습니다. 둘 다 "무엇을 보고 싶은지"가 아니라
  * "지금 화면을 어떻게 훑고 있는지"라서, 새 공연을 대조하는 조건으로는 의미가 없습니다.
  */
-export type SavedFilter = Pick<AudienceFilter, 'when' | 'distance' | 'genres' | 'price' | 'ownOnly'>
+export type SavedFilter = Pick<AudienceFilter, 'when' | 'distance' | 'genres' | 'ownOnly'>
 
 export interface SavedSearch {
   id: string

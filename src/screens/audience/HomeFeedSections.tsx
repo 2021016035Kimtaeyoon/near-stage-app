@@ -51,8 +51,14 @@ export function TrendingRow(props: {
   return <Row title="요즘 뜨는 공연" icon={Flame} {...props} />
 }
 
-/** 실제 데이터(무료 공연 건수) 기반 배너 — 가짜 할인율을 지어내지 않습니다 */
-export function FreeShowsBanner({ count, onClick }: { count: number; onClick: () => void }) {
+/**
+ * 우리 무대 배너 — 실제 건수 기반입니다. 가짜 할인율을 지어내지 않습니다.
+ *
+ * 예전에는 "무료 공연 N건"이었는데, 결제를 없애면서 모든 공연의 ticketPrice 가 0이
+ * 되어 유료 공연까지 무료로 집계됐습니다. 지금은 "우리가 참석 예정을 받는 공연"
+ * 건수입니다 — 등록 공연은 원본 예매처로 보내니까요.
+ */
+export function OwnShowsBanner({ count, onClick }: { count: number; onClick: () => void }) {
   if (count === 0) return null
   return (
     <button
@@ -60,8 +66,8 @@ export function FreeShowsBanner({ count, onClick }: { count: number; onClick: ()
       className="bg-gold-500 mb-5 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left text-gold-ink"
     >
       <div>
-        <p className="text-xs font-bold opacity-90">지금 예약할 수 있는</p>
-        <p className="mt-0.5 text-[15px] font-extrabold">무료 공연 {count}건 보러가기</p>
+        <p className="text-xs font-bold opacity-90">바로 참석 예정할 수 있는</p>
+        <p className="mt-0.5 text-[15px] font-extrabold">우리 무대 {count}건 보러가기</p>
       </div>
       <Sparkles size={22} className="shrink-0" />
     </button>

@@ -5,7 +5,7 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { Screen } from '@/components/shell/ScreenHeader'
 import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { PosterArt } from '@/components/ui/PosterArt'
+import { ShowPoster } from '@/components/ui/ShowPoster'
 import { FREE_TRIAL_NOTICE } from '@/config/brand'
 import { humanDateTime, priceLabel } from '@/lib/datetime'
 import { resolvePlace } from '@/store/selectors'
@@ -64,7 +64,8 @@ export function BookingFlow() {
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
         <div className="mb-5 flex items-center gap-3 rounded-2xl border border-border bg-surface-2 p-3">
-          <PosterArt
+          <ShowPoster
+            posterUrl={show.posterUrl}
             seed={show.id + (performer?.photoSeed ?? show.title)}
             genre={show.genre}
             className="h-14 w-14 shrink-0 rounded-xl"

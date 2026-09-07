@@ -1,6 +1,6 @@
 import { MapPin } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { PosterArt } from '@/components/ui/PosterArt'
+import { ShowPoster } from '@/components/ui/ShowPoster'
 import { usePublicShows } from '@/hooks/usePublicShows'
 import { humanDateTime } from '@/lib/datetime'
 import { useNow } from '@/store/useAppStore'
@@ -43,7 +43,8 @@ export function UpcomingShowsPreview() {
               onClick={() => navigate(`/desktop/audience/show/${show.id}`)}
               className="card overflow-hidden text-left"
             >
-              <PosterArt
+              <ShowPoster
+                posterUrl={show.posterUrl}
                 seed={show.id + (performer?.photoSeed ?? show.title)}
                 genre={show.genre}
                 className="aspect-[4/3] w-full"

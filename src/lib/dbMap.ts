@@ -71,6 +71,23 @@ export function districtFromAddress(address: string | null): string {
   return m ? m[1] : ''
 }
 
+/**
+ * KOPIS 포스터 주소 정규화.
+ *
+ * 원본은 http://www.kopis.or.kr/... 로 옵니다. 배포 사이트가 https 라서 그대로 쓰면
+ * 혼합 콘텐츠로 브라우저가 차단합니다. https 로 바꾸면 www → 루트 도메인으로 301
+ * 리다이렉트가 한 번 더 일어나므로, 처음부터 루트 도메인을 씁니다.
+ */
+function normalizePosterUrl(raw: string | null): string | undefined {
+  if (!raw) return undefined
+  let url = raw.trim()
+  if (url.startsWith('http://')) url = 'https://' + url.slice('http://'.length)
+  if (url.startsWith('https://www.kopis.or.kr')) {
+    url = 'https://kopis.or.kr' + url.slice('https://www.kopis.or.kr'.length)
+  }
+  return url
+}
+
 export function rowToShow(row: PublicShowRow): Show {
   return {
     id: row.id,
@@ -95,7 +112,7 @@ export function rowToShow(row: PublicShowRow): Show {
     ...(row.genre_raw ? { genreLabel: row.genre_raw } : {}),
     ...(row.kopis_id ? { kopisId: row.kopis_id } : {}),
     ...(row.external_url ? { externalUrl: row.external_url } : {}),
-    ...(row.poster_url ? { posterUrl: row.poster_url } : {}),
+    ...(normalizePosterUrl(row.poster_url) ? { posterUrl: normalizePosterUrl(row.poster_url) } : {}),
     ...(row.price_note ? { priceNote: row.price_note } : {}),
   }
 }

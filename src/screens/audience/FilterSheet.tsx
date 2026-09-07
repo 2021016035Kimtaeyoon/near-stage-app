@@ -6,7 +6,7 @@ import { GenreTag } from '@/components/ui/Badge'
 import { sameSavedFilter, toSavedFilter } from '@/lib/savedSearch'
 import { DEFAULT_FILTER } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
-import { GENRES, type AudienceFilter, type Genre, type PriceFilter } from '@/types'
+import { GENRES, type AudienceFilter, type Genre } from '@/types'
 
 interface Props {
   open: boolean
@@ -15,12 +15,6 @@ interface Props {
   onChange: (patch: Partial<AudienceFilter>) => void
   resultCount: number
 }
-
-const PRICE_OPTIONS: Array<{ value: PriceFilter; label: string }> = [
-  { value: 'all', label: '전체' },
-  { value: 'free', label: '무료' },
-  { value: 'under10k', label: '1만원 이하' },
-]
 
 export function FilterSheet({ open, onClose, filter, onChange, resultCount }: Props) {
   const savedSearches = useAppStore((s) => s.savedSearches)
@@ -93,23 +87,6 @@ export function FilterSheet({ open, onClose, filter, onChange, resultCount }: Pr
             장르 선택 해제
           </button>
         )}
-      </section>
-
-      <div className="divider" />
-
-      <section className="py-5">
-        <h3 className="mb-2.5 text-sm font-bold">가격</h3>
-        <div className="flex gap-1.5">
-          {PRICE_OPTIONS.map((o) => (
-            <Chip
-              key={o.value}
-              active={filter.price === o.value}
-              onClick={() => onChange({ price: o.value })}
-            >
-              {o.label}
-            </Chip>
-          ))}
-        </div>
       </section>
 
       <div className="divider" />

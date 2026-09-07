@@ -21,12 +21,6 @@ const DISTANCE_OPTIONS: Array<{ value: DistanceFilter; label: string }> = [
   { value: 0, label: '거리 전체' },
 ]
 
-const PRICE_LABEL: Record<AudienceFilter['price'], string> = {
-  all: '가격 전체',
-  free: '무료',
-  under10k: '1만원 이하',
-}
-
 export function FilterChips({ filter, onChange, onOpenSheet }: Props) {
   return (
     <div className="no-scrollbar flex gap-1.5 overflow-x-auto px-4 pb-1">
@@ -60,11 +54,6 @@ export function FilterChips({ filter, onChange, onOpenSheet }: Props) {
           : filter.genres.length === 1
             ? filter.genres[0]
             : `장르 ${filter.genres.length}개`}
-        <ChevronDown size={13} />
-      </Chip>
-
-      <Chip active={filter.price !== 'all'} onClick={onOpenSheet}>
-        {PRICE_LABEL[filter.price]}
         <ChevronDown size={13} />
       </Chip>
 

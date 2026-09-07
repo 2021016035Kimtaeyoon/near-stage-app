@@ -1,6 +1,7 @@
 import { Heart, MapPin, Users } from 'lucide-react'
 import { GenreTag, SourceBadge, StatusDot } from '@/components/ui/Badge'
-import { PosterArt, Rating } from '@/components/ui/PosterArt'
+import { Rating } from '@/components/ui/PosterArt'
+import { ShowPoster } from '@/components/ui/ShowPoster'
 import { cn } from '@/lib/cn'
 import { countdownLabel, humanDateTime, showPriceLabel } from '@/lib/datetime'
 import { distanceLabel } from '@/lib/geo'
@@ -46,7 +47,8 @@ export function ShowCard({
       }
     >
       <button onClick={onClick} className="flex min-w-0 flex-1 gap-3 text-left">
-        <PosterArt
+        <ShowPoster
+          posterUrl={show.posterUrl}
           seed={show.id + (performer?.photoSeed ?? show.title)}
           genre={show.genre}
           className={cn('shrink-0 rounded-xl', compact ? 'h-16 w-16' : 'h-[84px] w-[84px]')}
@@ -125,7 +127,8 @@ export function ShowMiniCard({
       className="flex w-[248px] items-center gap-2.5 p-2.5 text-left"
       style={{ background: 'transparent' }}
     >
-      <PosterArt
+      <ShowPoster
+        posterUrl={show.posterUrl}
         seed={show.id + (performer?.photoSeed ?? show.title)}
         genre={show.genre}
         className="h-14 w-14 shrink-0 rounded-lg"
