@@ -10,15 +10,12 @@ import { HomeMap } from '@/screens/audience/HomeMap'
 import { MyPage } from '@/screens/audience/MyPage'
 import { ReviewCompose } from '@/screens/audience/ReviewCompose'
 import { ShowDetail } from '@/screens/audience/ShowDetail'
-import { TicketScreen } from '@/screens/audience/TicketScreen'
 import { ChatListScreen } from '@/screens/common/ChatListScreen'
 import { ChatThreadScreen } from '@/screens/common/ChatThreadScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
 import { OwnerApplicantsScreen } from '@/screens/owner/OwnerApplicantsScreen'
 import { OwnerDashboard } from '@/screens/owner/OwnerDashboard'
 import { OwnerRecruitScreen } from '@/screens/owner/OwnerRecruitScreen'
-import { OwnerSettlementScreen } from '@/screens/owner/OwnerSettlementScreen'
-import { DemoScreen } from '@/screens/demo/DemoScreen'
 import { OwnerVenueScreen } from '@/screens/owner/OwnerVenueScreen'
 import { PerformerActivity } from '@/screens/performer/PerformerActivity'
 import { PerformerPostsScreen } from '@/screens/performer/PerformerPostsScreen'
@@ -81,14 +78,6 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           }
         />
         <Route
-          path="/audience/ticket/:reservationId"
-          element={
-            <PageTransition>
-              <TicketScreen />
-            </PageTransition>
-          }
-        />
-        <Route
           path="/audience/review/:showId"
           element={
             <PageTransition>
@@ -135,14 +124,6 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           element={
             <PageTransition>
               <OwnerApplicantsScreen />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/owner/settlement"
-          element={
-            <PageTransition>
-              <OwnerSettlementScreen />
             </PageTransition>
           }
         />
@@ -211,14 +192,6 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           element={
             <PageTransition>
               <ChatThreadScreen />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/demo"
-          element={
-            <PageTransition>
-              <DemoScreen />
             </PageTransition>
           }
         />

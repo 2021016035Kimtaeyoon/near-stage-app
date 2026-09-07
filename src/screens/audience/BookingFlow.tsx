@@ -1,18 +1,22 @@
-import { AnimatePresence, motion } from 'framer-motion'
-import { CheckCircle2, ChevronLeft, CreditCard, Info, Minus, Plus, ShieldAlert } from 'lucide-react'
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
+import { motion } from 'framer-motion'
+import { CheckCircle2, ChevronLeft, Info, Minus, Plus } from 'lucide-react'
+import { useState, type Dispatch, type SetStateAction } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Screen } from '@/components/shell/ScreenHeader'
 import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PosterArt } from '@/components/ui/PosterArt'
-import { DEPOSIT_AMOUNT, SERVICE_NAME } from '@/config/brand'
-import { humanDateTime, priceLabel, won } from '@/lib/datetime'
+import { FREE_TRIAL_NOTICE } from '@/config/brand'
+import { humanDateTime, priceLabel } from '@/lib/datetime'
 import { resolvePlace } from '@/store/selectors'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 
-type Step = 'count' | 'pay' | 'paying' | 'done'
-
+/**
+ * 참석 예정 등록.
+ *
+ * 결제가 없는 서비스라 단계는 인원 선택 → 완료, 둘뿐입니다.
+ * 예약금·결제·QR 티켓은 전부 없앴고, 입장 확인은 호스트 화면의 참석 명단에서 합니다.
+ */
 export function BookingFlow() {
   const { showId } = useParams<{ showId: string }>()
   const navigate = useNavigate()
@@ -20,21 +24,10 @@ export function BookingFlow() {
   const venues = useAppStore((s) => s.venues)
   const performers = useAppStore((s) => s.performers)
   const createReservation = useAppStore((s) => s.createReservation)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
 
-  const [step, setStep] = useState<Step>('count')
+  const [done, setDone] = useState(false)
   const [headcount, setHeadcount] = useState(1)
-  const [reservationId, setReservationId] = useState<string | null>(null)
-
-  // 결제 연출 타이머는 언마운트 시 반드시 취소합니다 — 안 그러면 2초 안에 뒤로 갔을 때
-  // 사용자가 포기한 예약이 뒤늦게 생성되고 정원·정산액까지 바뀝니다.
-  // (아래 early return보다 위에 있어야 훅 순서가 항상 같습니다)
-  const payTimer = useRef<number | null>(null)
-  useEffect(() => {
-    return () => {
-      if (payTimer.current !== null) window.clearTimeout(payTimer.current)
-    }
-  }, [])
 
   const show = shows.find((s) => s.id === showId) ?? null
   const place = show ? resolvePlace(show, venues) : null
@@ -48,36 +41,25 @@ export function BookingFlow() {
             <ChevronLeft size={22} />
           </IconButton>
         </div>
-        <EmptyState art="ticket" title="예약할 공연을 찾을 수 없어요" />
+        <EmptyState art="ticket" title="공연을 찾을 수 없어요" />
       </Screen>
     )
   }
 
   const seatsLeft = Math.max(0, show.capacity - show.reservedCount)
-  const deposit = DEPOSIT_AMOUNT * headcount
 
-  const handlePay = () => {
-    setStep('paying')
-    payTimer.current = window.setTimeout(() => {
-      payTimer.current = null
-      const reservation = createReservation(show.id, headcount)
-      setReservationId(reservation.id)
-      setStep('done')
-    }, 2000)
+  const handleConfirm = () => {
+    createReservation(show.id, headcount)
+    setDone(true)
   }
 
   return (
     <Screen>
       <div className="flex items-center gap-2 border-b border-border px-4 pb-3 pt-12">
-        <IconButton
-          label="뒤로"
-          onClick={() => (step === 'count' ? navigate(-1) : setStep('count'))}
-        >
+        <IconButton label="뒤로" onClick={() => navigate(-1)}>
           <ChevronLeft size={22} />
         </IconButton>
-        <h1 className="text-[16px] font-bold">
-          {step === 'done' ? '예약 완료' : '예약하기'}
-        </h1>
+        <h1 className="text-[16px] font-bold">{done ? '참석 예정 완료' : '참석 예정'}</h1>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5">
@@ -95,45 +77,24 @@ export function BookingFlow() {
           </div>
         </div>
 
-        <AnimatePresence mode="wait">
-          {step === 'count' && (
-            <StepCount
-              key="count"
-              headcount={headcount}
-              setHeadcount={setHeadcount}
-              seatsLeft={seatsLeft}
-              ticketPrice={show.ticketPrice}
-            />
-          )}
-          {(step === 'pay' || step === 'paying') && (
-            <StepPay
-              key="pay"
-              headcount={headcount}
-              deposit={deposit}
-              paying={step === 'paying'}
-            />
-          )}
-          {step === 'done' && reservationId && (
-            <StepDone key="done" reservationId={reservationId} onGoTicket={() => navigate(`/audience/ticket/${reservationId}`, { replace: true })} />
-          )}
-        </AnimatePresence>
+        {done ? (
+          <StepDone onGoMy={() => navigate('/audience/my', { replace: true })} />
+        ) : (
+          <StepCount
+            headcount={headcount}
+            setHeadcount={setHeadcount}
+            seatsLeft={seatsLeft}
+            ticketPrice={show.ticketPrice}
+          />
+        )}
       </div>
 
-      {step !== 'done' && (
+      {!done && (
         <div className="border-t border-border px-4 pb-[calc(var(--safe-bottom)+14px)] pt-3">
-          <div className="mb-2.5 flex items-center justify-between">
-            <span className="text-xs font-semibold text-ink-2">예약금</span>
-            <span className="tnum text-lg font-extrabold">{won(deposit)}원</span>
-          </div>
-          {step === 'count' ? (
-            <Button full variant="brand" size="lg" onClick={() => setStep('pay')}>
-              다음 · 예약금 결제하기
-            </Button>
-          ) : (
-            <Button full variant="brand" size="lg" loading={step === 'paying'} onClick={handlePay}>
-              {step === 'paying' ? '결제 처리 중' : `${won(deposit)}원 결제하기`}
-            </Button>
-          )}
+          <p className="mb-2.5 text-center text-2xs text-ink-3">{FREE_TRIAL_NOTICE}</p>
+          <Button full variant="brand" size="lg" onClick={handleConfirm} disabled={seatsLeft === 0}>
+            {seatsLeft === 0 ? '정원이 마감되었어요' : `${headcount}명 참석 예정하기`}
+          </Button>
         </div>
       )}
     </Screen>
@@ -155,9 +116,11 @@ function StepCount({
 }) {
   const max = Math.min(4, seatsLeft)
   return (
-    <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}>
-      <h2 className="mb-1 text-[15px] font-bold">인원을 선택하세요</h2>
-      <p className="mb-4 text-xs text-ink-3">1인당 티켓 {priceLabel(ticketPrice)} · 최대 4인</p>
+    <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }}>
+      <h2 className="mb-1 text-[15px] font-bold">몇 분이 오시나요?</h2>
+      <p className="mb-4 text-xs text-ink-3">
+        1인당 티켓 {priceLabel(ticketPrice)} · 최대 4인 · 남은 자리 {seatsLeft}석
+      </p>
 
       <div className="flex items-center justify-center gap-6 rounded-2xl border border-border bg-surface-2 py-8">
         <button
@@ -180,106 +143,29 @@ function StepCount({
       </div>
 
       <div className="mt-4 flex items-start gap-2 rounded-xl bg-surface-2 p-3 text-xs leading-relaxed text-ink-2">
-        <ShieldAlert size={15} className="mt-0.5 shrink-0 text-warn" />
+        <Info size={15} className="mt-0.5 shrink-0 text-gold-text" />
         <p>
-          <b className="text-ink">예약금은 입장 시 전액 차감됩니다.</b> 노쇼 방지를 위한
-          최소 금액이며, 실제 티켓 요금은 현장에서 결제합니다.
+          <b className="text-ink">미리 낼 돈은 없습니다.</b> 티켓 요금이 있는 공연은 현장에서
+          직접 내시면 됩니다. 못 가게 되면 시작 3시간 전까지 취소해 주세요.
         </p>
       </div>
     </motion.div>
   )
 }
 
-function StepPay({
-  headcount,
-  deposit,
-  paying,
-}: {
-  headcount: number
-  deposit: number
-  paying: boolean
-}) {
+function StepDone({ onGoMy }: { onGoMy: () => void }) {
   return (
-    <motion.div initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }}>
-      <h2 className="mb-4 text-[15px] font-bold">예약금 결제</h2>
-
-      <div
-        className="relative mb-4 flex h-44 flex-col justify-between overflow-hidden rounded-2xl p-4 text-white"
-        style={{ backgroundImage: 'linear-gradient(135deg,#2A2A38 0%,#17171C 100%)' }}
-      >
-        <div className="flex items-center justify-between">
-          <CreditCard size={22} />
-          <span className="text-xs font-bold tracking-wide opacity-80">MOCK CARD</span>
-        </div>
-        <div>
-          <p className="tnum text-lg font-bold tracking-[0.18em]">•••• •••• •••• 4242</p>
-          <div className="tnum mt-2 flex items-center justify-between text-xs opacity-80">
-            <span>{SERVICE_NAME} 데모카드</span>
-            <span>09/29</span>
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-2 rounded-xl border border-border p-3.5">
-        <Row label="인원" value={`${headcount}명`} />
-        <Row label="1인당 예약금" value={priceLabel(DEPOSIT_AMOUNT)} />
-        <div className="divider my-1" />
-        <Row label="결제 금액" value={`${won(deposit)}원`} bold />
-      </div>
-
-      <AnimatePresence>
-        {paying && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="mt-4 flex items-center justify-center gap-2 text-sm font-semibold text-ink-2"
-          >
-            <motion.span
-              className="h-4 w-4 rounded-full border-2 border-border-strong border-t-[#FFC42E]"
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
-            />
-            결제를 처리하고 있어요…
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  )
-}
-
-function StepDone({ reservationId, onGoTicket }: { reservationId: string; onGoTicket: () => void }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.96 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="flex flex-col items-center pt-8 text-center"
-    >
-      <div className="bg-gold-500 flex h-16 w-16 items-center justify-center rounded-full text-gold-ink">
-        <CheckCircle2 size={32} />
-      </div>
-      <h2 className="mt-4 text-lg font-extrabold">예약이 완료되었어요</h2>
-      <p className="mt-1.5 text-sm leading-relaxed text-ink-2">
-        예약 번호 <span className="tnum font-bold text-ink">{reservationId.toUpperCase()}</span>
+    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="text-center">
+      <CheckCircle2 size={56} className="mx-auto text-gold-text" />
+      <h2 className="mt-4 text-[17px] font-extrabold">참석 예정으로 등록됐어요</h2>
+      <p className="mt-1.5 text-xs leading-relaxed text-ink-2">
+        호스트에게 참석 인원이 전달됐습니다.
         <br />
-        QR 티켓으로 현장에서 바로 입장하실 수 있어요.
+        공연 당일 현장에서 닉네임을 말씀해 주세요.
       </p>
-      <div className="mt-5 flex items-start gap-2 rounded-xl bg-surface-2 p-3 text-left text-xs leading-relaxed text-ink-2">
-        <Info size={14} className="mt-0.5 shrink-0 text-ink-3" />
-        입장할 때 QR 티켓을 스태프에게 보여주세요. 예약금은 입장 시 전액 차감됩니다.
-      </div>
-      <Button full variant="brand" size="lg" className="mt-6" onClick={onGoTicket}>
-        QR 티켓 보기
+      <Button variant="brand" size="lg" full className="mt-6" onClick={onGoMy}>
+        내 참석 예정 보기
       </Button>
     </motion.div>
-  )
-}
-
-function Row({ label, value, bold = false }: { label: string; value: string; bold?: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-xs text-ink-2">{label}</span>
-      <span className={`tnum text-sm ${bold ? 'font-extrabold' : 'font-semibold'}`}>{value}</span>
-    </div>
   )
 }

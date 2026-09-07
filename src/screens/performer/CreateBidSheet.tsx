@@ -3,7 +3,7 @@ import { BottomSheet } from '@/components/ui/BottomSheet'
 import { Button } from '@/components/ui/Button'
 import { Label, TextArea, TextInput } from '@/components/ui/Field'
 import { kstIso } from '@/lib/datetime'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
 
 /**
@@ -12,7 +12,7 @@ import { toast } from '@/store/useToast'
 export function CreateBidSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const performerId = useAppStore((s) => s.currentPerformerId)
   const performer = useAppStore((s) => s.performers.find((p) => p.id === performerId))
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
   const createReverseBid = useAppStore((s) => s.createReverseBid)
   const addBidProposal = useAppStore((s) => s.addBidProposal)
 
@@ -26,6 +26,7 @@ export function CreateBidSheet({ open, onClose }: { open: boolean; onClose: () =
       toast('공간에 전할 메시지를 입력해주세요', 'error')
       return
     }
+    if (!performerId) return
     const [y, m, d] = dateStr.split('-').map(Number)
     const bid = createReverseBid({
       performerId,
@@ -53,7 +54,7 @@ export function CreateBidSheet({ open, onClose }: { open: boolean; onClose: () =
             i === 0
               ? `${v.name}입니다. 말씀하신 조건에 딱 맞는 슬롯이 있어요.`
               : `${v.name}입니다. 요청하신 날짜에 자리 비어있습니다.`,
-          createdAt: useAppStore.getState().demoNowIso,
+          createdAt: new Date().toISOString(),
         })
       })
       toast('공간 제안 2건이 도착했습니다', 'success', '역경매 탭에서 확인해보세요')

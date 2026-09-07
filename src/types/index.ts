@@ -4,6 +4,19 @@
 
 export type Role = 'audience' | 'owner' | 'performer'
 
+/**
+ * 로그인한 사용자.
+ *
+ * ★ 역할은 계정 속성이 아니라 보유 리소스로 판단합니다(§7). 공간을 가지고 있으면 호스트,
+ * 팀을 가지고 있으면 아티스트, 아무것도 없으면 관객입니다. 여기에 role을 넣지 마세요.
+ */
+export interface UserProfile {
+  id: string
+  displayName: string
+  avatarUrl?: string
+  isAdmin: boolean
+}
+
 export type Genre =
   | '밴드'
   | '마술'
@@ -260,17 +273,18 @@ export interface ReverseBid {
 
 export type ReservationStatus = '예약' | '입장완료' | '취소'
 
+/**
+ * 참석 예정.
+ *
+ * 결제가 없는 서비스라 금액·QR 필드가 없습니다. 입장 확인은 호스트가 참석 명단에서
+ * 체크하는 방식입니다.
+ */
 export interface Reservation {
   id: string
   showId: string
   headcount: number
-  depositPaid: number
-  /** QR 캔버스 패턴 시드 */
-  qrCode: string
   status: ReservationStatus
   createdAt: string
-  /** 취소 시 환불된 금액. 취소 전이거나 입장완료면 null */
-  refundAmount: number | null
 }
 
 /** ★ 공간 리뷰와 공연 리뷰를 분리해 저장 */
@@ -288,7 +302,7 @@ export interface Review {
   createdAt: string
 }
 
-/* ────────────────────────── 채팅 / 알림 / 정산 ────────────────────────── */
+/* ────────────────────────── 채팅 / 알림 ────────────────────────── */
 
 export interface ChatMessage {
   id: string
@@ -315,7 +329,6 @@ export type NotificationType =
   | '거절'
   | '예약'
   | '확정'
-  | '정산'
   | '리뷰'
   | '제안'
   | '관심'
@@ -337,18 +350,6 @@ export interface AppNotification {
    */
   audienceScope?: 'all' | 'followers'
   performerId?: string
-}
-
-export type SettlementStatus = '정산대기' | '정산완료'
-
-export interface Settlement {
-  id: string
-  showId: string
-  gross: number
-  platformFee: number
-  net: number
-  status: SettlementStatus
-  settledAt: string | null
 }
 
 /* ────────────────────────── 이벤트 / 회원등급 ────────────────────────── */

@@ -31,7 +31,7 @@ export function createSavedSearchActions(set: SetState, get: GetState) {
         name: name?.trim() || autoSavedSearchName(filter),
         filter,
         alertOn: true,
-        createdAt: state.demoNowIso,
+        createdAt: new Date().toISOString(),
         notifiedShowIds: [],
       }
       set((s) => ({ savedSearches: [search, ...s.savedSearches] }))
@@ -77,7 +77,7 @@ export function createSavedSearchActions(set: SetState, get: GetState) {
         (ss) =>
           ss.alertOn &&
           !ss.notifiedShowIds.includes(showId) &&
-          showMatchesSavedFilter(ss.filter, show, state.venues, state.demoNowIso),
+          showMatchesSavedFilter(ss.filter, show, state.venues, new Date().toISOString()),
       )
       if (hits.length === 0) return
 

@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Segmented } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { humanDate, priceLabel, won } from '@/lib/datetime'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import type { Post } from '@/types'
 import { ApplyToPostSheet } from './ApplyToPostSheet'
 import { CreateBidSheet } from './CreateBidSheet'
@@ -20,7 +20,7 @@ export function PerformerPostsScreen() {
   const posts = useAppStore((s) => s.posts)
   const venues = useAppStore((s) => s.venues)
   const bids = useAppStore((s) => s.reverseBids.filter((b) => b.performerId === performerId))
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
 
   const [applyTarget, setApplyTarget] = useState<Post | null>(null)
   const [bidSheetOpen, setBidSheetOpen] = useState(false)

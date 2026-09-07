@@ -16,7 +16,7 @@ export function createPerformerActions(set: SetState, get: GetState) {
         performerId,
         message,
         status: '대기',
-        createdAt: get().demoNowIso,
+        createdAt: new Date().toISOString(),
       }
       set((s) => ({
         posts: s.posts.map((p) =>
@@ -39,7 +39,7 @@ export function createPerformerActions(set: SetState, get: GetState) {
 
     createReverseBid: (input: Omit<ReverseBid, 'id' | 'createdAt' | 'proposals'>): ReverseBid => {
       const id = get().nextId('rb')
-      const bid: ReverseBid = { ...input, id, createdAt: get().demoNowIso, proposals: [] }
+      const bid: ReverseBid = { ...input, id, createdAt: new Date().toISOString(), proposals: [] }
       set((s) => ({ reverseBids: [bid, ...s.reverseBids] }))
       return bid
     },

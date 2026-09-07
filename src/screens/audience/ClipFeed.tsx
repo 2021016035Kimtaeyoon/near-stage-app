@@ -1,11 +1,9 @@
-import { ChevronUp, Plus } from 'lucide-react'
+import { ChevronUp } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { DEMO_PERFORMER_ID } from '@/config/brand'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import type { Performer, Show } from '@/types'
 import { ClipCard } from './ClipCard'
-import { UploadHighlightSheet } from './UploadHighlightSheet'
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -41,19 +39,18 @@ function buildClipEntries(performers: Performer[]): ClipEntry[] {
  * 세로 스와이프 풀스크린 클립 피드.
  * 네이티브 CSS 스크롤 스냅으로 카드 하나씩 넘기며(모멘텀·탄성은 브라우저가 처리),
  * 이번 주 공연이 있는 팀은 카드 하단에 유입 배너를 띄워 공연 상세로 바로 연결합니다(핵심 유입 루프).
- * ★ 좌상단 업로드 버튼으로 공연 하이라이트를 새로 올릴 수 있습니다(지금은 사진으로 대체).
+ * 영상은 우리가 호스팅하지 않습니다 — 아티스트가 등록한 외부 링크로 이동합니다.
  */
 export function ClipFeed() {
   const navigate = useNavigate()
   const performers = useAppStore((s) => s.performers)
   const shows = useAppStore((s) => s.shows)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
   const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const toggleFollow = useAppStore((s) => s.toggleFollow)
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
-  const [uploadOpen, setUploadOpen] = useState(false)
   // 클립 자체에 대한 좋아요는 공연 예약과 무관한 가벼운 반응이라 세션 로컬 상태로 둡니다
   const [likedClips, setLikedClips] = useState<Set<string>>(new Set())
 
@@ -81,26 +78,6 @@ export function ClipFeed() {
     setIndex((prev) => (prev === i ? prev : i))
   }
 
-  const scrollToIndex = (i: number, smooth = true) => {
-    const el = containerRef.current
-    if (!el) return
-    el.scrollTo({ top: i * el.clientHeight, behavior: smooth ? 'smooth' : 'auto' })
-  }
-
-  const handleUploaded = (performerId: string) => {
-    // 방금 올린 하이라이트는 그 팀의 클립 목록 맨 앞(0번)에 들어가므로,
-    // 그 팀의 첫 카드가 시작되는 위치로 피드를 바로 스크롤해 보여줍니다.
-    let target = 0
-    for (const performer of performers) {
-      if (performer.id === performerId) break
-      target += Math.max(1, performer.clipTitles.length)
-    }
-    setUploadOpen(false)
-    // 시트가 닫히고 새 카드가 DOM에 반영된 직후 스크롤합니다.
-    // requestAnimationFrame은 백그라운드/비활성 탭에서 지연되거나 아예 멈출 수 있어
-    // (배터리 절약을 위한 브라우저 정책) 더 안정적인 setTimeout을 씁니다.
-    window.setTimeout(() => scrollToIndex(target), 50)
-  }
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-[#0B0B0F]">
@@ -136,15 +113,6 @@ export function ClipFeed() {
         ))}
       </div>
 
-      {/* 하이라이트 업로드 */}
-      <button
-        onClick={() => setUploadOpen(true)}
-        className="bg-gold-500 absolute left-3 top-12 z-30 flex items-center gap-1.5 rounded-full px-3.5 py-2 text-xs font-bold text-gold-ink"
-        style={{ boxShadow: '0 8px 20px rgba(255,196,46,.4)' }}
-      >
-        <Plus size={15} />
-        하이라이트 올리기
-      </button>
 
       {/* 전체 진행도 (개수가 많아 점 대신 슬림 스크롤바 형태로 표시) */}
       {clips.length > 1 && (
@@ -166,13 +134,6 @@ export function ClipFeed() {
         </div>
       )}
 
-      <UploadHighlightSheet
-        open={uploadOpen}
-        onClose={() => setUploadOpen(false)}
-        performers={performers}
-        defaultPerformerId={DEMO_PERFORMER_ID}
-        onUploaded={handleUploaded}
-      />
     </div>
   )
 }

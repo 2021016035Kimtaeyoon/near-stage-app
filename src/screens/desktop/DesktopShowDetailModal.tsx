@@ -12,7 +12,7 @@ import { DEFAULT_USER_LOCATION } from '@/config/brand'
 import { priceLabel } from '@/lib/datetime'
 import { distanceKm as calcDistance } from '@/lib/geo'
 import { resolvePlace } from '@/store/selectors'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 
 /**
  * 데스크톱 전용 공연 상세 — 모바일 화면(`/audience/show/:id`)으로 새 탭이 열리지 않고
@@ -34,7 +34,7 @@ export function DesktopShowDetailModal({
   const venues = useAppStore((s) => s.venues)
   const performers = useAppStore((s) => s.performers)
   const reviews = useAppStore((s) => s.reviews)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const toggleLike = useAppStore((s) => s.toggleLike)

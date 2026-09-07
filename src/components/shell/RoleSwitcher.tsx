@@ -25,11 +25,9 @@ function useSwitchRole() {
 /** 모바일/프레임 안: 우하단 플로팅 버튼 */
 export function RoleSwitcherFab() {
   const role = useAppStore((s) => s.role)
-  const demoActive = useAppStore((s) => s.demo.active)
   const [open, setOpen] = useState(false)
   const switchRole = useSwitchRole()
 
-  if (demoActive) return null
 
   return (
     <div className="absolute bottom-[92px] right-4 z-[70] flex flex-col items-end gap-2">

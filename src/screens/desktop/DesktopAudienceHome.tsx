@@ -9,7 +9,7 @@ import { cn } from '@/lib/cn'
 import { sameSavedFilter, toSavedFilter } from '@/lib/savedSearch'
 import { computeTrendingKeywords } from '@/lib/trending'
 import { DEFAULT_FILTER, filterShows, withMeta } from '@/store/selectors'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
 import { TrendingSearchPanel } from '../audience/TrendingSearchPanel'
 import { DesktopShowDetailModal } from './DesktopShowDetailModal'
@@ -29,10 +29,10 @@ export function DesktopAudienceHome() {
   const performers = useAppStore((s) => s.performers)
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const toggleLike = useAppStore((s) => s.toggleLike)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
   const filter = useAppStore((s) => s.audienceFilter)
   const setFilter = useAppStore((s) => s.setAudienceFilter)
-  const highlightShowId = useAppStore((s) => s.demo.highlightShowId)
+  const highlightShowId = useAppStore((s) => s.highlightShowId)
   const savedSearches = useAppStore((s) => s.savedSearches)
   const saveCurrentSearch = useAppStore((s) => s.saveCurrentSearch)
   const applySavedSearch = useAppStore((s) => s.applySavedSearch)

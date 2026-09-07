@@ -1,5 +1,32 @@
-import { hashSeed } from './rng'
+/**
+ * 시드 기반 결정론적 값 생성기.
+ *
+ * 사진이 없는 공간·공연의 대체 이미지(PosterArt)를 만드는 데만 씁니다.
+ * 같은 시드는 항상 같은 그림이 나와야 하므로 Math.random()을 쓰지 않습니다.
+ */
+/** 문자열 → 32bit 정수 해시 (xmur3) */
+export function hashSeed(str: string): number {
+  let h = 1779033703 ^ str.length
+  for (let i = 0; i < str.length; i++) {
+    h = Math.imul(h ^ str.charCodeAt(i), 3432918353)
+    h = (h << 13) | (h >>> 19)
+  }
+  h = Math.imul(h ^ (h >>> 16), 2246822507)
+  h = Math.imul(h ^ (h >>> 13), 3266489909)
+  return (h ^= h >>> 16) >>> 0
+}
 
+/** mulberry32 — 0 이상 1 미만의 결정론적 난수 생성기 */
+export function makeRng(seed: string | number): () => number {
+  let a = typeof seed === 'string' ? hashSeed(seed) : seed >>> 0
+  return () => {
+    a |= 0
+    a = (a + 0x6d2b79f5) | 0
+    let t = Math.imul(a ^ (a >>> 15), 1 | a)
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
+}
 /**
  * photoSeed → 결정론적 그라데이션.
  * 외부 이미지 요청을 0건으로 유지하기 위해, 모든 "사진"은 시드에서 계산된

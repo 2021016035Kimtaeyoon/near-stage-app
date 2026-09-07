@@ -7,14 +7,14 @@ import { GenreTag, Tag } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { humanDate, priceLabel } from '@/lib/datetime'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import { CreatePostSheet } from './CreatePostSheet'
 
 export function OwnerRecruitScreen() {
   const navigate = useNavigate()
   const venueId = useAppStore((s) => s.currentVenueId)
   const posts = useAppStore((s) => s.posts.filter((p) => p.venueId === venueId))
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
   const [createOpen, setCreateOpen] = useState(false)
 
   const sorted = posts
@@ -85,7 +85,9 @@ export function OwnerRecruitScreen() {
         <TabBarSpacer />
       </ScreenBody>
 
-      <CreatePostSheet open={createOpen} onClose={() => setCreateOpen(false)} venueId={venueId} />
+      {venueId && (
+        <CreatePostSheet open={createOpen} onClose={() => setCreateOpen(false)} venueId={venueId} />
+      )}
     </Screen>
   )
 }

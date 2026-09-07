@@ -1,20 +1,21 @@
 import { isSameDay } from 'date-fns'
-import { CalendarDays, ChevronRight, QrCode, TrendingUp, Users, Wallet } from 'lucide-react'
+import { CalendarDays, ChevronRight, QrCode, TrendingUp, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Screen, ScreenBody, ScreenHeader, SectionTitle } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { GenreTag, Tag } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
 import { KpiCard, KpiGrid } from '@/components/ui/Kpi'
 import { PosterArt } from '@/components/ui/PosterArt'
-import { humanDateTime, won } from '@/lib/datetime'
+import { humanDateTime } from '@/lib/datetime'
 import {
   computeOwnerKpis,
   pendingApplicantsForVenue,
   upcomingShowsForVenue,
 } from '@/store/ownerSelectors'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
 import { PerformanceChart } from './PerformanceChart'
 
@@ -24,12 +25,11 @@ export function OwnerDashboard() {
   const venue = useAppStore((s) => s.venues.find((v) => v.id === venueId))
   const shows = useAppStore((s) => s.shows)
   const performers = useAppStore((s) => s.performers)
-  const settlements = useAppStore((s) => s.settlements)
   const weeklyStats = useAppStore((s) => s.weeklyStats)
   const posts = useAppStore((s) => s.posts)
   const reservations = useAppStore((s) => s.reservations)
   const checkInReservation = useAppStore((s) => s.checkInReservation)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
 
   if (!venue) {
     return (
@@ -40,10 +40,10 @@ export function OwnerDashboard() {
     )
   }
 
-  const kpis = computeOwnerKpis(venueId, shows, settlements, weeklyStats, nowIso)
-  const myStats = weeklyStats.filter((w) => w.venueId === venueId)
-  const upcoming = upcomingShowsForVenue(venueId, shows, nowIso).slice(0, 4)
-  const pending = pendingApplicantsForVenue(venueId, posts)
+  const kpis = computeOwnerKpis(venue.id, shows, weeklyStats, nowIso)
+  const myStats = weeklyStats.filter((w) => w.venueId === venue.id)
+  const upcoming = upcomingShowsForVenue(venue.id, shows, nowIso).slice(0, 4)
+  const pending = pendingApplicantsForVenue(venue.id, posts)
 
   const now = new Date(nowIso)
   const todayShowIds = new Set(
@@ -57,6 +57,7 @@ export function OwnerDashboard() {
     <Screen>
       <ScreenHeader title={venue.name} subtitle="호스트 대시보드" />
       <ScreenBody>
+        <FreeTrialNotice className="mb-4" />
         {pending.length > 0 && (
           <button
             onClick={() => navigate('/owner/recruit')}
@@ -84,7 +85,6 @@ export function OwnerDashboard() {
             value={`+${kpis.estimatedExtraAudience}명`}
             hint="공연 유무 방문객 차이 기반"
           />
-          <KpiCard icon={Wallet} label="정산 예정액" value={`${won(kpis.pendingSettlement)}원`} />
         </KpiGrid>
 
         <div className="mt-5">
@@ -102,7 +102,7 @@ export function OwnerDashboard() {
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-bold">{show.title}</p>
-                    <p className="tnum mt-0.5 text-xs text-ink-2">{reservation.headcount}명 · {reservation.qrCode}</p>
+                    <p className="tnum mt-0.5 text-xs text-ink-2">{reservation.headcount}명</p>
                   </div>
                   {reservation.status === '입장완료' ? (
                     <Tag tone="ok">입장완료</Tag>

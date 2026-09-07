@@ -12,7 +12,7 @@ import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
 import { computeTrendingKeywords } from '@/lib/trending'
 import { DEFAULT_FILTER, filterShows, withMeta } from '@/store/selectors'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
 import { FilterChips } from './FilterChips'
 import { FilterSheet } from './FilterSheet'
@@ -35,10 +35,10 @@ export function HomeMap() {
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const toggleLike = useAppStore((s) => s.toggleLike)
   const recentlyViewedShowIds = useAppStore((s) => s.recentlyViewedShowIds)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
   const filter = useAppStore((s) => s.audienceFilter)
   const setFilter = useAppStore((s) => s.setAudienceFilter)
-  const highlightShowId = useAppStore((s) => s.demo.highlightShowId)
+  const highlightShowId = useAppStore((s) => s.highlightShowId)
 
   // 홈은 지도 단독이 아니라 상단 검색창 + 하단 공연 리스트가 기본입니다
   const [view, setView] = useState<'map' | 'list'>('list')

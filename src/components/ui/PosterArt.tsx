@@ -1,7 +1,7 @@
 import { Star } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { seedDots, seedGradient, seedGradientDeep } from '@/lib/gradient'
-import { makeRng } from '@/lib/rng'
+import { makeRng } from '@/lib/gradient'
 import { GENRE_GLYPH } from '@/lib/theme'
 import { CrowdSilhouette, LightBeams, StageTruss } from './PosterAtmosphere'
 import { POSTER_FIGURE } from './PosterFigures'

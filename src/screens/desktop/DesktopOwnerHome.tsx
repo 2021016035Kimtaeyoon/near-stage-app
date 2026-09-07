@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronRight, TrendingUp, Users, Wallet } from 'lucide-react'
+import { CalendarDays, ChevronRight, TrendingUp, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { GenreTag } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -11,7 +11,7 @@ import {
   pendingApplicantsForVenue,
   upcomingShowsForVenue,
 } from '@/store/ownerSelectors'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 
 /** 데스크톱 홈 — 공간주용. KPI·성과 리포트·다가오는 공연을 한 화면 그리드로 */
 export function DesktopOwnerHome() {
@@ -20,10 +20,9 @@ export function DesktopOwnerHome() {
   const venue = useAppStore((s) => s.venues.find((v) => v.id === venueId))
   const shows = useAppStore((s) => s.shows)
   const performers = useAppStore((s) => s.performers)
-  const settlements = useAppStore((s) => s.settlements)
   const weeklyStats = useAppStore((s) => s.weeklyStats)
   const posts = useAppStore((s) => s.posts)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
 
   if (!venue) {
     return (
@@ -33,10 +32,10 @@ export function DesktopOwnerHome() {
     )
   }
 
-  const kpis = computeOwnerKpis(venueId, shows, settlements, weeklyStats, nowIso)
-  const myStats = weeklyStats.filter((w) => w.venueId === venueId)
-  const upcoming = upcomingShowsForVenue(venueId, shows, nowIso).slice(0, 6)
-  const pending = pendingApplicantsForVenue(venueId, posts)
+  const kpis = computeOwnerKpis(venue.id, shows, weeklyStats, nowIso)
+  const myStats = weeklyStats.filter((w) => w.venueId === venue.id)
+  const upcoming = upcomingShowsForVenue(venue.id, shows, nowIso).slice(0, 6)
+  const pending = pendingApplicantsForVenue(venue.id, posts)
 
   return (
     <div className="h-full overflow-y-auto">
@@ -61,7 +60,6 @@ export function DesktopOwnerHome() {
           <KpiCard icon={CalendarDays} label="이번 달 공연 수" value={`${kpis.monthShowCount}건`} tone="brand" />
           <KpiCard icon={Users} label="총 예약 관객" value={`${kpis.monthReserved}명`} />
           <KpiCard icon={TrendingUp} label="예상 추가 집객" value={`+${kpis.estimatedExtraAudience}명`} />
-          <KpiCard icon={Wallet} label="정산 예정액" value={`${kpis.pendingSettlement.toLocaleString('ko-KR')}원`} />
         </KpiGrid>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">

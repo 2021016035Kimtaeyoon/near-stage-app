@@ -3,10 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { Tag } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PosterArt } from '@/components/ui/PosterArt'
-import { DEMO_AUDIENCE_NAME } from '@/config/brand'
-import { humanDateTime, won } from '@/lib/datetime'
+import { humanDateTime } from '@/lib/datetime'
 import { resolvePlace } from '@/store/selectors'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import type { Reservation } from '@/types'
 
 export function MyReservations() {
@@ -16,11 +15,12 @@ export function MyReservations() {
   const venues = useAppStore((s) => s.venues)
   const performers = useAppStore((s) => s.performers)
   const reviews = useAppStore((s) => s.reviews)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const myName = useAppStore((s) => s.profile?.displayName ?? '')
+  const nowIso = useNow()
 
   // 내가 이미 후기를 남긴 공연 — 중복 작성 유도를 막습니다
   const myReviewedShowIds = new Set(
-    reviews.filter((r) => r.authorName === DEMO_AUDIENCE_NAME).map((r) => r.showId),
+    reviews.filter((r) => r.authorName === myName).map((r) => r.showId),
   )
 
   const rows = reservations
@@ -36,7 +36,7 @@ export function MyReservations() {
       <EmptyState
         art="ticket"
         title="예약 내역이 없어요"
-        description="관심 있는 공연을 찾아 예약금 1,000원으로 자리를 잡아보세요."
+        description="관심 있는 공연에 참석 예정을 눌러두면 여기 모입니다."
         action={
           <button
             onClick={() => navigate('/audience/home')}
@@ -82,7 +82,6 @@ export function MyReservations() {
                 <MapPin size={11} className="shrink-0" />
                 {place?.name} · {humanDateTime(show.startAt, nowIso)}
               </p>
-              <p className="tnum mt-1 text-2xs text-ink-3">예약금 {won(reservation.depositPaid)}원 결제</p>
             </div>
             <div className="flex shrink-0 items-center text-ink-3">
               <QrCode size={20} />

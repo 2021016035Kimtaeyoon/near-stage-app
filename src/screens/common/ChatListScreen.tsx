@@ -4,7 +4,7 @@ import { TabBarSpacer } from '@/components/shell/TabBar'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { SeedAvatar } from '@/components/ui/PosterArt'
 import { relativeFromNow } from '@/lib/datetime'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 
 export function ChatListScreen() {
   const navigate = useNavigate()
@@ -14,7 +14,7 @@ export function ChatListScreen() {
   const threads = useAppStore((s) => s.chatThreads)
   const venues = useAppStore((s) => s.venues)
   const performers = useAppStore((s) => s.performers)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
 
   const mine = threads
     .filter((t) => (role === 'owner' ? t.venueId === venueId : t.performerId === performerId))

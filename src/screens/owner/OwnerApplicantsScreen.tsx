@@ -5,7 +5,7 @@ import { TabBarSpacer } from '@/components/shell/TabBar'
 import { GenreTag, Tag } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { priceLabel } from '@/lib/datetime'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import type { Application } from '@/types'
 import { AcceptSheet } from './AcceptSheet'
 import { ApplicantCard } from './ApplicantCard'
@@ -16,7 +16,7 @@ export function OwnerApplicantsScreen() {
   const posts = useAppStore((s) => s.posts)
   const performers = useAppStore((s) => s.performers)
   const venues = useAppStore((s) => s.venues)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
 
   const [target, setTarget] = useState<Application | null>(null)
   const [mode, setMode] = useState<'accept' | 'reject' | null>(null)
@@ -69,7 +69,7 @@ export function OwnerApplicantsScreen() {
                   performer={performer}
                   venue={venue}
                   nowIso={nowIso}
-                  offerFee={post.offerFee}
+                  post={post}
                   onAccept={() => {
                     setTarget(application)
                     setMode('accept')

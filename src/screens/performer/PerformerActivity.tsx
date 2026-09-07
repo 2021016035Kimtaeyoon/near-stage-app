@@ -3,12 +3,12 @@ import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeade
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { SourceBadge, Tag } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
 import { PosterArt, Rating } from '@/components/ui/PosterArt'
 import { Segmented } from '@/components/ui/Chip'
-import { humanDateTime, relativeFromNow, won } from '@/lib/datetime'
+import { humanDateTime, relativeFromNow } from '@/lib/datetime'
 import { resolvePlace } from '@/store/selectors'
-import { useAppStore } from '@/store/useAppStore'
-import { FollowerTrendChart } from './FollowerTrendChart'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import { ShowWeekStrip } from './ShowWeekStrip'
 
 type Tab = 'schedule' | 'settlement' | 'review'
@@ -21,9 +21,8 @@ export function PerformerActivity() {
   const shows = useAppStore((s) => s.shows.filter((sh) => sh.performerId === performerId))
   const venues = useAppStore((s) => s.venues)
   const posts = useAppStore((s) => s.posts)
-  const settlements = useAppStore((s) => s.settlements)
   const reviews = useAppStore((s) => s.reviews.filter((r) => r.targetType === 'performer' && r.targetId === performerId))
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
 
   if (!performer) {
     return (
@@ -34,8 +33,6 @@ export function PerformerActivity() {
     )
   }
 
-  const myShowIds = new Set(shows.map((s) => s.id))
-  const mySettlements = settlements.filter((st) => myShowIds.has(st.showId))
   const pendingApplications = posts.flatMap((p) =>
     p.applications
       .filter((a) => a.performerId === performerId && a.status === '대기')
@@ -49,15 +46,13 @@ export function PerformerActivity() {
     <Screen>
       <ScreenHeader title="내 활동" subtitle={performer.teamName} />
       <ScreenBody>
-        <FollowerTrendChart performerId={performer.id} current={performer.followerCount} />
-
+        <FreeTrialNotice className="mb-4" />
         <div className="mt-4">
           <Segmented
             value={tab}
             onChange={setTab}
             options={[
               { value: 'schedule', label: '공연 일정' },
-              { value: 'settlement', label: '정산' },
               { value: 'review', label: '리뷰' },
             ]}
           />
@@ -118,30 +113,6 @@ export function PerformerActivity() {
             </div>
           )}
 
-          {tab === 'settlement' &&
-            (mySettlements.length === 0 ? (
-              <EmptyState art="chart" title="정산 내역이 없어요" />
-            ) : (
-              <div className="space-y-2.5">
-                {mySettlements.map((st) => {
-                  const show = shows.find((s) => s.id === st.showId)
-                  return (
-                    <div key={st.id} className="card p-3.5">
-                      <div className="flex items-center justify-between">
-                        <p className="truncate text-sm font-bold">{show?.title ?? '공연'}</p>
-                        <Tag tone={st.status === '정산완료' ? 'ok' : 'warn'}>{st.status}</Tag>
-                      </div>
-                      <div className="tnum mt-2 space-y-1 text-xs">
-                        <Row label="총 매출" value={`${won(st.gross)}원`} />
-                        <Row label="플랫폼 수수료" value={`-${won(st.platformFee)}원`} />
-                        <Row label="정산액" value={`${won(st.net)}원`} bold />
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
-            ))}
-
           {tab === 'review' &&
             (reviews.length === 0 ? (
               <EmptyState art="chat" title="아직 받은 리뷰가 없어요" />
@@ -167,11 +138,3 @@ export function PerformerActivity() {
   )
 }
 
-function Row({ label, value, bold = false }: { label: string; value: string; bold?: boolean }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-ink-2">{label}</span>
-      <span className={bold ? 'font-extrabold' : 'font-semibold'}>{value}</span>
-    </div>
-  )
-}

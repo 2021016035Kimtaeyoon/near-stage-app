@@ -26,7 +26,7 @@ export function ApplyToPostSheet({
   const [attachClips, setAttachClips] = useState(true)
 
   const submit = () => {
-    if (!post) return
+    if (!post || !performerId) return
     if (!message.trim()) {
       toast('지원 메시지를 입력해주세요', 'error')
       return

@@ -7,15 +7,15 @@ import { PosterArt, Rating } from '@/components/ui/PosterArt'
 import { relativeFromNow } from '@/lib/datetime'
 import { matchNeeds } from '@/lib/match'
 import { useAppStore } from '@/store/useAppStore'
-import type { Application, Performer, Venue } from '@/types'
-import { ContractPreviewModal } from './ContractPreviewModal'
+import type { Application, Performer, Venue, Post } from '@/types'
+import { GuaranteeNoticeModal } from './GuaranteeNoticeModal'
 
 interface Props {
   application: Application
   performer: Performer
   venue: Venue
   nowIso: string
-  offerFee: number
+  post: Post
   onAccept: () => void
   onReject: () => void
 }
@@ -26,13 +26,13 @@ export function ApplicantCard({
   performer,
   venue,
   nowIso,
-  offerFee,
+  post,
   onAccept,
   onReject,
 }: Props) {
   const navigate = useNavigate()
   const ensureThread = useAppStore((s) => s.ensureThread)
-  const [contractOpen, setContractOpen] = useState(false)
+  const [guaranteeOpen, setGuaranteeOpen] = useState(false)
   const match = matchNeeds(performer, venue)
   const decided = application.status !== '대기'
 
@@ -99,8 +99,8 @@ export function ApplicantCard({
         </Button>
         {!decided && (
           <>
-            <Button variant="outline" size="sm" leading={<FileText size={13} />} onClick={() => setContractOpen(true)}>
-              계약서
+            <Button variant="outline" size="sm" leading={<FileText size={13} />} onClick={() => setGuaranteeOpen(true)}>
+              개런티
             </Button>
             <Button variant="danger" size="sm" leading={<XCircle size={13} />} onClick={onReject} className="flex-1">
               거절
@@ -112,12 +112,11 @@ export function ApplicantCard({
         )}
       </div>
 
-      <ContractPreviewModal
-        open={contractOpen}
-        onClose={() => setContractOpen(false)}
-        venue={venue}
+      <GuaranteeNoticeModal
+        open={guaranteeOpen}
+        onClose={() => setGuaranteeOpen(false)}
+        post={post}
         performer={performer}
-        fee={offerFee}
       />
     </div>
   )

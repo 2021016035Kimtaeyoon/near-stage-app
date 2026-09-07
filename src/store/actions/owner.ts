@@ -1,8 +1,6 @@
-import { PLATFORM_FEE } from '@/config/brand'
 import { hmToMin, humanDateTime } from '@/lib/datetime'
-import { getShowStatus } from '../selectors'
 import { toast } from '../useToast'
-import type { Post, Settlement, Show, TimeSlot, Venue, Weekday } from '@/types'
+import type { Post, Show, TimeSlot, Venue, Weekday } from '@/types'
 import type { AcceptResult, GetState, SetState } from '../types'
 
 /** 런타임에 확정되는 공연의 기본 티켓 가격 */
@@ -67,7 +65,7 @@ export function createOwnerActions(set: SetState, get: GetState) {
 
     createPost: (input: Omit<Post, 'id' | 'createdAt' | 'applications' | 'closed'>): Post => {
       const id = get().nextId('po')
-      const post: Post = { ...input, id, createdAt: get().demoNowIso, applications: [], closed: false }
+      const post: Post = { ...input, id, createdAt: new Date().toISOString(), applications: [], closed: false }
       set((s) => ({ posts: [post, ...s.posts] }))
       get().pushNotification({
         role: 'performer',
@@ -118,17 +116,6 @@ export function createOwnerActions(set: SetState, get: GetState) {
         tags: [performer.genre, '신규 매칭'],
         description: `${venue.name}에서 열리는 ${performer.teamName}의 ${performer.durationMin}분 공연입니다. ${performer.bio}`,
         genre: performer.genre,
-        createdByDemo: true,
-      }
-
-      const settlement: Settlement = {
-        id: state.nextId('st'),
-        showId,
-        gross: 0,
-        platformFee: PLATFORM_FEE,
-        net: 0,
-        status: '정산대기',
-        settledAt: null,
       }
 
       const startDate = new Date(startAt)
@@ -137,7 +124,6 @@ export function createOwnerActions(set: SetState, get: GetState) {
 
       set((s) => ({
         shows: [...s.shows, show],
-        settlements: [settlement, ...s.settlements],
         posts: s.posts.map((p) =>
           p.id !== postId
             ? p
@@ -169,7 +155,7 @@ export function createOwnerActions(set: SetState, get: GetState) {
                 ),
               },
         ),
-        demo: { ...s.demo, highlightShowId: showId },
+        highlightShowId: showId,
       }))
 
       // 관심 조건에 걸리는 관객이 있으면 알림 — 새 공연이 생기는 유일한 지점입니다
@@ -188,7 +174,7 @@ export function createOwnerActions(set: SetState, get: GetState) {
         role: 'owner',
         type: '확정',
         title: '공연이 확정되었습니다',
-        body: `${performer.teamName} · ${humanDateTime(startAt, state.demoNowIso)}`,
+        body: `${performer.teamName} · ${humanDateTime(startAt, new Date().toISOString())}`,
         link: '/owner/dashboard',
       })
       // 알림 ③: 이 공연자를 팔로우하는 관객에게만 (전체 브로드캐스트 아님)
@@ -260,7 +246,7 @@ export function createOwnerActions(set: SetState, get: GetState) {
       const post = get().createPost({
         venueId,
         wantedGenres: venue?.preferredGenres ?? [],
-        dateRange: { from: get().demoNowIso, to: get().demoNowIso },
+        dateRange: { from: new Date().toISOString(), to: new Date().toISOString() },
         offerFee: 0,
         message: `[긴급] ${message}`,
       })
@@ -274,30 +260,5 @@ export function createOwnerActions(set: SetState, get: GetState) {
       return post.id
     },
 
-    /** 종료된 공연의 정산대기 건만 일괄 정산완료 처리하고 총액을 반환합니다 */
-    settleAll: (venueId: string): number => {
-      const state = get()
-      const myEndedShowIds = new Set(
-        state.shows
-          .filter((s) => s.venueId === venueId && getShowStatus(s, state.demoNowIso) === '종료')
-          .map((s) => s.id),
-      )
-      const pending = state.settlements.filter(
-        (st) => myEndedShowIds.has(st.showId) && st.status === '정산대기',
-      )
-      if (pending.length === 0) {
-        toast('정산할 종료된 공연이 없습니다', 'warn')
-        return 0
-      }
-      const total = pending.reduce((n, st) => n + st.net, 0)
-      set((s) => ({
-        settlements: s.settlements.map((st) =>
-          myEndedShowIds.has(st.showId) && st.status === '정산대기'
-            ? { ...st, status: '정산완료' as const, settledAt: s.demoNowIso }
-            : st,
-        ),
-      }))
-      return total
-    },
   }
 }

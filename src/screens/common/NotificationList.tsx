@@ -7,7 +7,6 @@ import {
   Megaphone,
   Star,
   ThumbsUp,
-  Wallet,
   XCircle,
   type LucideIcon,
 } from 'lucide-react'
@@ -15,7 +14,7 @@ import { useNavigate } from 'react-router-dom'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { cn } from '@/lib/cn'
 import { relativeFromNow } from '@/lib/datetime'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import type { AppNotification, NotificationType, Role } from '@/types'
 
 const TYPE_ICON: Record<NotificationType, LucideIcon> = {
@@ -24,7 +23,6 @@ const TYPE_ICON: Record<NotificationType, LucideIcon> = {
   거절: XCircle,
   예약: Calendar,
   확정: Bell,
-  정산: Wallet,
   리뷰: Star,
   제안: MessageSquareText,
   관심: BellPlus,
@@ -36,7 +34,7 @@ export function NotificationList({ role, showHeader = true }: { role: Role; show
   const navigate = useNavigate()
   const notifications = useAppStore((s) => s.notifications)
   const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
   const markNotificationRead = useAppStore((s) => s.markNotificationRead)
   const markAllNotificationsRead = useAppStore((s) => s.markAllNotificationsRead)
 

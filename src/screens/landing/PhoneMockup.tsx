@@ -100,9 +100,9 @@ export function PhoneMockup() {
                 <div className="flex items-center gap-1">
                   <SourceBadge source="own" size="sm" />
                 </div>
-                <p className="mt-1 truncate text-[13px] font-bold">농담수집가 솔로쇼</p>
+                <p className="mt-1 truncate text-[13px] font-bold">오늘 밤 우리 동네 무대</p>
                 <p className="flex items-center gap-0.5 text-[10px] text-ink-3">
-                  <MapPin size={9} /> 카페 온화 · 125m
+                  <MapPin size={9} /> 걸어서 갈 수 있는 거리
                 </p>
               </div>
               <Heart size={14} className="mt-1 shrink-0 text-ink-3" />

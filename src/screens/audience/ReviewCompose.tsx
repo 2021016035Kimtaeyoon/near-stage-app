@@ -6,7 +6,6 @@ import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Label, TextArea } from '@/components/ui/Field'
 import { RatingInput } from '@/components/ui/PosterArt'
-import { DEMO_AUDIENCE_NAME } from '@/config/brand'
 import { resolvePlace } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
@@ -21,6 +20,7 @@ export function ReviewCompose() {
   const shows = useAppStore((s) => s.shows)
   const venues = useAppStore((s) => s.venues)
   const addReview = useAppStore((s) => s.addReview)
+  const myName = useAppStore((s) => s.profile?.displayName ?? '')
 
   const show = shows.find((s) => s.id === showId) ?? null
   const place = show ? resolvePlace(show, venues) : null
@@ -56,7 +56,7 @@ export function ReviewCompose() {
       targetId: show.venueId as string,
       rating: venueRating,
       text: venueText.trim() || '좋은 공간이었어요.',
-      authorName: DEMO_AUDIENCE_NAME,
+      authorName: myName,
     })
     addReview({
       showId: show.id,
@@ -64,7 +64,7 @@ export function ReviewCompose() {
       targetId: show.performerId as string,
       rating: performerRating,
       text: performerText.trim() || '좋은 공연이었어요.',
-      authorName: DEMO_AUDIENCE_NAME,
+      authorName: myName,
     })
     toast('리뷰가 등록되었습니다', 'success', '공간과 공연 평가가 각각 반영됩니다')
     setSubmitted(true)

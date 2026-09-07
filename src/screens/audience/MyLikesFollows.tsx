@@ -3,7 +3,7 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { ShowCard } from '@/components/cards/ShowCard'
 import { PerformerCard } from '@/components/cards/PerformerCard'
 import { withMeta } from '@/store/selectors'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 
 export function MyLikedShows() {
   const navigate = useNavigate()
@@ -12,7 +12,7 @@ export function MyLikedShows() {
   const performers = useAppStore((s) => s.performers)
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const toggleLike = useAppStore((s) => s.toggleLike)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
 
   const liked = withMeta(
     shows.filter((s) => likedShowIds.includes(s.id)),
@@ -51,7 +51,7 @@ export function MyFollowedPerformers() {
   const performers = useAppStore((s) => s.performers)
   const shows = useAppStore((s) => s.shows)
   const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
 
   const followed = performers.filter((p) => followedPerformerIds.includes(p.id))
 

@@ -1,16 +1,15 @@
-import { DEMO_NOW_ISO, DEMO_OWNER_VENUE_ID, DEMO_PERFORMER_ID } from '@/config/brand'
-import { createSeedData } from '@/data/seed'
+import { createEmptyData } from '../emptyData'
 import { DEFAULT_FILTER } from '../selectors'
-import type { AppNotification, Role } from '@/types'
+import type { AppNotification, Role, UserProfile } from '@/types'
 import type { GetState, SetState, ThemeMode } from '../types'
 
 export function createCommonActions(set: SetState, get: GetState) {
   return {
+    setProfile: (profile: UserProfile | null) => set({ profile }),
+
     setRole: (role: Role) => set({ role }),
 
     setTheme: (theme: ThemeMode) => set({ theme }),
-
-    setDemoNow: (iso: string) => set({ demoNowIso: iso }),
 
     nextId: (prefix: string): string => {
       const n = get().seq + 1
@@ -18,16 +17,17 @@ export function createCommonActions(set: SetState, get: GetState) {
       return `${prefix}${n}`
     },
 
+    /** 화면에 올려둔 데이터를 전부 비웁니다 (로그아웃 등) */
     resetAll: () =>
       set({
-        ...createSeedData(),
+        ...createEmptyData(),
+        profile: null,
         role: 'audience',
-        demoNowIso: DEMO_NOW_ISO,
-        currentVenueId: DEMO_OWNER_VENUE_ID,
-        currentPerformerId: DEMO_PERFORMER_ID,
-        seq: 1000,
+        currentVenueId: null,
+        currentPerformerId: null,
+        seq: 0,
         audienceFilter: { ...DEFAULT_FILTER },
-        demo: { active: false, stepIndex: 0, playing: false, speed: 1, highlightShowId: null, runId: 0 },
+        highlightShowId: null,
       }),
 
     pushNotification: (n: Omit<AppNotification, 'id' | 'createdAt' | 'read'>) => {
@@ -35,7 +35,7 @@ export function createCommonActions(set: SetState, get: GetState) {
       const noti: AppNotification = {
         ...n,
         id,
-        createdAt: get().demoNowIso,
+        createdAt: new Date().toISOString(),
         read: false,
       }
       set((s) => ({ notifications: [noti, ...s.notifications] }))
@@ -51,7 +51,6 @@ export function createCommonActions(set: SetState, get: GetState) {
         notifications: s.notifications.map((n) => (n.role === role ? { ...n, read: true } : n)),
       })),
 
-    setHighlightShow: (showId: string | null) =>
-      set((s) => ({ demo: { ...s.demo, highlightShowId: showId } })),
+    setHighlightShow: (showId: string | null) => set({ highlightShowId: showId }),
   }
 }

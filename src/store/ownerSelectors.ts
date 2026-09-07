@@ -1,10 +1,9 @@
-import type { Application, Post, Settlement, Show, WeeklyVisitStat } from '@/types'
+import type { Application, Post, Show, WeeklyVisitStat } from '@/types'
 
 export interface OwnerKpis {
   monthShowCount: number
   monthReserved: number
   estimatedExtraAudience: number
-  pendingSettlement: number
 }
 
 function sameMonth(iso: string, nowIso: string): boolean {
@@ -16,7 +15,6 @@ function sameMonth(iso: string, nowIso: string): boolean {
 export function computeOwnerKpis(
   venueId: string,
   shows: Show[],
-  settlements: Settlement[],
   weeklyStats: WeeklyVisitStat[],
   nowIso: string,
 ): OwnerKpis {
@@ -31,16 +29,10 @@ export function computeOwnerKpis(
   const diff = Math.max(0, avg(withShow) - avg(withoutShow))
   const estimatedExtraAudience = Math.round(diff * Math.max(1, monthShows.length))
 
-  const showIds = new Set(venueShows.map((s) => s.id))
-  const pendingSettlement = settlements
-    .filter((st) => showIds.has(st.showId) && st.status === '정산대기')
-    .reduce((n, st) => n + st.net, 0)
-
   return {
     monthShowCount: monthShows.length,
     monthReserved,
     estimatedExtraAudience,
-    pendingSettlement,
   }
 }
 

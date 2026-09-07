@@ -5,7 +5,7 @@ import { GenreTag } from '@/components/ui/Badge'
 import { Label, TextArea, TextInput } from '@/components/ui/Field'
 import { Toggle } from '@/components/ui/Chip'
 import { kstIso } from '@/lib/datetime'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
 import { GENRES, type Genre } from '@/types'
 
@@ -23,7 +23,7 @@ export function CreatePostSheet({
   onClose: () => void
   venueId: string
 }) {
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
   const preferredGenres = useAppStore((s) => s.venues.find((v) => v.id === venueId)?.preferredGenres ?? [])
   const createPost = useAppStore((s) => s.createPost)
 

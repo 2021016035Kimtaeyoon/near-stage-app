@@ -1,14 +1,6 @@
-import { DEPOSIT_AMOUNT } from '@/config/brand'
-import { hashSeed } from '@/lib/rng'
 import { toast } from '../useToast'
 import type { AudienceFilter, Reservation, Review } from '@/types'
 import type { GetState, SetState } from '../types'
-
-/** 예약 코드 — 결정론적으로 만들어 QR 캔버스 시드로 사용 */
-function makeCode(showId: string, seq: number): string {
-  const h = hashSeed(`${showId}-${seq}`).toString(36).toUpperCase().slice(0, 4).padEnd(4, 'X')
-  return `NST-${showId.toUpperCase()}-${h}`
-}
 
 /** 취소는 공연 시작 3시간 전까지만 가능합니다 */
 const CANCEL_CUTOFF_MS = 3 * 60 * 60 * 1000
@@ -65,11 +57,8 @@ export function createAudienceActions(set: SetState, get: GetState) {
         id,
         showId,
         headcount,
-        depositPaid: DEPOSIT_AMOUNT * headcount,
-        qrCode: makeCode(showId, get().seq),
         status: '예약',
-        createdAt: get().demoNowIso,
-        refundAmount: null,
+        createdAt: new Date().toISOString(),
       }
       set((s) => {
         const shows = s.shows.map((sh) =>
@@ -77,18 +66,7 @@ export function createAudienceActions(set: SetState, get: GetState) {
             ? { ...sh, reservedCount: Math.min(sh.capacity, sh.reservedCount + headcount) }
             : sh,
         )
-        const updated = shows.find((sh) => sh.id === showId)
-        const gross = updated ? updated.ticketPrice * updated.reservedCount : 0
-        return {
-          reservations: [reservation, ...s.reservations],
-          shows,
-          // 예약이 늘면 해당 공연의 정산 예정액도 함께 갱신됩니다
-          settlements: s.settlements.map((st) =>
-            st.showId === showId && st.status === '정산대기'
-              ? { ...st, gross, net: Math.max(0, gross - st.platformFee) }
-              : st,
-          ),
-        }
+        return { reservations: [reservation, ...s.reservations], shows }
       })
 
       const show = get().shows.find((s) => s.id === showId)
@@ -96,8 +74,8 @@ export function createAudienceActions(set: SetState, get: GetState) {
         get().pushNotification({
           role: 'owner',
           type: '예약',
-          title: '새 예약이 들어왔습니다',
-          body: `‘${show.title}’에 ${headcount}명이 예약했습니다. 예약금 ${DEPOSIT_AMOUNT * headcount}원 결제 완료.`,
+          title: '참석 예정이 등록됐어요',
+          body: `‘${show.title}’에 ${headcount}명이 온다고 알려왔습니다.`,
           link: '/owner/dashboard',
         })
       }
@@ -114,14 +92,13 @@ export function createAudienceActions(set: SetState, get: GetState) {
         return false
       }
       const show = state.shows.find((sh) => sh.id === target.showId)
-      if (show && new Date(show.startAt).getTime() - new Date(state.demoNowIso).getTime() < CANCEL_CUTOFF_MS) {
+      if (show && new Date(show.startAt).getTime() - new Date(new Date().toISOString()).getTime() < CANCEL_CUTOFF_MS) {
         toast('공연 3시간 전부터는 취소할 수 없어요', 'warn', '스태프에게 문의해 주세요')
         return false
       }
-      const refundAmount = target.depositPaid
       set((s) => ({
         reservations: s.reservations.map((r) =>
-          r.id === reservationId ? { ...r, status: '취소' as const, refundAmount } : r,
+          r.id === reservationId ? { ...r, status: '취소' as const } : r,
         ),
         shows: s.shows.map((sh) =>
           sh.id === target.showId
@@ -133,7 +110,7 @@ export function createAudienceActions(set: SetState, get: GetState) {
         get().pushNotification({
           role: 'owner',
           type: '예약',
-          title: '예약이 취소되었습니다',
+          title: '참석 예정이 취소되었습니다',
           body: `‘${show.title}’ 예약 ${target.headcount}명이 취소되어 자리가 다시 열렸습니다.`,
           link: '/owner/dashboard',
         })
@@ -159,7 +136,7 @@ export function createAudienceActions(set: SetState, get: GetState) {
 
     addReview: (input: Omit<Review, 'id' | 'createdAt'>) => {
       const id = get().nextId('rv')
-      const review: Review = { ...input, id, createdAt: get().demoNowIso }
+      const review: Review = { ...input, id, createdAt: new Date().toISOString() }
       set((s) => ({
         reviews: [review, ...s.reviews],
         venues:

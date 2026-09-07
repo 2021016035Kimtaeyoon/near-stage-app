@@ -280,7 +280,7 @@ function KpiSection() {
   return (
     <Block title="Kpi">
       <KpiGrid>
-        <KpiCard icon={Heart} label="정산 예정액" value="128,000원" tone="brand" hint="3건 대기중" />
+        <KpiCard icon={Heart} label="이번 달 참석 예정" value="128명" tone="brand" hint="3건 진행중" />
         <KpiCard icon={Heart} label="총 예약 관객" value="42명" />
       </KpiGrid>
     </Block>

@@ -15,7 +15,7 @@ export function createChatActions(set: SetState, get: GetState) {
         venueId,
         performerId,
         lastText: '아직 나눈 대화가 없어요',
-        lastAt: get().demoNowIso,
+        lastAt: new Date().toISOString(),
         unread: 0,
       }
       set((s) => ({ chatThreads: [thread, ...s.chatThreads] }))
@@ -24,7 +24,7 @@ export function createChatActions(set: SetState, get: GetState) {
 
     sendMessage: (threadId: string, from: Role, text: string) => {
       const id = get().nextId('cm')
-      const message: ChatMessage = { id, threadId, from, text, createdAt: get().demoNowIso }
+      const message: ChatMessage = { id, threadId, from, text, createdAt: new Date().toISOString() }
       set((s) => ({
         chatMessages: [...s.chatMessages, message],
         chatThreads: s.chatThreads.map((t) =>

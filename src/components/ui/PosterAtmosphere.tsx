@@ -1,4 +1,4 @@
-import { makeRng } from '@/lib/rng'
+import { makeRng } from '@/lib/gradient'
 
 /**
  * 무대 사진의 "분위기" 레이어 — 트러스 조명 리그, 안개를 가르는 조명 빔, 앞줄 관객 실루엣.

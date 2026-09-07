@@ -3,17 +3,15 @@ import { Moon, Sun } from 'lucide-react'
 import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { Segmented } from '@/components/ui/Chip'
-import { DEMO_AUDIENCE_NAME } from '@/config/brand'
+import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
 import { unreadNotificationCount } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
 import { NotificationList } from '@/screens/common/NotificationList'
-import { EventsPanel } from './EventsPanel'
-import { MembershipCard } from './MembershipCard'
 import { MyFollowedPerformers, MyLikedShows } from './MyLikesFollows'
 import { MyReservations } from './MyReservations'
 import { SavedSearchPanel } from './SavedSearchPanel'
 
-type Tab = 'reservation' | 'liked' | 'follow' | 'noti' | 'events'
+type Tab = 'reservation' | 'liked' | 'follow' | 'noti'
 
 export function MyPage() {
   const [tab, setTab] = useState<Tab>('reservation')
@@ -21,6 +19,7 @@ export function MyPage() {
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const notifications = useAppStore((s) => s.notifications)
+  const profile = useAppStore((s) => s.profile)
   const theme = useAppStore((s) => s.theme)
   const setTheme = useAppStore((s) => s.setTheme)
 
@@ -28,16 +27,19 @@ export function MyPage() {
 
   return (
     <Screen>
-      <ScreenHeader title={`안녕하세요, ${DEMO_AUDIENCE_NAME}님`} subtitle="오늘 밤도 좋은 무대 만나세요" />
+      <ScreenHeader
+        title={profile ? `안녕하세요, ${profile.displayName}님` : '마이 페이지'}
+        subtitle={profile ? '오늘 밤도 좋은 무대 만나세요' : '로그인하면 참석 예정과 알림을 볼 수 있어요'}
+      />
       <ScreenBody>
         <div className="card mb-4 grid grid-cols-4 divide-x divide-border overflow-hidden">
-          <Stat label="예약" value={reservations.filter((r) => r.status !== '취소').length} />
+          <Stat label="참석 예정" value={reservations.filter((r) => r.status !== '취소').length} />
           <Stat label="좋아요" value={likedShowIds.length} />
           <Stat label="팔로우" value={followedPerformerIds.length} />
           <Stat label="알림" value={unread} />
         </div>
 
-        <MembershipCard />
+        <FreeTrialNotice className="mb-4" />
 
         <SavedSearchPanel />
 
@@ -67,11 +69,10 @@ export function MyPage() {
           value={tab}
           onChange={setTab}
           options={[
-            { value: 'reservation', label: '예약' },
+            { value: 'reservation', label: '참석' },
             { value: 'liked', label: '좋아요' },
             { value: 'follow', label: '팔로우' },
             { value: 'noti', label: '알림' },
-            { value: 'events', label: '이벤트' },
           ]}
         />
 
@@ -80,7 +81,6 @@ export function MyPage() {
           {tab === 'liked' && <MyLikedShows />}
           {tab === 'follow' && <MyFollowedPerformers />}
           {tab === 'noti' && <NotificationList role="audience" />}
-          {tab === 'events' && <EventsPanel />}
         </div>
 
         <TabBarSpacer />

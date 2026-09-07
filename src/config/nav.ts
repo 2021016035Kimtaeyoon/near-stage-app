@@ -10,7 +10,6 @@ import {
   Store,
   User,
   UserCircle,
-  Wallet,
   type LucideIcon,
 } from 'lucide-react'
 import type { Role } from '@/types'
@@ -49,7 +48,6 @@ export const TABS: Record<Role, TabItem[]> = {
       icon: Megaphone,
       matches: ['/owner/recruit', '/owner/applicants'],
     },
-    { to: '/owner/settlement', label: '정산', icon: Wallet, matches: ['/owner/settlement'] },
     { to: '/chat', label: '채팅', icon: MessageSquare, matches: ['/chat'] },
   ],
   performer: [

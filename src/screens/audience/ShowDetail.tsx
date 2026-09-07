@@ -4,12 +4,13 @@ import { Screen, ScreenBody } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
 import { ChevronLeft } from 'lucide-react'
 import { DEFAULT_USER_LOCATION } from '@/config/brand'
 import { priceLabel } from '@/lib/datetime'
 import { distanceKm as calcDistance } from '@/lib/geo'
 import { resolvePlace } from '@/store/selectors'
-import { useAppStore } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import { KopisCastBlock, PerformerBlock } from './PerformerBlock'
 import { ReviewTabs } from './ReviewTabs'
 import { ShowDetailHero } from './ShowDetailHero'
@@ -23,7 +24,7 @@ export function ShowDetail() {
   const venues = useAppStore((s) => s.venues)
   const performers = useAppStore((s) => s.performers)
   const reviews = useAppStore((s) => s.reviews)
-  const nowIso = useAppStore((s) => s.demoNowIso)
+  const nowIso = useNow()
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const toggleLike = useAppStore((s) => s.toggleLike)
@@ -128,11 +129,12 @@ export function ShowDetail() {
       </ScreenBody>
 
       <div className="absolute inset-x-0 bottom-0 z-40 border-t border-border bg-surface-1/95 px-4 pb-[calc(var(--safe-bottom)+14px)] pt-3 backdrop-blur-xl">
+        <FreeTrialNotice className="mb-2.5" />
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">
             <p className="tnum text-lg font-extrabold">{priceLabel(show.ticketPrice)}</p>
             <p className="tnum text-2xs text-ink-3">
-              {soldOut ? '매진' : `${seatsLeft}석 남음`} · 예약금 1,000원
+              {soldOut ? '정원 마감' : `${seatsLeft}석 남음`} · 참가비 없음
             </p>
           </div>
           <Button
@@ -142,7 +144,7 @@ export function ShowDetail() {
             onClick={() => navigate(`/audience/book/${show.id}`)}
             className="shrink-0"
           >
-            {soldOut ? '매진되었습니다' : '예약하기 · 예약금 1,000원'}
+            {soldOut ? '정원이 마감되었어요' : '참석 예정'}
           </Button>
         </div>
       </div>
