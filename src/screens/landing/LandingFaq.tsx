@@ -35,7 +35,7 @@ export function LandingFaq() {
   const [open, setOpen] = useState<number | null>(0)
 
   return (
-    <section className="mx-auto max-w-3xl px-6 py-20">
+    <section className="mx-auto max-w-3xl px-6 py-14 md:py-20">
       <h2 className="text-center text-2xl font-extrabold tracking-tight md:text-3xl">
         자주 묻는 질문
       </h2>

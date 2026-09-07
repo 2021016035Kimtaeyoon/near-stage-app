@@ -41,7 +41,7 @@ export function LandingPage() {
       <CurtainHero mode="compact" />
 
       {/* 차별점 — 한 문장 */}
-      <section className="mx-auto max-w-3xl px-6 py-20 text-center">
+      <section className="mx-auto max-w-3xl px-6 py-14 text-center md:py-20">
         <ScrollReveal>
           <p className="text-gold-text text-xs font-bold uppercase tracking-widest">
             {SERVICE_NAME}가 다른 점
@@ -63,7 +63,7 @@ export function LandingPage() {
       <UpcomingShowsPreview />
 
       {/* 3역할 */}
-      <section className="border-y border-border bg-surface-2/60 py-20">
+      <section className="border-y border-border bg-surface-2/60 py-14 md:py-20">
         <div className="mx-auto max-w-5xl px-6">
           <h2 className="text-center text-2xl font-extrabold tracking-tight md:text-3xl">
             세 사람이 만나 하나의 무대가 됩니다
@@ -86,7 +86,7 @@ export function LandingPage() {
       <LandingFaq />
 
       {/* 마무리 */}
-      <section className="border-t border-border px-6 py-16">
+      <section className="border-t border-border px-6 py-12 md:py-16">
         <div className="mx-auto max-w-3xl text-center">
           <LogoMark className="mx-auto w-[150px]" />
           <p className="mt-5 text-[15px] font-semibold">
