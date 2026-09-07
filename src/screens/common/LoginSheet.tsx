@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { FREE_TRIAL_NOTICE, SERVICE_NAME } from '@/config/brand'
 import { signInWith, useAuthStore, type AuthProvider } from '@/hooks/useAuth'
+import { isKakaoConfigured, startKakaoLogin } from '@/hooks/useKakaoLogin'
 import { toast } from '@/store/useToast'
 
 /**
@@ -10,11 +11,10 @@ import { toast } from '@/store/useToast'
  * 둘러보기는 로그인 없이 됩니다. 등록·지원·참석처럼 "내 것이 생기는" 순간에만
  * 이 시트가 뜨고, 로그인이 끝나면 원래 누르려던 동작이 그대로 이어집니다.
  *
- * 카카오 버튼은 비즈 앱 전환이 끝나야 동작합니다(useAuth.ts 의 설명 참고).
- * 그전에는 눌러도 카카오가 KOE205 로 거부하므로, 이유를 화면에 밝히고 구글을
- * 앞에 둡니다. 사용자를 아무 설명 없이 에러 페이지로 보내지 않기 위함입니다.
+ * 카카오는 Supabase 의 OAuth provider 를 쓰지 않습니다 — 그쪽은 scope 에
+ * account_email 을 강제로 넣어 비즈 앱이 아닌 앱에서는 KOE205 로 막힙니다.
+ * 대신 OIDC id_token 방식(useKakaoLogin.ts)으로 우리가 직접 요청합니다.
  */
-const KAKAO_READY = false
 
 export function LoginSheet() {
   const open = useAuthStore((s) => s.sheetOpen)
@@ -39,6 +39,20 @@ export function LoginSheet() {
       subtitle={`${SERVICE_NAME}는 소셜 계정으로 바로 시작할 수 있습니다`}
     >
       <div className="space-y-2.5">
+        {isKakaoConfigured && (
+          <button
+            onClick={() => {
+              setBusy('kakao')
+              startKakaoLogin()
+            }}
+            disabled={busy !== null}
+            className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-[#FEE500] text-[15px] font-bold text-[#191600] disabled:opacity-60"
+          >
+            <KakaoMark />
+            {busy === 'kakao' ? '카카오로 이동 중…' : '카카오로 시작하기'}
+          </button>
+        )}
+
         <button
           onClick={() => start('google')}
           disabled={busy !== null}
@@ -47,21 +61,6 @@ export function LoginSheet() {
           <GoogleMark />
           {busy === 'google' ? '구글로 이동 중…' : '구글로 시작하기'}
         </button>
-
-        <button
-          onClick={() => start('kakao')}
-          disabled={busy !== null || !KAKAO_READY}
-          className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl bg-[#FEE500] text-[15px] font-bold text-[#191600] disabled:opacity-45"
-        >
-          <KakaoMark />
-          {busy === 'kakao' ? '카카오로 이동 중…' : '카카오로 시작하기'}
-        </button>
-        {!KAKAO_READY && (
-          <p className="text-2xs leading-relaxed text-ink-3">
-            카카오 로그인은 준비 중입니다. 카카오가 이메일 항목을 사업자 인증된 앱에만
-            열어주는데, 로그인 연동이 그 항목을 함께 요구해서 아직 켤 수 없습니다.
-          </p>
-        )}
       </div>
 
       <ul className="mt-5 space-y-2 text-xs leading-relaxed text-ink-2">

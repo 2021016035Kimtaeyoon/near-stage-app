@@ -5,6 +5,7 @@ import { RoleSwitcherFab, RoleSwitcherPanel } from '@/components/shell/RoleSwitc
 import { TabBar } from '@/components/shell/TabBar'
 import { ToastHost } from '@/components/ui/Toast'
 import { useAuthSync } from '@/hooks/useAuth'
+import { useKakaoCallback } from '@/hooks/useKakaoLogin'
 import { isFullscreenRoute } from '@/lib/routeUtils'
 import { AppRoutes } from '@/routes'
 import { DesktopHome } from '@/screens/desktop/DesktopHome'
@@ -35,6 +36,7 @@ function AppShell() {
   const { pathname } = useLocation()
   const fullscreen = isFullscreenRoute(pathname)
   useAuthSync()
+  useKakaoCallback()
   useThemeSync()
 
   // 데스크톱 웹앱 안에 있는 동안에는, 화면 내부의 navigate()가 접두사 없는 경로
