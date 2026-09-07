@@ -6,8 +6,10 @@ import { Segmented } from '@/components/ui/Chip'
 import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
 import { unreadNotificationCount } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
+import { useAuthStore } from '@/hooks/useAuth'
 import { NotificationList } from '@/screens/common/NotificationList'
 import { MyFollowedPerformers, MyLikedShows } from './MyLikesFollows'
+import { AccountCard } from './AccountCard'
 import { MyReservations } from './MyReservations'
 import { SavedSearchPanel } from './SavedSearchPanel'
 
@@ -19,7 +21,7 @@ export function MyPage() {
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const notifications = useAppStore((s) => s.notifications)
-  const profile = useAppStore((s) => s.profile)
+  const profile = useAuthStore((s) => s.profile)
   const theme = useAppStore((s) => s.theme)
   const setTheme = useAppStore((s) => s.setTheme)
 
@@ -32,6 +34,8 @@ export function MyPage() {
         subtitle={profile ? '오늘 밤도 좋은 무대 만나세요' : '로그인하면 참석 예정과 알림을 볼 수 있어요'}
       />
       <ScreenBody>
+        <AccountCard />
+
         <div className="card mb-4 grid grid-cols-4 divide-x divide-border overflow-hidden">
           <Stat label="참석 예정" value={reservations.filter((r) => r.status !== '취소').length} />
           <Stat label="좋아요" value={likedShowIds.length} />

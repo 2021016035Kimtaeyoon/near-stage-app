@@ -132,6 +132,15 @@ export async function signInWithKakao(): Promise<{ error: string | null }> {
     options: {
       // HashRouter 라 해시까지 포함해 돌려보내야 원래 보던 화면으로 복귀합니다
       redirectTo: window.location.href,
+      // ★ scopes 를 여기서 줄일 수 없습니다.
+      //   Supabase 의 카카오 provider 는 'account_email profile_image profile_nickname'
+      //   을 기본으로 붙이고, options.scopes 는 그 뒤에 "덧붙입니다"(대체가 아닙니다).
+      //   실제로 확인한 요청: scope="account_email profile_image profile_nickname ..."
+      //
+      //   그래서 account_email 을 요청에서 뺄 방법이 없고, 카카오 콘솔의 동의항목에서
+      //   '카카오계정(이메일)'을 최소 **선택 동의**로 열어두어야 KOE205 가 나지 않습니다.
+      //   우리는 이메일을 저장하지도 쓰지도 않습니다 — profiles 에 이메일 컬럼이 없고,
+      //   사용자가 동의를 거부해도 모든 기능이 그대로 동작합니다.
     },
   })
   return { error: error?.message ?? null }

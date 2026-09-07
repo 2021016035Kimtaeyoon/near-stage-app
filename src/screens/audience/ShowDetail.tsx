@@ -10,6 +10,7 @@ import { DEFAULT_USER_LOCATION } from '@/config/brand'
 import { priceLabel } from '@/lib/datetime'
 import { distanceKm as calcDistance } from '@/lib/geo'
 import { resolvePlace } from '@/store/selectors'
+import { useAuthStore } from '@/hooks/useAuth'
 import { useAppStore, useNow } from '@/store/useAppStore'
 import { KopisCastBlock, PerformerBlock } from './PerformerBlock'
 import { ReviewTabs } from './ReviewTabs'
@@ -25,6 +26,7 @@ export function ShowDetail() {
   const performers = useAppStore((s) => s.performers)
   const reviews = useAppStore((s) => s.reviews)
   const nowIso = useNow()
+  const requireAuth = useAuthStore((s) => s.requireAuth)
   const likedShowIds = useAppStore((s) => s.likedShowIds)
   const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const toggleLike = useAppStore((s) => s.toggleLike)
@@ -141,7 +143,7 @@ export function ShowDetail() {
             variant="brand"
             size="lg"
             disabled={soldOut}
-            onClick={() => navigate(`/audience/book/${show.id}`)}
+            onClick={() => requireAuth(() => navigate(`/audience/book/${show.id}`))}
             className="shrink-0"
           >
             {soldOut ? '정원이 마감되었어요' : '참석 예정'}
