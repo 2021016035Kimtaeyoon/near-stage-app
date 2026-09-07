@@ -13,6 +13,7 @@
     "db:check": "node scripts/db-check.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.115.0",
     "date-fns": "^3.6.0",
     "framer-motion": "^11.11.17",
     "leaflet": "^1.9.4",
