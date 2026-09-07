@@ -14,6 +14,12 @@
  *   앱 전체가 이미 Leaflet/OSM 을 씁니다. 핀 위치 조정 하나 때문에 지도 라이브러리를
  *   두 개 태우지 않습니다. 카카오 SDK 는 좌표 변환에만 쓰고, 등록 폼에 들어올 때만
  *   지연 로딩합니다.
+ *
+ * ★ 좌표 변환은 두 경로를 둡니다
+ *   카카오 JavaScript 키는 콘솔에 등록된 사이트 도메인에서만 동작하고, localhost 를
+ *   등록할 수 없는 상황이 있습니다(등록 가능한 도메인 수 제한 등). 그때 개발이 멈추지
+ *   않도록 OpenStreetMap 을 폴백으로 둡니다. 카카오는 건물 단위, OSM 은 도로 단위라
+ *   정확도가 다르므로 화면에서 안내 문구를 달리합니다.
  */
 
 const POSTCODE_SRC = '//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js'
@@ -137,15 +143,24 @@ function ensureSdk(): Promise<void> {
   return sdkReady
 }
 
-/**
- * 주소 → 좌표.
- * 변환에 실패하면 null 을 돌려줍니다. 그때는 사용자가 지도에서 직접 핀을 찍게 합니다.
- */
-export async function geocodeAddress(
-  address: string,
-): Promise<{ lat: number; lng: number } | null> {
+export interface GeocodeResult {
+  lat: number
+  lng: number
+  /** 어느 경로로 찾았는지 — 정확도가 달라서 화면 안내 문구를 바꿉니다 */
+  source: 'kakao' | 'osm'
+}
+
+/** 카카오 SDK 로 변환 (건물 단위로 정확) */
+async function geocodeWithKakao(address: string): Promise<GeocodeResult | null> {
   if (!isKakaoMapConfigured) return null
-  await ensureSdk()
+  try {
+    await ensureSdk()
+  } catch {
+    // 사이트 도메인이 등록되지 않으면 카카오가 401 domain mismatched 로 막습니다.
+    // 개발 중(localhost)에 흔한 상황이라 실패로 끝내지 않고 아래 폴백으로 넘깁니다.
+    sdkReady = null
+    return null
+  }
   const geocoder = new window.kakao!.maps.services.Geocoder()
   return new Promise((resolve) => {
     geocoder.addressSearch(address, (result, status) => {
@@ -154,7 +169,40 @@ export async function geocodeAddress(
         return
       }
       // 카카오는 x=경도, y=위도 순서입니다
-      resolve({ lat: Number(result[0].y), lng: Number(result[0].x) })
+      resolve({ lat: Number(result[0].y), lng: Number(result[0].x), source: 'kakao' })
     })
   })
+}
+
+/**
+ * OpenStreetMap 으로 변환 (도로 단위).
+ *
+ * 카카오가 막힐 때를 위한 폴백입니다. 키가 필요 없고 어느 도메인에서든 됩니다.
+ * 정확도는 도로 단위라 건물 번지까지는 못 짚습니다 — 핀을 옮길 출발점으로 씁니다.
+ * 무료 공용 서버라 등록 폼에서 한 번씩 부르는 정도로만 씁니다.
+ */
+async function geocodeWithOsm(address: string): Promise<GeocodeResult | null> {
+  const url =
+    'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=kr&q=' +
+    encodeURIComponent(address)
+  try {
+    const res = await fetch(url, { headers: { Accept: 'application/json' } })
+    if (!res.ok) return null
+    const rows = (await res.json()) as Array<{ lat: string; lon: string }>
+    if (!rows[0]) return null
+    return { lat: Number(rows[0].lat), lng: Number(rows[0].lon), source: 'osm' }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 주소 → 좌표.
+ *
+ * 카카오를 먼저 시도하고(건물 단위로 정확), 막히면 OSM 으로 넘어갑니다(도로 단위).
+ * 둘 다 실패하면 null — 그때는 사용자가 지도에서 직접 핀을 찍습니다.
+ * 어느 쪽이든 마지막 판단은 사용자의 핀 위치이므로, 자동 변환은 출발점일 뿐입니다.
+ */
+export async function geocodeAddress(address: string): Promise<GeocodeResult | null> {
+  return (await geocodeWithKakao(address)) ?? (await geocodeWithOsm(address))
 }

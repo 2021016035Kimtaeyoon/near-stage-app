@@ -37,6 +37,9 @@ export function StepBasic({ draft, patch }: { draft: VenueDraft; patch: Patch })
       })
       if (!coords) {
         toast('좌표를 자동으로 못 찾았어요', 'warn', '지도에서 위치를 직접 찍어주세요')
+      } else if (coords.source === 'osm') {
+        // 도로 단위라 건물까지는 못 짚습니다. 그대로 두면 관객이 엉뚱한 곳으로 갑니다.
+        toast('대략 위치만 찾았어요', 'warn', '지도에서 정확한 자리로 핀을 옮겨주세요')
       }
     } catch (e) {
       toast('주소 검색을 열지 못했어요', 'error', e instanceof Error ? e.message : undefined)
