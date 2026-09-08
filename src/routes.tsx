@@ -13,6 +13,7 @@ import { ShowDetail } from '@/screens/audience/ShowDetail'
 import { ChatListScreen } from '@/screens/common/ChatListScreen'
 import { ChatThreadScreen } from '@/screens/common/ChatThreadScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
+import { AdminScreen } from '@/screens/admin/AdminScreen'
 import { ArtistRegisterScreen } from '@/screens/artist/ArtistRegisterScreen'
 import { MyArtistsScreen } from '@/screens/artist/MyArtistsScreen'
 import { MyVenuesScreen } from '@/screens/host/MyVenuesScreen'
@@ -94,6 +95,16 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           element={
             <PageTransition>
               <MyPage />
+            </PageTransition>
+          }
+        />
+
+        {/* 운영자 (§9) — 접근 제어는 RLS 가 합니다 */}
+        <Route
+          path="/admin"
+          element={
+            <PageTransition>
+              <AdminScreen />
             </PageTransition>
           }
         />

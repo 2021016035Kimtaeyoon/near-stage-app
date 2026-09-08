@@ -1,4 +1,5 @@
-import { LogIn, LogOut, UserRound } from 'lucide-react'
+import { LogIn, LogOut, ShieldCheck, UserRound } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import { signOut, useAuthStore } from '@/hooks/useAuth'
 import { toast } from '@/store/useToast'
 
@@ -10,6 +11,7 @@ import { toast } from '@/store/useToast'
  * 명시적인 진입점을 둡니다.
  */
 export function AccountCard() {
+  const navigate = useNavigate()
   const profile = useAuthStore((s) => s.profile)
   const userId = useAuthStore((s) => s.userId)
   const loading = useAuthStore((s) => s.loading)
@@ -39,36 +41,49 @@ export function AccountCard() {
   }
 
   return (
-    <div className="card mb-4 flex items-center gap-3 px-4 py-3.5">
-      {profile?.avatarUrl ? (
-        <img
-          src={profile.avatarUrl}
-          alt=""
-          className="h-11 w-11 shrink-0 rounded-full object-cover"
-        />
-      ) : (
-        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-2 text-ink-3">
-          <UserRound size={18} />
-        </span>
-      )}
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-[14px] font-bold">
-          {profile?.displayName || '이름 없는 사용자'}
-        </p>
-        <p className="mt-0.5 text-2xs text-ink-3">
-          {profile?.isAdmin ? '운영자 계정' : '카카오 계정으로 로그인됨'}
-        </p>
+    <div className="card mb-4 overflow-hidden">
+      <div className="flex items-center gap-3 px-4 py-3.5">
+        {profile?.avatarUrl ? (
+          <img
+            src={profile.avatarUrl}
+            alt=""
+            className="h-11 w-11 shrink-0 rounded-full object-cover"
+          />
+        ) : (
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-surface-2 text-ink-3">
+            <UserRound size={18} />
+          </span>
+        )}
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[14px] font-bold">
+            {profile?.displayName || '이름 없는 사용자'}
+          </p>
+          <p className="mt-0.5 text-2xs text-ink-3">
+            {profile?.isAdmin ? '운영자 계정' : '카카오 계정으로 로그인됨'}
+          </p>
+        </div>
+        <button
+          onClick={async () => {
+            await signOut()
+            toast('로그아웃했어요')
+          }}
+          aria-label="로그아웃"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-3 active:bg-surface-2"
+        >
+          <LogOut size={16} />
+        </button>
       </div>
-      <button
-        onClick={async () => {
-          await signOut()
-          toast('로그아웃했어요')
-        }}
-        aria-label="로그아웃"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-ink-3 active:bg-surface-2"
-      >
-        <LogOut size={16} />
-      </button>
+
+      {profile?.isAdmin && (
+        <button
+          onClick={() => navigate('/admin')}
+          className="flex w-full items-center gap-2 border-t border-border bg-surface-2 px-4 py-2.5 text-left"
+        >
+          <ShieldCheck size={14} className="shrink-0 text-gold-text" />
+          <span className="flex-1 text-2xs font-bold">운영자 화면 열기</span>
+          <span className="text-2xs text-ink-3">승인 · 지표</span>
+        </button>
+      )}
     </div>
   )
 }
