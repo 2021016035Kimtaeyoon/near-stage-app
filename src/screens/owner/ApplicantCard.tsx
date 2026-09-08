@@ -1,123 +1,207 @@
-import { CheckCircle2, Clapperboard, FileText, MessageCircle, TriangleAlert, XCircle } from 'lucide-react'
+import { CheckCircle2, CircleHelp, ExternalLink, Music4, TriangleAlert, XCircle } from 'lucide-react'
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { GenreTag, Tag } from '@/components/ui/Badge'
+import { Tag } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
-import { PosterArt, Rating } from '@/components/ui/PosterArt'
-import { relativeFromNow } from '@/lib/datetime'
-import { matchNeeds } from '@/lib/match'
-import { useAppStore } from '@/store/useAppStore'
-import type { Application, Performer, Venue, Post } from '@/types'
-import { GuaranteeNoticeModal } from './GuaranteeNoticeModal'
+import { TextInput } from '@/components/ui/Field'
+import { rejectApplication, type Applicant } from '@/hooks/useApplications'
+import { matchNeeds, matchSummary, type VenueEquipment } from '@/lib/needMatch'
+import { toast } from '@/store/useToast'
 
-interface Props {
-  application: Application
-  performer: Performer
-  venue: Venue
-  nowIso: string
-  post: Post
-  onAccept: () => void
-  onReject: () => void
-}
-
-/** 지원자 카드 — 클립 미리보기 + ★ 필요 장비 vs 내 공간 장비 자동 매칭 표시 */
+/**
+ * 지원자 카드 (§10).
+ *
+ * 호스트가 수락을 결정하는 데 필요한 것만 담습니다 — 팀 소개, 영상, 그리고
+ * ★ 필요 장비와 우리 가게 장비의 항목별 대조.
+ *
+ * 대조에서 못 읽은 항목은 "직접 확인"으로 남깁니다. 충족으로 처리하면 당일 현장에서
+ * 사고가 나고, 미충족으로 처리하면 멀쩡한 팀이 걸러집니다.
+ */
 export function ApplicantCard({
-  application,
-  performer,
-  venue,
-  nowIso,
-  post,
-  onAccept,
-  onReject,
-}: Props) {
-  const navigate = useNavigate()
-  const ensureThread = useAppStore((s) => s.ensureThread)
-  const [guaranteeOpen, setGuaranteeOpen] = useState(false)
-  const match = matchNeeds(performer, venue)
-  const decided = application.status !== '대기'
+  applicant,
+  equipment,
+  onDone,
+  accept,
+}: {
+  applicant: Applicant
+  equipment: VenueEquipment
+  onDone: () => void
+  /** 11단계에서 붙습니다. 없으면 수락 버튼을 아예 그리지 않습니다 */
+  accept?: () => void
+}) {
+  const [rejecting, setRejecting] = useState(false)
+  const [reason, setReason] = useState('')
+  const [busy, setBusy] = useState(false)
 
-  const openChat = () => {
-    const threadId = ensureThread(venue.id, performer.id)
-    navigate(`/chat/${threadId}`)
+  const a = applicant.artist
+  const match = matchNeeds(a.needs, equipment)
+  const decided = applicant.status !== 'pending'
+
+  const doReject = async () => {
+    if (!reason.trim()) {
+      toast('거절 사유를 적어주세요', 'warn', '지원한 팀에게 그대로 보입니다')
+      return
+    }
+    setBusy(true)
+    const err = await rejectApplication(applicant.id, reason.trim())
+    setBusy(false)
+    if (err) {
+      toast('처리하지 못했어요', 'error', err)
+      return
+    }
+    toast('거절했어요', 'success')
+    setRejecting(false)
+    onDone()
   }
 
   return (
-    <div className="card p-3.5">
-      <div className="flex items-start gap-3">
-        <PosterArt seed={performer.photoSeed} genre={performer.genre} className="h-14 w-14 shrink-0 rounded-xl" />
+    <div className="card overflow-hidden">
+      <div className="flex gap-3 p-3.5">
+        {a.photos[0] ? (
+          <img
+            src={a.photos[0]}
+            alt=""
+            loading="lazy"
+            className="h-16 w-16 shrink-0 rounded-xl object-cover"
+          />
+        ) : (
+          <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-surface-2 text-ink-3">
+            <Music4 size={20} />
+          </span>
+        )}
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-1.5">
-            <GenreTag genre={performer.genre} size="sm" />
+            <span className="truncate text-[15px] font-bold">{a.teamName}</span>
             {decided && (
-              <Tag tone={application.status === '수락' ? 'ok' : 'danger'}>{application.status}</Tag>
+              <Tag tone={applicant.status === 'accepted' ? 'ok' : 'danger'}>
+                {applicant.status === 'accepted' ? '수락' : '거절'}
+              </Tag>
             )}
           </div>
-          <h3 className="mt-1 truncate text-[15px] font-bold">{performer.teamName}</h3>
-          <div className="mt-0.5 flex items-center gap-2">
-            <Rating value={performer.rating} count={performer.reviewCount} />
-            <span className="tnum text-2xs text-ink-3">지원 {relativeFromNow(application.createdAt, nowIso)}</span>
-          </div>
+          <p className="mt-0.5 text-2xs text-ink-2">
+            {a.genre} · {a.memberCount}명 · {a.durationMin}분
+          </p>
+          {a.bio && <p className="mt-1 line-clamp-2 text-2xs leading-relaxed text-ink-3">{a.bio}</p>}
+          {a.clipUrls.length > 0 && (
+            <div className="mt-1.5 flex flex-wrap gap-1.5">
+              {a.clipUrls.slice(0, 3).map((u) => (
+                <a
+                  key={u}
+                  href={u}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-2xs font-semibold text-gold-text"
+                >
+                  영상 보기
+                  <ExternalLink size={10} />
+                </a>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      <p className="mt-2.5 rounded-lg bg-surface-2 p-2.5 text-[13px] leading-relaxed text-ink-2">
-        “{application.message}”
-      </p>
-      {application.rejectReason && (
-        <p className="mt-1.5 text-2xs text-danger">거절 사유: {application.rejectReason}</p>
+      {applicant.message && (
+        <p className="mx-3.5 rounded-lg bg-surface-2 p-2.5 text-[13px] leading-relaxed text-ink-2">
+          “{applicant.message}”
+        </p>
+      )}
+      {applicant.rejectReason && (
+        <p className="mx-3.5 mt-1.5 text-2xs text-danger">거절 사유: {applicant.rejectReason}</p>
       )}
 
-      <div className="no-scrollbar mt-2.5 flex gap-1.5 overflow-x-auto">
-        {performer.clipTitles.slice(0, 3).map((title, i) => (
-          <div key={title} className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg">
-            <PosterArt seed={`${performer.photoSeed}-clip-${i}`} genre={performer.genre} className="h-full w-full" deep glyphScale={0.6} />
-            <Clapperboard size={11} className="absolute bottom-1 right-1 text-white/80" />
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-3 rounded-xl border border-border p-3">
+      <div className="m-3.5 rounded-xl border border-border p-3">
         <p className="mb-2 text-2xs font-bold text-ink-2">
-          장비 조건 대조 · {match.satisfiedCount}/{match.totalCount} 충족
+          장비 조건 대조 · {matchSummary(match)}
         </p>
-        <div className="space-y-1.5">
-          {match.checks.map((c) => (
-            <div key={c.need.key} className="flex items-center justify-between text-2xs">
-              <span className={c.ok ? 'text-ink-2' : 'font-semibold text-warn'}>{c.need.label} 필요</span>
-              <span className={c.ok ? 'flex items-center gap-1 font-semibold text-ok' : 'flex items-center gap-1 font-bold text-warn'}>
-                {c.ok ? <CheckCircle2 size={12} /> : <TriangleAlert size={12} />}
-                {c.actualLabel}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="mt-3 flex gap-2">
-        <Button variant="outline" size="sm" leading={<MessageCircle size={13} />} onClick={openChat}>
-          채팅
-        </Button>
-        {!decided && (
-          <>
-            <Button variant="outline" size="sm" leading={<FileText size={13} />} onClick={() => setGuaranteeOpen(true)}>
-              개런티
-            </Button>
-            <Button variant="danger" size="sm" leading={<XCircle size={13} />} onClick={onReject} className="flex-1">
-              거절
-            </Button>
-            <Button variant="brand" size="sm" leading={<CheckCircle2 size={13} />} onClick={onAccept} className="flex-1">
-              수락
-            </Button>
-          </>
+        {match.checks.length === 0 ? (
+          <p className="text-2xs text-ink-3">
+            이 팀은 필요한 장비를 적지 않았습니다. 채팅으로 직접 물어보세요.
+          </p>
+        ) : (
+          <div className="space-y-1.5">
+            {match.checks.map((c) => (
+              <div key={c.label} className="flex items-center justify-between gap-2 text-2xs">
+                <span
+                  className={
+                    c.ok === false ? 'font-semibold text-warn' : 'min-w-0 truncate text-ink-2'
+                  }
+                >
+                  {c.label}
+                </span>
+                <span
+                  className={`flex shrink-0 items-center gap-1 font-semibold ${
+                    c.ok === true ? 'text-ok' : c.ok === false ? 'text-warn' : 'text-ink-3'
+                  }`}
+                >
+                  {c.ok === true ? (
+                    <CheckCircle2 size={12} />
+                  ) : c.ok === false ? (
+                    <TriangleAlert size={12} />
+                  ) : (
+                    <CircleHelp size={12} />
+                  )}
+                  {c.actual || '직접 확인'}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+        {match.missingCount > 0 && (
+          <p className="mt-2 text-2xs leading-relaxed text-ink-3">
+            부족한 항목이 있어도 수락할 수 있습니다. 팀과 상의해 대여하거나 빼고 진행하는 경우가
+            많습니다.
+          </p>
         )}
       </div>
 
-      <GuaranteeNoticeModal
-        open={guaranteeOpen}
-        onClose={() => setGuaranteeOpen(false)}
-        post={post}
-        performer={performer}
-      />
+      {!decided &&
+        (rejecting ? (
+          <div className="border-t border-border p-3">
+            <TextInput
+              autoFocus
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+              placeholder="거절 사유 (지원한 팀에게 그대로 보입니다)"
+              maxLength={120}
+            />
+            <div className="mt-2 flex gap-2">
+              <Button variant="ghost" size="sm" onClick={() => setRejecting(false)}>
+                취소
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                full
+                loading={busy}
+                onClick={() => void doReject()}
+              >
+                거절하기
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <div className="flex gap-2 border-t border-border p-3">
+            <Button
+              variant="outline"
+              size="sm"
+              leading={<XCircle size={13} />}
+              onClick={() => setRejecting(true)}
+            >
+              거절
+            </Button>
+            {accept && (
+              <Button
+                variant="brand"
+                size="sm"
+                full
+                leading={<CheckCircle2 size={13} />}
+                onClick={accept}
+              >
+                수락하고 공연 만들기
+              </Button>
+            )}
+          </div>
+        ))}
     </div>
   )
 }

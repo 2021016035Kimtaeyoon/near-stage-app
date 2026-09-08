@@ -18,6 +18,7 @@ import { ArtistRegisterScreen } from '@/screens/artist/ArtistRegisterScreen'
 import { MyArtistsScreen } from '@/screens/artist/MyArtistsScreen'
 import { MyVenuesScreen } from '@/screens/host/MyVenuesScreen'
 import { VenueRegisterScreen } from '@/screens/host/VenueRegisterScreen'
+import { VenueSlotsScreen } from '@/screens/host/VenueSlotsScreen'
 import { OwnerApplicantsScreen } from '@/screens/owner/OwnerApplicantsScreen'
 import { OwnerDashboard } from '@/screens/owner/OwnerDashboard'
 import { OwnerRecruitScreen } from '@/screens/owner/OwnerRecruitScreen'
@@ -133,6 +134,14 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           element={
             <PageTransition>
               <VenueRegisterScreen />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/host/venue/:venueId/slots"
+          element={
+            <PageTransition>
+              <VenueSlotsScreen />
             </PageTransition>
           }
         />

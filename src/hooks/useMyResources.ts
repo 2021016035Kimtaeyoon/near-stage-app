@@ -29,6 +29,8 @@ export interface MyArtist {
   status: 'pending' | 'approved' | 'rejected'
   rejectReason: string | null
   photos: string[]
+  /** 필요 장비 — 공간 장비와 대조할 때 씁니다 (§10) */
+  needs: string[]
   createdAt: string
 }
 
@@ -102,7 +104,7 @@ export function useMyArtists(): Query<MyArtist[]> {
     setLoading(true)
     void supabase
       .from('artists')
-      .select('id,team_name,genre,status,reject_reason,photos,created_at')
+      .select('id,team_name,genre,status,reject_reason,photos,needs,created_at')
       .eq('owner_id', userId)
       .order('created_at', { ascending: false })
       .then(({ data: rows, error: err }) => {
@@ -121,6 +123,7 @@ export function useMyArtists(): Query<MyArtist[]> {
             status: r.status,
             rejectReason: r.reject_reason,
             photos: r.photos ?? [],
+            needs: r.needs ?? [],
             createdAt: r.created_at,
           })),
         )

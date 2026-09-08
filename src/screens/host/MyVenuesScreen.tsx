@@ -72,7 +72,11 @@ export function MyVenuesScreen() {
           <>
             <div className="space-y-2.5">
               {data.map((v) => (
-                <VenueRow key={v.id} venue={v} onOpen={() => navigate('/host/dashboard')} />
+                <VenueRow
+                  key={v.id}
+                  venue={v}
+                  onOpen={() => navigate(`/host/venue/${v.id}/slots`)}
+                />
               ))}
             </div>
             <Button variant="outline" full className="mt-4" leading={<Plus size={16} />} onClick={goNew}>
@@ -100,7 +104,7 @@ function VenueRow({ venue, onOpen }: { venue: MyVenue; onOpen: () => void }) {
       icon: MapPin,
       label: '공개 중',
       cls: 'bg-ok/15 text-ok border-ok/35',
-      note: '지도에 노출되고 있습니다. 이제 구인글을 올려 공연팀을 찾아보세요.',
+      note: '지도에 노출되고 있습니다. 눌러서 가능 시간을 열어두면 공연팀이 지원할 수 있어요.',
     },
     rejected: {
       icon: XCircle,
