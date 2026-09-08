@@ -11,6 +11,8 @@ import { SnapSheet, type SnapIndex } from '@/components/ui/SnapSheet'
 import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
 import { computeTrendingKeywords } from '@/lib/trending'
+import { useAuthStore } from '@/hooks/useAuth'
+import { useMyLikes } from '@/hooks/useEngagement'
 import { usePublicShows } from '@/hooks/usePublicShows'
 import { DEFAULT_FILTER, filterShows } from '@/store/selectors'
 import { useAppStore, useNow } from '@/store/useAppStore'
@@ -31,8 +33,12 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
 export function HomeMap() {
   const navigate = useNavigate()
   const { data: all, loading, error, refresh } = usePublicShows()
-  const likedShowIds = useAppStore((s) => s.likedShowIds)
-  const toggleLike = useAppStore((s) => s.toggleLike)
+  // 좋아요는 내 계정에 저장됩니다 (§12). 로그인 전에는 빈 목록이고, 하트를
+  // 누르면 로그인 시트가 뜹니다.
+  const likes = useMyLikes()
+  const requireAuth = useAuthStore((s) => s.requireAuth)
+  const likedShowIds = likes.data
+  const toggleLike = (id: string) => requireAuth(() => void likes.toggle(id))
   const recentlyViewedShowIds = useAppStore((s) => s.recentlyViewedShowIds)
   const nowIso = useNow()
   const filter = useAppStore((s) => s.audienceFilter)

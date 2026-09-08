@@ -84,7 +84,7 @@ export function MyPage() {
           {tab === 'reservation' && <MyReservations />}
           {tab === 'liked' && <MyLikedShows />}
           {tab === 'follow' && <MyFollowedPerformers />}
-          {tab === 'noti' && <NotificationList role="audience" />}
+          {tab === 'noti' && <NotificationList />}
         </div>
 
         <TabBarSpacer />

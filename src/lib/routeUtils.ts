@@ -4,7 +4,6 @@ export const FULLSCREEN_PREFIXES = [
   // 제출 버튼과 겹치고, 실수로 탭을 눌러 폼을 벗어나면 흐름이 끊깁니다.
   '/host/venue/new',
   '/artist/new',
-  '/audience/book',
   '/audience/review',
   '/chat/',
 ]

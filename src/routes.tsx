@@ -4,7 +4,6 @@ import { PageTransition } from '@/components/shell/PageTransition'
 import { ROLE_HOME } from '@/config/nav'
 import { useAppStore } from '@/store/useAppStore'
 
-import { BookingFlow } from '@/screens/audience/BookingFlow'
 import { ClipFeed } from '@/screens/audience/ClipFeed'
 import { HomeMap } from '@/screens/audience/HomeMap'
 import { MyPage } from '@/screens/audience/MyPage'
@@ -72,14 +71,6 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           element={
             <PageTransition>
               <ShowDetail />
-            </PageTransition>
-          }
-        />
-        <Route
-          path="/audience/book/:showId"
-          element={
-            <PageTransition>
-              <BookingFlow />
             </PageTransition>
           }
         />

@@ -6,89 +6,137 @@ import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Label, TextArea } from '@/components/ui/Field'
 import { RatingInput } from '@/components/ui/PosterArt'
-import { resolvePlace } from '@/store/selectors'
-import { useAppStore } from '@/store/useAppStore'
+import { useMyAttendances } from '@/hooks/useEngagement'
+import { usePublicShow } from '@/hooks/usePublicShows'
+import { submitReview } from '@/hooks/useReviews'
+import { useNow } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
 
 /**
- * ★ 공간 리뷰와 공연 리뷰를 한 화면에서 쓰되, 항상 두 개의 별도 레코드로 저장합니다.
- * 등록 공연(KOPIS)은 우리 플랫폼에 등록된 공간·공연자 데이터가 없어 리뷰 작성 대상이 없습니다.
+ * 리뷰 작성 (§12).
+ *
+ * ★ 공간 리뷰와 공연 리뷰를 한 화면에서 쓰되 항상 두 개의 별도 레코드로 저장합니다.
+ *   "장소가 좋았다"와 "무대가 좋았다"는 다른 평가라서 합치면 둘 다 못 믿게 됩니다.
+ *
+ * ★ 쓸 수 있는지는 DB 가 최종 판단합니다 — 공연이 실제로 끝났고 참석한 사람만
+ *   통과합니다(0012). 여기 가드는 헛걸음을 줄이려는 것이지 보안이 아닙니다.
  */
 export function ReviewCompose() {
   const { showId } = useParams<{ showId: string }>()
   const navigate = useNavigate()
-  const shows = useAppStore((s) => s.shows)
-  const venues = useAppStore((s) => s.venues)
-  const addReview = useAppStore((s) => s.addReview)
-  const myName = useAppStore((s) => s.profile?.displayName ?? '')
-
-  const show = shows.find((s) => s.id === showId) ?? null
-  const place = show ? resolvePlace(show, venues) : null
+  const nowIso = useNow()
+  const { data: meta, loading } = usePublicShow(showId)
+  const attendances = useMyAttendances()
 
   const [venueRating, setVenueRating] = useState(5)
   const [venueText, setVenueText] = useState('')
   const [performerRating, setPerformerRating] = useState(5)
   const [performerText, setPerformerText] = useState('')
+  const [busy, setBusy] = useState(false)
   const [submitted, setSubmitted] = useState(false)
 
-  if (!show || !place || show.source !== 'own' || !show.venueId || !show.performerId) {
+  const show = meta?.show ?? null
+  const place = meta?.place ?? null
+  const mine = attendances.data.find((a) => a.showId === showId)
+  const ended = show
+    ? new Date(show.startAt).getTime() + show.durationMin * 60_000 < new Date(nowIso).getTime()
+    : false
+
+  const header = (title: string, onBack: () => void) => (
+    <div className="flex items-center gap-2 border-b border-border px-4 pb-3 pt-12">
+      <IconButton label="닫기" onClick={onBack}>
+        <ChevronLeft size={22} />
+      </IconButton>
+      <div className="min-w-0">
+        <h1 className="text-[16px] font-bold">리뷰 작성</h1>
+        {title && <p className="truncate text-2xs text-ink-3">{title}</p>}
+      </div>
+    </div>
+  )
+
+  if (loading) {
     return (
       <Screen>
-        <div className="flex items-center gap-2 px-4 pb-3 pt-12">
-          <IconButton label="닫기" onClick={() => navigate(-1)}>
-            <ChevronLeft size={22} />
-          </IconButton>
-          <h1 className="text-[16px] font-bold">리뷰 작성</h1>
+        {header('', () => navigate(-1))}
+        <div className="p-4">
+          <div className="h-40 animate-pulse rounded-2xl bg-surface-2" />
         </div>
-        <EmptyState
-          art="chat"
-          title="리뷰를 작성할 수 없어요"
-          description="등록 공연(KOPIS)은 우리 플랫폼에 등록된 공간·아티스트 정보가 없어 리뷰를 남길 수 없습니다."
-        />
       </Screen>
     )
   }
 
-  const submit = () => {
-    addReview({
-      showId: show.id,
-      targetType: 'venue',
-      targetId: show.venueId as string,
-      rating: venueRating,
-      text: venueText.trim() || '좋은 공간이었어요.',
-      authorName: myName,
-    })
-    addReview({
-      showId: show.id,
-      targetType: 'performer',
-      targetId: show.performerId as string,
-      rating: performerRating,
-      text: performerText.trim() || '좋은 공연이었어요.',
-      authorName: myName,
-    })
-    toast('리뷰가 등록되었습니다', 'success', '공간과 공연 평가가 각각 반영됩니다')
+  const blocked = !show
+    ? { title: '공연을 찾을 수 없어요', desc: '취소되었거나 삭제된 공연일 수 있어요.' }
+    : show.source !== 'own'
+      ? {
+          title: '리뷰를 쓸 수 없는 공연이에요',
+          desc: '등록 공연(KOPIS)은 우리 플랫폼에 등록된 공간·아티스트 정보가 없어 평점을 남길 대상이 없습니다.',
+        }
+      : !ended
+        ? {
+            title: '아직 공연 전이에요',
+            desc: '공연이 끝난 뒤에 리뷰를 쓸 수 있어요. 안 본 공연에 별점이 달리면 별점을 아무도 안 믿게 됩니다.',
+          }
+        : !mine || mine.status === 'canceled'
+          ? {
+              title: '참석하신 분만 쓸 수 있어요',
+              desc: '이 공연에 참석 예정을 등록한 기록이 없습니다. 다녀오신 게 맞다면 호스트에게 문의해주세요.',
+            }
+          : null
+
+  if (blocked) {
+    return (
+      <Screen>
+        {header(show?.title ?? '', () => navigate(-1))}
+        <EmptyState art="chat" title={blocked.title} description={blocked.desc} />
+      </Screen>
+    )
+  }
+
+  const submit = async () => {
+    if (!show) return
+    setBusy(true)
+    const errs = [
+      await submitReview({
+        showId: show.id,
+        targetType: 'venue',
+        rating: venueRating,
+        body: venueText.trim(),
+      }),
+      await submitReview({
+        showId: show.id,
+        targetType: 'artist',
+        rating: performerRating,
+        body: performerText.trim(),
+      }),
+    ].filter(Boolean)
+    setBusy(false)
+    if (errs.length > 0) {
+      toast('등록하지 못했어요', 'error', errs[0] ?? undefined)
+      return
+    }
+    toast('리뷰를 남겼어요', 'success', '공간 평점과 공연 평점에 각각 반영됩니다')
     setSubmitted(true)
   }
 
   if (submitted) {
     return (
       <Screen>
-        <div className="flex items-center gap-2 px-4 pb-3 pt-12">
-          <IconButton label="닫기" onClick={() => navigate('/audience/my')}>
-            <ChevronLeft size={22} />
-          </IconButton>
-          <h1 className="text-[16px] font-bold">리뷰 작성</h1>
-        </div>
+        {header(show?.title ?? '', () => navigate('/audience/my'))}
         <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">
           <div className="bg-gold-500 flex h-14 w-14 items-center justify-center rounded-full text-2xl text-gold-ink">
             ✓
           </div>
-          <h2 className="mt-4 text-lg font-extrabold">리뷰가 등록되었어요</h2>
-          <p className="mt-1.5 text-sm text-ink-2">
-            공간 평점과 공연 평점이 각각 반영되었습니다.
-          </p>
-          <Button full variant="brand" size="lg" className="mt-6" onClick={() => navigate('/audience/my')}>
-            마이 페이지로
+          <h2 className="mt-4 text-lg font-extrabold">리뷰를 남겼어요</h2>
+          <p className="mt-1.5 text-sm text-ink-2">공간 평점과 공연 평점에 각각 반영되었습니다.</p>
+          <Button
+            full
+            variant="brand"
+            size="lg"
+            className="mt-6"
+            onClick={() => navigate(`/audience/show/${show?.id}`)}
+          >
+            공연 화면으로
           </Button>
         </div>
       </Screen>
@@ -97,15 +145,7 @@ export function ReviewCompose() {
 
   return (
     <Screen>
-      <div className="flex items-center gap-2 border-b border-border px-4 pb-3 pt-12">
-        <IconButton label="닫기" onClick={() => navigate(-1)}>
-          <ChevronLeft size={22} />
-        </IconButton>
-        <div>
-          <h1 className="text-[16px] font-bold">리뷰 작성</h1>
-          <p className="text-2xs text-ink-3">{show.title}</p>
-        </div>
-      </div>
+      {header(show?.title ?? '', () => navigate(-1))}
 
       <div className="min-h-0 flex-1 space-y-6 overflow-y-auto px-4 py-5">
         <section>
@@ -113,12 +153,13 @@ export function ReviewCompose() {
           <p className="mb-3 text-xs text-ink-3">{place?.name} · 분위기, 좌석, 접근성 등</p>
           <RatingInput value={venueRating} onChange={setVenueRating} />
           <div className="mt-3">
-            <Label>공간 후기</Label>
+            <Label hint="비워도 별점은 저장됩니다">공간 후기</Label>
             <TextArea
               rows={3}
               value={venueText}
               onChange={(e) => setVenueText(e.target.value)}
               placeholder="공간에 대한 솔직한 후기를 남겨주세요"
+              maxLength={500}
             />
           </div>
         </section>
@@ -127,22 +168,29 @@ export function ReviewCompose() {
 
         <section>
           <h2 className="mb-1 text-[15px] font-bold">공연은 어땠나요?</h2>
-          <p className="mb-3 text-xs text-ink-3">무대, 연출, 완성도 등</p>
+          <p className="mb-3 text-xs text-ink-3">
+            {meta?.performer?.teamName ?? '무대'} · 연출, 완성도 등
+          </p>
           <RatingInput value={performerRating} onChange={setPerformerRating} />
           <div className="mt-3">
-            <Label>공연 후기</Label>
+            <Label hint="비워도 별점은 저장됩니다">공연 후기</Label>
             <TextArea
               rows={3}
               value={performerText}
               onChange={(e) => setPerformerText(e.target.value)}
               placeholder="공연에 대한 솔직한 후기를 남겨주세요"
+              maxLength={500}
             />
           </div>
         </section>
+
+        <p className="text-2xs leading-relaxed text-ink-3">
+          리뷰는 이름과 함께 공개됩니다. 이미 쓰신 리뷰가 있으면 이번 내용으로 바뀝니다.
+        </p>
       </div>
 
       <div className="border-t border-border px-4 pb-[calc(var(--safe-bottom)+14px)] pt-3">
-        <Button full variant="brand" size="lg" onClick={submit}>
+        <Button full variant="brand" size="lg" loading={busy} onClick={() => void submit()}>
           리뷰 등록하기
         </Button>
       </div>

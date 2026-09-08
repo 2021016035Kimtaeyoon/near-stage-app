@@ -1,17 +1,16 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { TABS } from '@/config/nav'
 import { cn } from '@/lib/cn'
-import { unreadNotificationCount } from '@/store/selectors'
+import { useNotifications } from '@/hooks/useNotifications'
 import { useAppStore } from '@/store/useAppStore'
 
 export function TabBar() {
   const role = useAppStore((s) => s.role)
-  const notifications = useAppStore((s) => s.notifications)
-  const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const navigate = useNavigate()
   const { pathname } = useLocation()
 
-  const unread = unreadNotificationCount(notifications, role, followedPerformerIds)
+  // 읽지 않은 알림 수 — 내 계정의 실제 알림입니다 (§12)
+  const { unread } = useNotifications()
   const tabs = TABS[role]
 
   return (

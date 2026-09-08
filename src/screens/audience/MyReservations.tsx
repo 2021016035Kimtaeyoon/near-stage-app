@@ -1,114 +1,131 @@
-import { Check, MapPin, QrCode } from 'lucide-react'
+import { MapPin, PenLine } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Tag } from '@/components/ui/Badge'
+import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { PosterArt } from '@/components/ui/PosterArt'
+import { ShowPoster } from '@/components/ui/ShowPoster'
+import { useAuthStore } from '@/hooks/useAuth'
+import { useMyAttendances } from '@/hooks/useEngagement'
+import { usePublicShows } from '@/hooks/usePublicShows'
 import { humanDateTime } from '@/lib/datetime'
-import { resolvePlace } from '@/store/selectors'
-import { useAppStore, useNow } from '@/store/useAppStore'
-import type { Reservation } from '@/types'
+import { useNow } from '@/store/useAppStore'
 
+/**
+ * 내 참석 예정 (§12).
+ *
+ * 예매가 아니라 "참석 예정"입니다 — 결제도 좌석 지정도 없고, QR 티켓도 없습니다.
+ * 호스트가 대략 몇 명 오는지 알기 위한 숫자입니다. 그래서 화면도 티켓처럼 꾸미지
+ * 않습니다. 티켓처럼 보이면 관객이 자리를 보장받았다고 오해합니다.
+ */
 export function MyReservations() {
   const navigate = useNavigate()
-  const reservations = useAppStore((s) => s.reservations)
-  const shows = useAppStore((s) => s.shows)
-  const venues = useAppStore((s) => s.venues)
-  const performers = useAppStore((s) => s.performers)
-  const reviews = useAppStore((s) => s.reviews)
-  const myName = useAppStore((s) => s.profile?.displayName ?? '')
   const nowIso = useNow()
+  const userId = useAuthStore((s) => s.userId)
+  const attendances = useMyAttendances()
+  const shows = usePublicShows()
 
-  // 내가 이미 후기를 남긴 공연 — 중복 작성 유도를 막습니다
-  const myReviewedShowIds = new Set(
-    reviews.filter((r) => r.authorName === myName).map((r) => r.showId),
-  )
+  if (!userId) {
+    return (
+      <EmptyState
+        art="ticket"
+        title="로그인하면 참석 예정을 볼 수 있어요"
+        description="공연에 참석 예정을 눌러두면 여기 모입니다."
+      />
+    )
+  }
 
-  const rows = reservations
-    .map((r) => {
-      const show = shows.find((s) => s.id === r.showId)
-      return show ? { reservation: r, show } : null
+  if (attendances.loading || shows.loading) {
+    return (
+      <div className="space-y-2.5">
+        {[0, 1].map((i) => (
+          <div key={i} className="h-24 animate-pulse rounded-2xl bg-surface-2" />
+        ))}
+      </div>
+    )
+  }
+
+  const rows = attendances.data
+    .map((a) => {
+      const meta = shows.data.find((x) => x.show.id === a.showId)
+      return meta ? { attendance: a, meta } : null
     })
-    .filter((x): x is { reservation: Reservation; show: NonNullable<typeof x>['show'] } => x !== null)
-    .sort((a, b) => new Date(b.show.startAt).getTime() - new Date(a.show.startAt).getTime())
+    .filter((x): x is NonNullable<typeof x> => x !== null)
+    .sort(
+      (a, b) =>
+        new Date(b.meta.show.startAt).getTime() - new Date(a.meta.show.startAt).getTime(),
+    )
 
   if (rows.length === 0) {
     return (
       <EmptyState
         art="ticket"
-        title="예약 내역이 없어요"
+        title="참석 예정인 공연이 없어요"
         description="관심 있는 공연에 참석 예정을 눌러두면 여기 모입니다."
         action={
-          <button
-            onClick={() => navigate('/audience/home')}
-            className="rounded-xl bg-ink px-4 py-2.5 text-xs font-bold text-white"
-          >
+          <Button variant="brand" onClick={() => navigate('/audience/home')}>
             공연 둘러보기
-          </button>
+          </Button>
         }
       />
     )
   }
 
+  const now = new Date(nowIso).getTime()
+
   return (
     <div className="space-y-2.5">
-      {rows.map(({ reservation, show }) => {
-        const place = resolvePlace(show, venues)
-        const performer = performers.find((p) => p.id === show.performerId)
-        const ended = new Date(show.startAt).getTime() + show.durationMin * 60_000 < new Date(nowIso).getTime()
-        // 리뷰는 우리 무대(공간·공연자가 실재하는 공연)에만 쓸 수 있습니다 — ReviewCompose와 같은 조건
-        const reviewable =
-          ended && reservation.status !== '취소' && show.source === 'own' && !!show.venueId && !!show.performerId
-        const alreadyReviewed = myReviewedShowIds.has(show.id)
-        return (
-          <div key={reservation.id} className="card overflow-hidden">
-          <button
-            onClick={() => navigate(`/audience/ticket/${reservation.id}`)}
-            className="flex w-full gap-3 p-3 text-left"
-          >
-            <PosterArt
-              seed={show.id + (performer?.photoSeed ?? show.title)}
-              genre={show.genre}
-              className="h-16 w-16 shrink-0 rounded-xl"
-            />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <Tag tone={reservation.status === '취소' ? 'danger' : ended ? 'default' : 'ok'}>
-                  {reservation.status === '취소' ? '취소됨' : ended ? '종료' : reservation.status}
-                </Tag>
-                <span className="tnum text-2xs text-ink-3">{reservation.headcount}명</span>
-              </div>
-              <p className="mt-1 truncate text-sm font-bold">{show.title}</p>
-              <p className="tnum mt-0.5 flex items-center gap-1 truncate text-xs text-ink-2">
-                <MapPin size={11} className="shrink-0" />
-                {place?.name} · {humanDateTime(show.startAt, nowIso)}
-              </p>
-            </div>
-            <div className="flex shrink-0 items-center text-ink-3">
-              <QrCode size={20} />
-            </div>
-          </button>
+      {rows.map(({ attendance, meta }) => {
+        const show = meta.show
+        const ended = new Date(show.startAt).getTime() + show.durationMin * 60_000 < now
+        const canceled = attendance.status === 'canceled'
+        const canReview = ended && !canceled && show.source === 'own'
 
-          {/* 관람이 끝나면 여기서 바로 후기를 남깁니다 — 예전엔 리뷰 화면이 완성돼 있는데
-              진입 버튼이 없어 어디서도 도달할 수 없었습니다. */}
-          {reviewable && (
-            <div className="flex items-center justify-between gap-3 border-t border-border px-3 py-2.5">
-              <p className="text-2xs text-ink-2">
-                {alreadyReviewed ? '후기를 남겨주셔서 감사해요' : '공연은 어떠셨나요? 후기 30P'}
-              </p>
-              {alreadyReviewed ? (
-                <Tag tone="ok">
-                  <Check size={10} /> 후기 작성 완료
-                </Tag>
-              ) : (
-                <button
-                  onClick={() => navigate(`/audience/review/${show.id}`)}
-                  className="bg-gold-500 shrink-0 rounded-lg px-3 py-1.5 text-2xs font-bold text-gold-ink"
-                >
-                  후기 남기기
-                </button>
-              )}
-            </div>
-          )}
+        return (
+          <div key={show.id} className="card overflow-hidden">
+            <button
+              onClick={() => navigate(`/audience/show/${show.id}`)}
+              className="flex w-full gap-3 p-3.5 text-left"
+            >
+              <ShowPoster
+                posterUrl={show.posterUrl ?? undefined}
+                seed={show.id + show.title}
+                genre={show.genre}
+                className="h-16 w-16 shrink-0 rounded-xl"
+              />
+              <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-1.5">
+                  <span className="truncate text-sm font-bold">{show.title}</span>
+                  <Tag tone={canceled ? 'danger' : ended ? 'default' : 'ok'}>
+                    {canceled ? '취소함' : ended ? '종료' : '참석 예정'}
+                  </Tag>
+                </span>
+                <span className="tnum mt-0.5 block text-2xs text-ink-2">
+                  {humanDateTime(show.startAt, nowIso)}
+                </span>
+                <span className="mt-0.5 flex items-center gap-1 text-2xs text-ink-3">
+                  <MapPin size={10} className="shrink-0" />
+                  <span className="truncate">{meta.place.name}</span>
+                </span>
+                {!canceled && (
+                  <span className="tnum mt-0.5 block text-2xs text-ink-3">
+                    {attendance.headcount}명
+                  </span>
+                )}
+              </span>
+            </button>
+
+            {canReview && (
+              <Button
+                variant="ghost"
+                full
+                size="sm"
+                leading={<PenLine size={13} />}
+                className="border-t border-border"
+                onClick={() => navigate(`/audience/review/${show.id}`)}
+              >
+                리뷰 쓰기
+              </Button>
+            )}
           </div>
         )
       })}

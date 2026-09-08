@@ -160,7 +160,7 @@ export function DesktopShowDetailModal({
                       size="lg"
                       disabled={soldOut}
                       onClick={() =>
-                        window.open(`${location.pathname}#/audience/book/${show.id}`, '_blank', 'noopener')
+                        window.open(`${location.pathname}#/audience/show/${show.id}`, '_blank', 'noopener')
                       }
                       className="shrink-0"
                     >

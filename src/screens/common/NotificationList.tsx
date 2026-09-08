@@ -1,106 +1,132 @@
-import {
-  Bell,
-  Calendar,
-  CheckCheck,
-  BellPlus,
-  MessageSquareText,
-  Megaphone,
-  Star,
-  ThumbsUp,
-  XCircle,
-  type LucideIcon,
-} from 'lucide-react'
+import { Bell, CheckCheck, CircleCheck, Megaphone, Star, Ticket } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { cn } from '@/lib/cn'
+import { useAuthStore } from '@/hooks/useAuth'
+import { markRead, useNotifications, type AppNotice } from '@/hooks/useNotifications'
 import { relativeFromNow } from '@/lib/datetime'
-import { useAppStore, useNow } from '@/store/useAppStore'
-import type { AppNotification, NotificationType, Role } from '@/types'
+import { useNow } from '@/store/useAppStore'
 
-const TYPE_ICON: Record<NotificationType, LucideIcon> = {
-  지원: Megaphone,
-  수락: ThumbsUp,
-  거절: XCircle,
-  예약: Calendar,
-  확정: Bell,
-  리뷰: Star,
-  제안: MessageSquareText,
-  관심: BellPlus,
-  시스템: Bell,
+/**
+ * 인앱 알림 목록 (§12).
+ *
+ * ★ 알림은 전부 서버가 만듭니다. 프론트에는 INSERT 권한이 없습니다.
+ *   여기서는 읽고, 읽음 표시하고, 링크로 보내는 일만 합니다.
+ *
+ * 링크는 DB 에 문자열로 들어 있습니다. 없는 경로를 넣으면 눌러도 아무 데도 못 가서,
+ * 0011 에서 죽은 링크 두 개를 실제 경로로 고쳤습니다.
+ */
+
+const ICONS: Record<string, typeof Bell> = {
+  accepted: CircleCheck,
+  confirmed: Ticket,
+  new_show: Megaphone,
+  review: Star,
 }
 
-/** 역할별 알림 목록 — 마이 페이지의 알림 탭과 /notifications 라우트가 함께 사용합니다 */
-export function NotificationList({ role, showHeader = true }: { role: Role; showHeader?: boolean }) {
+export function NotificationList({ showHeader = true }: { showHeader?: boolean }) {
   const navigate = useNavigate()
-  const notifications = useAppStore((s) => s.notifications)
-  const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
   const nowIso = useNow()
-  const markNotificationRead = useAppStore((s) => s.markNotificationRead)
-  const markAllNotificationsRead = useAppStore((s) => s.markAllNotificationsRead)
+  const userId = useAuthStore((s) => s.userId)
+  const { data, loading, error, refresh, unread } = useNotifications()
 
-  const mine = notifications
-    .filter(
-      (n) =>
-        n.role === role &&
-        (n.audienceScope !== 'followers' || followedPerformerIds.includes(n.performerId ?? '')),
+  if (!userId) {
+    return (
+      <EmptyState
+        art="chat"
+        title="로그인하면 알림을 볼 수 있어요"
+        description="공연 확정, 지원 결과 같은 소식이 여기로 옵니다."
+      />
     )
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-  const unread = mine.filter((n) => !n.read).length
+  }
 
-  const open = (n: AppNotification) => {
-    markNotificationRead(n.id)
+  if (loading) {
+    return (
+      <div className="space-y-2">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-16 animate-pulse rounded-2xl bg-surface-2" />
+        ))}
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <EmptyState
+        art="search"
+        title="불러오지 못했어요"
+        description={error}
+        action={
+          <Button variant="outline" onClick={refresh}>
+            다시 시도
+          </Button>
+        }
+      />
+    )
+  }
+
+  if (data.length === 0) {
+    return (
+      <EmptyState
+        art="chat"
+        title="아직 알림이 없어요"
+        description="공연이 확정되거나 지원 결과가 나오면 여기로 옵니다."
+      />
+    )
+  }
+
+  const open = async (n: AppNotice) => {
+    if (!n.readAt) {
+      await markRead([n.id])
+      refresh()
+    }
     if (n.link) navigate(n.link)
   }
 
-  if (mine.length === 0) {
-    return <EmptyState art="chat" title="알림이 없어요" description="새 소식이 오면 여기에 모아서 보여드려요." />
+  const readAll = async () => {
+    const ids = data.filter((n) => !n.readAt).map((n) => n.id)
+    const err = await markRead(ids)
+    if (!err) refresh()
   }
 
   return (
     <div>
-      {showHeader && (
-        <div className="mb-3 flex items-center justify-between">
-          <p className="text-xs text-ink-3">
-            안 읽은 알림 <span className="tnum font-bold text-ink">{unread}</span>건
-          </p>
-          {unread > 0 && (
-            <button
-              onClick={() => markAllNotificationsRead(role)}
-              className="flex items-center gap-1 text-xs font-bold text-ink-2"
-            >
-              <CheckCheck size={13} />
-              모두 읽음
-            </button>
-          )}
+      {showHeader && unread > 0 && (
+        <div className="mb-2.5 flex items-center justify-between gap-2">
+          <p className="tnum text-2xs font-bold text-ink-2">읽지 않은 알림 {unread}건</p>
+          <Button size="sm" variant="ghost" leading={<CheckCheck size={13} />} onClick={() => void readAll()}>
+            모두 읽음
+          </Button>
         </div>
       )}
-      <div className="space-y-1.5">
-        {mine.map((n) => {
-          const Icon = TYPE_ICON[n.type]
+
+      <div className="space-y-2">
+        {data.map((n) => {
+          const Icon = ICONS[n.type] ?? Bell
           return (
             <button
               key={n.id}
-              onClick={() => open(n)}
-              className={cn(
-                'flex w-full items-start gap-3 rounded-xl border px-3.5 py-3 text-left transition-colors',
-                n.read ? 'border-border bg-surface' : 'border-border-strong bg-surface-2',
-              )}
+              onClick={() => void open(n)}
+              className={`flex w-full items-start gap-3 rounded-2xl border px-3.5 py-3 text-left transition-colors ${
+                n.readAt ? 'border-border bg-surface' : 'border-gold-500/40 bg-gold-500/8'
+              }`}
             >
               <span
-                className={cn(
-                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-full',
-                  n.read ? 'bg-surface-2 text-ink-3' : 'bg-gold-500 text-gold-ink',
-                )}
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
+                  n.readAt ? 'bg-surface-2 text-ink-3' : 'bg-gold-500 text-gold-ink'
+                }`}
               >
-                <Icon size={16} />
+                <Icon size={15} />
               </span>
               <span className="min-w-0 flex-1">
                 <span className="flex items-center gap-1.5">
                   <span className="truncate text-[13px] font-bold">{n.title}</span>
-                  {!n.read && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />}
+                  {!n.readAt && <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-gold-500" />}
                 </span>
-                <span className="mt-0.5 block text-xs leading-snug text-ink-2">{n.body}</span>
-                <span className="tnum mt-1 block text-2xs text-ink-3">
+                {n.body && (
+                  <span className="mt-0.5 block text-2xs leading-relaxed text-ink-2">{n.body}</span>
+                )}
+                <span className="tnum mt-0.5 block text-2xs text-ink-3">
                   {relativeFromNow(n.createdAt, nowIso)}
                 </span>
               </span>
