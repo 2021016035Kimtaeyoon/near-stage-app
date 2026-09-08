@@ -3,7 +3,8 @@ import { CalendarClock, Flame, MapPinned, Sparkles, Star, TrendingUp, Users2 } f
 import { useAppNavigate } from '@/lib/appLink'
 import { SourceBadge } from '@/components/ui/Badge'
 import { LogoMark } from '@/components/shell/LogoMark'
-import { SERVICE_NAME, SERVICE_TAGLINE } from '@/config/brand'
+import { FEE_DISCLAIMER, SERVICE_NAME, SERVICE_TAGLINE } from '@/config/brand'
+import { OPERATOR } from '@/config/legal'
 import { useAppStore } from '@/store/useAppStore'
 import { staggerItem } from './motionVariants'
 import { ScrollReveal, StaggerGroup } from './ScrollReveal'
@@ -210,13 +211,41 @@ export function ClosingSection() {
         </motion.button>
       </ScrollReveal>
 
+      {/* ★ 예전 푸터에 "모든 데이터는 목데이터입니다"가 남아 있었습니다. 실제 공연과
+          실제 이용자가 들어온 뒤로는 사실이 아니고, 약관 링크도 없었습니다 (§16) */}
       <footer className="mx-auto mt-16 max-w-5xl border-t border-white/10 px-6 pt-8">
         <LogoMark dark className="w-[104px] opacity-90" />
         <p className="mt-3 text-xs leading-relaxed text-white/50">
           {SERVICE_NAME} · {SERVICE_TAGLINE}
-          <br />
-          본 서비스는 심사용 프로토타입이며, 모든 데이터는 목데이터입니다.
         </p>
+        <p className="mt-2 text-xs leading-relaxed text-white/40">
+          {FEE_DISCLAIMER}
+        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <button
+            onClick={() => go('/legal/terms')}
+            className="text-xs font-semibold text-white/70 underline-offset-2 hover:underline"
+          >
+            이용약관
+          </button>
+          <button
+            onClick={() => go('/legal/privacy')}
+            className="text-xs font-semibold text-white/70 underline-offset-2 hover:underline"
+          >
+            개인정보처리방침
+          </button>
+          {OPERATOR.email && (
+            <a
+              href={`mailto:${OPERATOR.email}`}
+              className="text-xs font-semibold text-white/70 underline-offset-2 hover:underline"
+            >
+              문의
+            </a>
+          )}
+        </div>
+        {OPERATOR.name && (
+          <p className="mt-3 text-xs text-white/35">운영: {OPERATOR.name}</p>
+        )}
       </footer>
     </section>
   )

@@ -1,4 +1,15 @@
-import { ExternalLink, Heart, MessageCircle, Music4, Pause, Share2, Ticket, Volume2, VolumeX } from 'lucide-react'
+import {
+  ExternalLink,
+  Flag,
+  Heart,
+  MessageCircle,
+  Music4,
+  Pause,
+  Share2,
+  Ticket,
+  Volume2,
+  VolumeX,
+} from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '@/components/ui/Button'
 import type { Clip } from '@/hooks/useClips'
@@ -30,6 +41,7 @@ export function ClipCard({
   onToggleFollow,
   onOpenComments,
   onShare,
+  onReport,
   upcomingShow,
   nowIso,
   onOpenShow,
@@ -45,6 +57,7 @@ export function ClipCard({
   onToggleFollow: () => void
   onOpenComments: () => void
   onShare: () => void
+  onReport: () => void
   upcomingShow: Show | null
   nowIso: string
   onOpenShow: (showId: string) => void
@@ -163,6 +176,10 @@ export function ClipCard({
         <button onClick={onShare} aria-label="공유" className="flex flex-col items-center gap-1">
           <Share2 size={26} className="text-white drop-shadow" />
           <span className="text-2xs font-bold text-white drop-shadow">공유</span>
+        </button>
+
+        <button onClick={onReport} aria-label="신고" className="flex flex-col items-center">
+          <Flag size={22} className="text-white/70 drop-shadow" />
         </button>
 
         {(isVideo || isEmbed) && (

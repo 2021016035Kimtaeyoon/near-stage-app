@@ -208,3 +208,91 @@ export async function setApproval(
     .eq('id', id)
   return error ? describeDbError(error) : null
 }
+
+/* ───────────────── 신고 큐 (§16) ───────────────── */
+
+export interface AdminReport {
+  id: string
+  targetType: 'venue' | 'artist' | 'clip' | 'comment' | 'show'
+  targetId: string
+  reason: string
+  detail: string
+  status: 'open' | 'resolved' | 'rejected'
+  createdAt: string
+  reporterName: string | null
+}
+
+/**
+ * 처리 대기 신고.
+ *
+ * ★ 신고자 이름은 운영자에게만 보입니다(RLS). 신고당한 쪽에는 어떤 화면에서도
+ *   노출되지 않습니다 — 보복이 걱정되면 아무도 신고하지 않습니다.
+ */
+export function useAdminReports(): Query<AdminReport[]> {
+  const isAdmin = useAuthStore((s) => s.profile?.isAdmin ?? false)
+  const [data, setData] = useState<AdminReport[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [tick, setTick] = useState(0)
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !isAdmin) {
+      setLoading(false)
+      return
+    }
+    let alive = true
+    setLoading(true)
+    void supabase
+      .from('reports')
+      .select(
+        'id,target_type,target_id,reason,detail,status,created_at,profiles!reports_reporter_id_fkey(display_name)',
+      )
+      .order('created_at', { ascending: false })
+      .limit(100)
+      .then(({ data: rows, error: err }) => {
+        if (!alive) return
+        setLoading(false)
+        if (err) {
+          setError(describeDbError(err))
+          return
+        }
+        setError(null)
+        type P = { display_name: string }
+        setData(
+          (rows ?? []).map((r) => {
+            const p = r.profiles as P | P[] | null
+            return {
+              id: r.id,
+              targetType: r.target_type,
+              targetId: r.target_id,
+              reason: r.reason,
+              detail: r.detail ?? '',
+              status: r.status,
+              createdAt: r.created_at,
+              reporterName: Array.isArray(p)
+                ? (p[0]?.display_name ?? null)
+                : (p?.display_name ?? null),
+            }
+          }),
+        )
+      })
+    return () => {
+      alive = false
+    }
+  }, [isAdmin, tick])
+
+  const refresh = useCallback(() => setTick((n) => n + 1), [])
+  return { data, loading, error, refresh }
+}
+
+export async function setReportStatus(
+  reportId: string,
+  status: 'resolved' | 'rejected',
+  adminNote: string,
+): Promise<string | null> {
+  const { error } = await supabase
+    .from('reports')
+    .update({ status, admin_note: adminNote })
+    .eq('id', reportId)
+  return error ? describeDbError(error) : null
+}

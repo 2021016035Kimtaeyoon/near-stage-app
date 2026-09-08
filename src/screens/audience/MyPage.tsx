@@ -8,6 +8,7 @@ import { unreadNotificationCount } from '@/store/selectors'
 import { useAppStore } from '@/store/useAppStore'
 import { useAuthStore } from '@/hooks/useAuth'
 import { NotificationList } from '@/screens/common/NotificationList'
+import { AccountDangerZone } from './AccountDangerZone'
 import { MyFollowedPerformers, MyLikedShows } from './MyLikesFollows'
 import { AccountCard } from './AccountCard'
 import { MyReservations } from './MyReservations'
@@ -86,6 +87,8 @@ export function MyPage() {
           {tab === 'follow' && <MyFollowedPerformers />}
           {tab === 'noti' && <NotificationList />}
         </div>
+
+        <AccountDangerZone />
 
         <TabBarSpacer />
       </ScreenBody>

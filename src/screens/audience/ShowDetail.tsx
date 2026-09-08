@@ -1,10 +1,11 @@
-import { ChevronLeft, PenLine } from 'lucide-react'
+import { ChevronLeft, Flag, PenLine } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Screen, ScreenBody } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ReportSheet } from '@/components/ui/ReportSheet'
 import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
 import { useAuthStore } from '@/hooks/useAuth'
 import {
@@ -50,6 +51,7 @@ export function ShowDetail() {
   const artist = useArtist(meta?.performer?.id)
   const [busy, setBusy] = useState(false)
   const [headcount, setHeadcount] = useState(1)
+  const [reportOpen, setReportOpen] = useState(false)
 
   const show = meta?.show ?? null
   const place = meta?.place ?? null
@@ -220,6 +222,15 @@ export function ShowDetail() {
           )}
         </section>
 
+        {/* 신고 (§16). 눈에 잘 띄지 않게 두되 찾을 수 있는 자리에 둡니다 */}
+        <button
+          onClick={() => setReportOpen(true)}
+          className="mx-auto mt-6 flex items-center gap-1.5 px-3 py-2 text-2xs font-semibold text-ink-3"
+        >
+          <Flag size={12} />
+          이 공연 신고하기
+        </button>
+
         <TabBarSpacer />
       </ScreenBody>
 
@@ -292,6 +303,12 @@ export function ShowDetail() {
           )}
         </div>
       </div>
+      <ReportSheet
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        targetType="show"
+        targetId={show.id}
+      />
     </Screen>
   )
 }

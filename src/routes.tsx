@@ -13,6 +13,7 @@ import { ChatListScreen } from '@/screens/common/ChatListScreen'
 import { ChatThreadScreen } from '@/screens/common/ChatThreadScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
 import { AdminScreen } from '@/screens/admin/AdminScreen'
+import { LegalScreen } from '@/screens/legal/LegalScreen'
 import { ArtistClipsScreen } from '@/screens/artist/ArtistClipsScreen'
 import { ArtistRegisterScreen } from '@/screens/artist/ArtistRegisterScreen'
 import { MyArtistsScreen } from '@/screens/artist/MyArtistsScreen'
@@ -96,6 +97,16 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           element={
             <PageTransition>
               <MyPage />
+            </PageTransition>
+          }
+        />
+
+        {/* 약관·개인정보처리방침 (§16) */}
+        <Route
+          path="/legal/:doc"
+          element={
+            <PageTransition>
+              <LegalScreen />
             </PageTransition>
           }
         />

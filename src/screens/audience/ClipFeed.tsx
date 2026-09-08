@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ReportSheet } from '@/components/ui/ReportSheet'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useClipFeed } from '@/hooks/useClips'
 import { useMyClipLikes } from '@/hooks/useClipSocial'
@@ -40,6 +41,7 @@ export function ClipFeed() {
   const [index, setIndex] = useState(0)
   const [muted, setMuted] = useState(true)
   const [commentsFor, setCommentsFor] = useState<string | null>(null)
+  const [reportFor, setReportFor] = useState<string | null>(null)
   // 공유 링크로 들어온 클립으로 한 번만 이동합니다
   const jumped = useRef(false)
 
@@ -137,6 +139,7 @@ export function ClipFeed() {
                 onToggleFollow={() => requireAuth(() => void follows.toggle(clip.artistId))}
                 onOpenComments={() => setCommentsFor(clip.id)}
                 onShare={() => void shareClip(clip)}
+                onReport={() => setReportFor(clip.id)}
                 upcomingShow={upcomingByArtist.get(clip.artistId) ?? null}
                 nowIso={nowIso}
                 onOpenShow={(showId) => navigate(`/audience/show/${showId}`)}
@@ -161,6 +164,13 @@ export function ClipFeed() {
           <span className="text-2xs font-semibold">위로 밀어서 다음 클립 보기</span>
         </div>
       )}
+
+      <ReportSheet
+        open={reportFor !== null}
+        onClose={() => setReportFor(null)}
+        targetType="clip"
+        targetId={reportFor ?? ''}
+      />
 
       <ClipComments
         clipId={commentsFor}

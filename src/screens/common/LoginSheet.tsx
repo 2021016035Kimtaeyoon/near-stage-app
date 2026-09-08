@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { FREE_TRIAL_NOTICE, SERVICE_NAME } from '@/config/brand'
 import { signInWith, useAuthStore, type AuthProvider } from '@/hooks/useAuth'
@@ -18,6 +19,7 @@ import { toast } from '@/store/useToast'
 
 export function LoginSheet() {
   const open = useAuthStore((s) => s.sheetOpen)
+  const navigate = useNavigate()
   const closeSheet = useAuthStore((s) => s.closeSheet)
   const [busy, setBusy] = useState<AuthProvider | null>(null)
 
@@ -69,10 +71,30 @@ export function LoginSheet() {
         <li>· 공연 둘러보기는 로그인 없이도 계속 하실 수 있어요.</li>
       </ul>
 
+      {/* ★ 약관을 굵은 글씨로만 두면 읽을 방법이 없습니다. 동의를 받는 문서는
+          그 자리에서 열 수 있어야 합니다 (§16) */}
       <p className="mt-4 text-2xs leading-relaxed text-ink-3">
-        로그인하면 <span className="font-semibold text-ink-2">이용약관</span>과{' '}
-        <span className="font-semibold text-ink-2">개인정보처리방침</span>에 동의하는 것으로
-        봅니다. 만 14세 미만은 가입할 수 없습니다.
+        로그인하면{' '}
+        <button
+          onClick={() => {
+            closeSheet()
+            navigate('/legal/terms')
+          }}
+          className="font-semibold text-gold-text underline underline-offset-2"
+        >
+          이용약관
+        </button>
+        과{' '}
+        <button
+          onClick={() => {
+            closeSheet()
+            navigate('/legal/privacy')
+          }}
+          className="font-semibold text-gold-text underline underline-offset-2"
+        >
+          개인정보처리방침
+        </button>
+        에 동의하는 것으로 봅니다. 만 14세 미만은 가입할 수 없습니다.
       </p>
     </BottomSheet>
   )
