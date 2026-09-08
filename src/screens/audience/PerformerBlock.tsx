@@ -1,7 +1,9 @@
-import { ExternalLink, Music4, Users } from 'lucide-react'
+import { Music4, Users } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { GenreTag } from '@/components/ui/Badge'
 import type { ArtistDetail } from '@/hooks/useArtist'
+import { useArtistClips } from '@/hooks/useClips'
+import { ClipStrip } from './ClipStrip'
 import type { Genre } from '@/types'
 import { GENRES } from '@/types'
 
@@ -31,6 +33,9 @@ export function PerformerBlock({
   following: boolean
   onToggleFollow: () => void
 }) {
+  // 클립은 artist_clips 에서 읽습니다. 업로드본은 눌러서 바로 재생됩니다.
+  const clips = useArtistClips(artist?.id)
+
   if (loading) {
     return (
       <section className="px-4 py-5">
@@ -103,25 +108,7 @@ export function PerformerBlock({
         </div>
       )}
 
-      {artist.clipUrls.length > 0 && (
-        <div className="mt-3.5">
-          <h4 className="mb-1.5 text-xs font-bold text-ink-2">영상</h4>
-          <div className="flex flex-wrap gap-1.5">
-            {artist.clipUrls.map((u) => (
-              <a
-                key={u}
-                href={u}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1 rounded-full border border-border px-2.5 py-1 text-2xs font-semibold text-gold-text"
-              >
-                영상 보기
-                <ExternalLink size={10} />
-              </a>
-            ))}
-          </div>
-        </div>
-      )}
+      <ClipStrip clips={clips.data} />
 
       <p className="mt-3 text-2xs leading-relaxed text-ink-3">
         팔로우하면 이 팀의 새 공연이 열릴 때 알림을 보내드려요.

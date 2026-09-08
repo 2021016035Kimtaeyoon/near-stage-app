@@ -1,35 +1,25 @@
-import { Clapperboard, Heart, Share2, UserPlus, UserCheck, ChevronRight } from 'lucide-react'
-import { GenreTag } from '@/components/ui/Badge'
-import { PosterArt } from '@/components/ui/PosterArt'
-import { humanDateTime } from '@/lib/datetime'
-import { toast } from '@/store/useToast'
-import type { Performer, Show } from '@/types'
+import { ExternalLink, Heart, Music4, Play, Ticket, Volume2, VolumeX } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Button } from '@/components/ui/Button'
+import type { Clip } from '@/hooks/useClips'
+import { countdownLabel } from '@/lib/datetime'
+import { cn } from '@/lib/cn'
+import type { Show } from '@/types'
 
-interface Props {
-  performer: Performer
-  /** 이 카드가 대표하는 개별 하이라이트의 제목 (사진으로 대체된 "영상") */
-  clipTitle: string
-  /** 이 하이라이트 전용 포스터 시드 — 같은 팀이어도 클립마다 다른 사진처럼 보입니다 */
-  posterSeed: string
-  /** 몇 번째 클립인지 (1부터) / 전체 클립 수 */
-  clipPosition: number
-  clipTotal: number
-  liked: boolean
-  following: boolean
-  onToggleLike: () => void
-  onToggleFollow: () => void
-  /** 이번 주 이 팀 공연 (있으면 유입 배너 노출 — 핵심 유입 루프) */
-  upcomingShow: Show | null
-  nowIso: string
-  onOpenShow: (showId: string) => void
-}
-
+/**
+ * 클립 카드 한 장 — 화면을 꽉 채우는 세로 영상.
+ *
+ * ★ 보이는 카드만 재생합니다. 전부 재생하면 데이터가 순식간에 나가고 폰이 뜨거워집니다.
+ *   IntersectionObserver 로 화면에 들어올 때 play, 나갈 때 pause 합니다.
+ *
+ * ★ 소리는 꺼진 채로 시작합니다. 브라우저가 소리 있는 자동재생을 막기도 하고,
+ *   무엇보다 지하철에서 앱을 열었는데 소리가 나면 다시는 안 엽니다.
+ */
 export function ClipCard({
-  performer,
-  clipTitle,
-  posterSeed,
-  clipPosition,
-  clipTotal,
+  clip,
+  active,
+  muted,
+  onToggleMute,
   liked,
   following,
   onToggleLike,
@@ -37,107 +27,162 @@ export function ClipCard({
   upcomingShow,
   nowIso,
   onOpenShow,
-}: Props) {
+}: {
+  clip: Clip
+  /** 지금 화면에 보이는 카드인지 */
+  active: boolean
+  muted: boolean
+  onToggleMute: () => void
+  liked: boolean
+  following: boolean
+  onToggleLike: () => void
+  onToggleFollow: () => void
+  upcomingShow: Show | null
+  nowIso: string
+  onOpenShow: (showId: string) => void
+}) {
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => {
+    const v = videoRef.current
+    if (!v) return
+    if (active) {
+      // 자동재생이 거부돼도 화면은 그대로 둡니다 — 사용자가 탭하면 재생됩니다
+      void v.play().catch(() => undefined)
+    } else {
+      v.pause()
+      v.currentTime = 0
+    }
+  }, [active])
+
+  const isUpload = clip.kind === 'upload' && !failed
+
   return (
-    <div className="relative h-full w-full shrink-0 overflow-hidden">
-      <PosterArt
-        seed={posterSeed}
-        genre={performer.genre}
-        className="absolute inset-0 h-full w-full"
-        deep
-        glyphScale={1.9}
-      />
+    <div className="relative h-full w-full overflow-hidden bg-[#0B0B0F]">
+      {isUpload ? (
+        <video
+          ref={videoRef}
+          src={clip.url}
+          poster={clip.thumbUrl ?? undefined}
+          muted={muted}
+          loop
+          playsInline
+          preload={active ? 'auto' : 'none'}
+          onError={() => setFailed(true)}
+          onClick={() => {
+            const v = videoRef.current
+            if (!v) return
+            if (v.paused) void v.play().catch(() => undefined)
+            else v.pause()
+          }}
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+      ) : (
+        // 외부 링크 클립 — 임베드는 플랫폼 정책이 자주 바뀌어 조용히 막힙니다.
+        // 썸네일을 크게 깔고 원본으로 보냅니다.
+        <a
+          href={clip.url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="absolute inset-0 flex flex-col items-center justify-center gap-3"
+        >
+          {clip.thumbUrl ? (
+            <img
+              src={clip.thumbUrl}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover opacity-70"
+            />
+          ) : (
+            <span className="absolute inset-0 bg-gradient-to-b from-[#1A1A24] to-[#0B0B0F]" />
+          )}
+          <span className="relative flex h-16 w-16 items-center justify-center rounded-full bg-white/20 backdrop-blur">
+            <Play size={26} className="fill-white text-white" />
+          </span>
+          <span className="relative flex items-center gap-1 rounded-full bg-black/50 px-3 py-1.5 text-2xs font-bold text-white">
+            원본에서 보기
+            <ExternalLink size={11} />
+          </span>
+        </a>
+      )}
 
-      <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-12">
-        <GenreTag genre={performer.genre} />
-        <span className="rounded-full bg-black/40 px-2.5 py-1 text-2xs font-bold text-white">
-          클립 {clipPosition}/{clipTotal}
-        </span>
+      {/* 아래쪽 그라데이션 — 글자가 영상 위에서도 읽히게 */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/85 to-transparent" />
+
+      {/* 오른쪽 액션 열 */}
+      <div className="absolute bottom-28 right-3 flex flex-col items-center gap-4">
+        <button onClick={onToggleLike} aria-label="좋아요" className="flex flex-col items-center gap-1">
+          <Heart
+            size={28}
+            className={liked ? 'fill-danger text-danger' : 'text-white drop-shadow'}
+          />
+        </button>
+        {isUpload && (
+          <button onClick={onToggleMute} aria-label="소리" className="flex flex-col items-center">
+            {muted ? (
+              <VolumeX size={26} className="text-white drop-shadow" />
+            ) : (
+              <Volume2 size={26} className="text-white drop-shadow" />
+            )}
+          </button>
+        )}
       </div>
 
-      {/* 우측 액션 버튼 */}
-      <div className="absolute bottom-40 right-3 flex flex-col items-center gap-5">
-        <button
-          onClick={onToggleLike}
-          aria-label={liked ? '좋아요 취소' : '좋아요'}
-          className="flex flex-col items-center gap-1 text-white"
-        >
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/35">
-            <Heart size={22} className={liked ? 'fill-gold-500 text-gold-500' : ''} />
-          </span>
-          <span className="text-2xs font-bold drop-shadow">
-            {(performer.followerCount / 10).toFixed(0)}
-          </span>
-        </button>
-        <button
-          onClick={() => toast('링크가 복사되었습니다', 'success')}
-          aria-label="공유"
-          className="flex flex-col items-center gap-1 text-white"
-        >
-          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/35">
-            <Share2 size={20} />
-          </span>
-          <span className="text-2xs font-bold drop-shadow">공유</span>
-        </button>
-        <button
-          onClick={onToggleFollow}
-          aria-label={following ? '팔로잉' : '팔로우'}
-          className="flex flex-col items-center gap-1 text-white"
-        >
-          <span
-            className={
-              following
-                ? 'flex h-11 w-11 items-center justify-center rounded-full bg-white/25'
-                : 'bg-gold-500 flex h-11 w-11 items-center justify-center rounded-full'
-            }
-          >
-            {following ? <UserCheck size={20} /> : <UserPlus size={20} />}
-          </span>
-          <span className="text-2xs font-bold drop-shadow">{following ? '팔로잉' : '팔로우'}</span>
-        </button>
-      </div>
-
-      {/* 하단 정보 — 탭바(약 70px)가 이 영역 위에 겹쳐 뜨므로, 핵심 유입 배너가
-          가리지 않도록 탭바 높이 + 안전영역만큼 아래 여백을 둡니다. */}
-      <div
-        className="absolute inset-x-0 bottom-0 px-4 text-white"
-        style={{ paddingBottom: 'calc(var(--safe-bottom) + 84px)' }}
-      >
-        <h2 className="text-lg font-extrabold drop-shadow">{performer.teamName}</h2>
-        <p className="mt-0.5 flex items-center gap-1 text-[13px] font-semibold text-white/95 drop-shadow">
-          <Clapperboard size={13} className="shrink-0" />
-          <span className="truncate">{clipTitle}</span>
-        </p>
-        <p className="mt-1 text-[13px] leading-relaxed text-white/85 drop-shadow">
-          {performer.bio}
-        </p>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {performer.setlist.slice(0, 3).map((s) => (
-            <span
-              key={s}
-              className="rounded-full bg-white/15 px-2 py-0.5 text-2xs font-semibold backdrop-blur-sm"
-            >
-              {s}
+      {/* 아래 정보 */}
+      <div className="absolute inset-x-0 bottom-0 px-4 pb-[calc(var(--safe-bottom)+18px)]">
+        <div className="flex items-center gap-2.5">
+          {clip.artistPhotos[0] ? (
+            <img
+              src={clip.artistPhotos[0]}
+              alt=""
+              className="h-10 w-10 shrink-0 rounded-full border border-white/30 object-cover"
+            />
+          ) : (
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-white/30 bg-white/10 text-white">
+              <Music4 size={16} />
             </span>
-          ))}
+          )}
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-[15px] font-extrabold text-white drop-shadow">
+              {clip.artistName}
+            </p>
+            {clip.artistGenre && (
+              <p className="text-2xs text-white/70">{clip.artistGenre}</p>
+            )}
+          </div>
+          <Button
+            size="sm"
+            variant={following ? 'solid' : 'brand'}
+            onClick={onToggleFollow}
+            className="shrink-0"
+          >
+            {following ? '팔로잉' : '팔로우'}
+          </Button>
         </div>
 
-        {/* ★ 핵심 유입 루프 배너 */}
+        {clip.title && (
+          <p className="mt-2 line-clamp-2 text-[13px] leading-relaxed text-white/90 drop-shadow">
+            {clip.title}
+          </p>
+        )}
+
         {upcomingShow && (
           <button
             onClick={() => onOpenShow(upcomingShow.id)}
-            className="bg-gold-500 mt-3 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left text-gold-ink"
-            style={{ boxShadow: '0 10px 28px rgba(255,196,46,.4)' }}
+            className={cn(
+              'mt-3 flex w-full items-center gap-2 rounded-2xl border border-white/20 bg-white/12 px-3.5 py-3 text-left backdrop-blur',
+            )}
           >
-            <span className="min-w-0">
-              <span className="block text-[13px] font-extrabold leading-tight">
-                이번 주 이 팀 공연 있어요 →
+            <Ticket size={16} className="shrink-0 text-gold-text" />
+            <span className="min-w-0 flex-1">
+              <span className="block truncate text-[13px] font-bold text-white">
+                {upcomingShow.title}
               </span>
-              <span className="tnum mt-0.5 block text-2xs font-semibold text-gold-ink/75">
-                {humanDateTime(upcomingShow.startAt, nowIso)} · {upcomingShow.title}
+              <span className="tnum block text-2xs text-white/70">
+                {countdownLabel(upcomingShow.startAt, nowIso, upcomingShow.durationMin)}
               </span>
             </span>
-            <ChevronRight size={20} className="shrink-0" />
+            <span className="shrink-0 text-2xs font-bold text-gold-text">보러가기</span>
           </button>
         )}
       </div>

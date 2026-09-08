@@ -1,75 +1,55 @@
 import { ChevronUp } from 'lucide-react'
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAppStore, useNow } from '@/store/useAppStore'
-import type { Performer, Show } from '@/types'
+import { Button } from '@/components/ui/Button'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { useAuthStore } from '@/hooks/useAuth'
+import { useClipFeed } from '@/hooks/useClips'
+import { useMyFollows } from '@/hooks/useEngagement'
+import { usePublicShows } from '@/hooks/usePublicShows'
+import { useNow } from '@/store/useAppStore'
+import type { Show } from '@/types'
 import { ClipCard } from './ClipCard'
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
-interface ClipEntry {
-  key: string
-  performer: Performer
-  title: string
-  seed: string
-  position: number
-  total: number
-}
-
-/** 공연자마다 등록된 클립 제목들을 낱개의 "숏폼 카드"로 펼칩니다 (제목이 없으면 팀명으로 대체) */
-function buildClipEntries(performers: Performer[]): ClipEntry[] {
-  const out: ClipEntry[] = []
-  for (const performer of performers) {
-    const titles = performer.clipTitles.length > 0 ? performer.clipTitles : [`${performer.teamName} 하이라이트`]
-    titles.forEach((title, i) => {
-      out.push({
-        key: `${performer.id}-${title}-${i}`,
-        performer,
-        title,
-        seed: `${performer.id}-clip-${title}`,
-        position: i + 1,
-        total: titles.length,
-      })
-    })
-  }
-  return out
-}
-
 /**
- * 세로 스와이프 풀스크린 클립 피드.
- * 네이티브 CSS 스크롤 스냅으로 카드 하나씩 넘기며(모멘텀·탄성은 브라우저가 처리),
- * 이번 주 공연이 있는 팀은 카드 하단에 유입 배너를 띄워 공연 상세로 바로 연결합니다(핵심 유입 루프).
- * 영상은 우리가 호스팅하지 않습니다 — 아티스트가 등록한 외부 링크로 이동합니다.
+ * 세로 스와이프 클립 피드.
+ *
+ * CSS 스크롤 스냅으로 한 장씩 넘깁니다(모멘텀·탄성은 브라우저가 처리). 이번 주에
+ * 공연이 있는 팀은 카드 아래에 배너가 붙어 공연 상세로 바로 갑니다 — 클립을 보다가
+ * "이 팀 언제 하지"가 되는 순간이 이 앱의 핵심 흐름입니다.
+ *
+ * ★ 재생은 지금 보이는 카드 하나만 합니다. 전부 재생하면 데이터가 순식간에
+ *   나가고 폰이 뜨거워집니다.
  */
 export function ClipFeed() {
   const navigate = useNavigate()
-  const performers = useAppStore((s) => s.performers)
-  const shows = useAppStore((s) => s.shows)
   const nowIso = useNow()
-  const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
-  const toggleFollow = useAppStore((s) => s.toggleFollow)
+  const requireAuth = useAuthStore((s) => s.requireAuth)
+  const clips = useClipFeed()
+  const follows = useMyFollows()
+  const shows = usePublicShows()
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
-  // 클립 자체에 대한 좋아요는 공연 예약과 무관한 가벼운 반응이라 세션 로컬 상태로 둡니다
+  const [muted, setMuted] = useState(true)
+  // 클립 좋아요는 공연 좋아요와 다른 가벼운 반응이라 화면 안에서만 셉니다
   const [likedClips, setLikedClips] = useState<Set<string>>(new Set())
 
-  const upcomingByPerformer = useMemo(() => {
+  // 팀별 "가장 가까운 이번 주 공연"
+  const upcomingByArtist = useMemo(() => {
     const now = new Date(nowIso).getTime()
     const map = new Map<string, Show>()
-    for (const show of shows) {
-      if (show.source !== 'own' || !show.performerId) continue
+    for (const { show, performer } of shows.data) {
+      if (show.source !== 'own' || !performer) continue
       const start = new Date(show.startAt).getTime()
       if (start < now || start > now + WEEK_MS) continue
-      const existing = map.get(show.performerId)
-      if (!existing || start < new Date(existing.startAt).getTime()) {
-        map.set(show.performerId, show)
-      }
+      const cur = map.get(performer.id)
+      if (!cur || start < new Date(cur.startAt).getTime()) map.set(performer.id, show)
     }
     return map
-  }, [shows, nowIso])
-
-  const clips = useMemo(() => buildClipEntries(performers), [performers])
+  }, [shows.data, nowIso])
 
   const handleScroll = () => {
     const el = containerRef.current
@@ -78,6 +58,39 @@ export function ClipFeed() {
     setIndex((prev) => (prev === i ? prev : i))
   }
 
+  if (clips.loading) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-[#0B0B0F]">
+        <div className="h-10 w-10 animate-pulse rounded-full bg-white/20" />
+      </div>
+    )
+  }
+
+  if (clips.data.length === 0) {
+    return (
+      <div className="flex h-full w-full items-center justify-center bg-bg px-6">
+        <EmptyState
+          art="stage"
+          title={clips.error ? '클립을 불러오지 못했어요' : '아직 올라온 클립이 없어요'}
+          description={
+            clips.error ??
+            '공연팀이 짧은 영상을 올리면 여기에 모입니다. 팀을 등록하고 무대 영상을 올려보세요.'
+          }
+          action={
+            clips.error ? (
+              <Button variant="outline" onClick={clips.refresh}>
+                다시 시도
+              </Button>
+            ) : (
+              <Button variant="brand" onClick={() => navigate('/artist/me')}>
+                공연팀 등록하기
+              </Button>
+            )
+          }
+        />
+      </div>
+    )
+  }
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-[#0B0B0F]">
@@ -86,26 +99,25 @@ export function ClipFeed() {
         onScroll={handleScroll}
         className="no-scrollbar h-full w-full snap-y snap-mandatory overflow-y-scroll overscroll-y-contain"
       >
-        {clips.map((clip) => (
-          <div key={clip.key} className="h-full w-full snap-start snap-always">
+        {clips.data.map((clip, i) => (
+          <div key={clip.id} className="h-full w-full snap-start snap-always">
             <ClipCard
-              performer={clip.performer}
-              clipTitle={clip.title}
-              posterSeed={clip.seed}
-              clipPosition={clip.position}
-              clipTotal={clip.total}
-              liked={likedClips.has(clip.key)}
-              following={followedPerformerIds.includes(clip.performer.id)}
+              clip={clip}
+              active={i === index}
+              muted={muted}
+              onToggleMute={() => setMuted((m) => !m)}
+              liked={likedClips.has(clip.id)}
+              following={follows.data.includes(clip.artistId)}
               onToggleLike={() =>
                 setLikedClips((prev) => {
                   const next = new Set(prev)
-                  if (next.has(clip.key)) next.delete(clip.key)
-                  else next.add(clip.key)
+                  if (next.has(clip.id)) next.delete(clip.id)
+                  else next.add(clip.id)
                   return next
                 })
               }
-              onToggleFollow={() => toggleFollow(clip.performer.id)}
-              upcomingShow={upcomingByPerformer.get(clip.performer.id) ?? null}
+              onToggleFollow={() => requireAuth(() => void follows.toggle(clip.artistId))}
+              upcomingShow={upcomingByArtist.get(clip.artistId) ?? null}
               nowIso={nowIso}
               onOpenShow={(showId) => navigate(`/audience/show/${showId}`)}
             />
@@ -113,27 +125,21 @@ export function ClipFeed() {
         ))}
       </div>
 
-
-      {/* 전체 진행도 (개수가 많아 점 대신 슬림 스크롤바 형태로 표시) */}
-      {clips.length > 1 && (
+      {clips.data.length > 1 && (
         <div className="pointer-events-none absolute right-1.5 top-1/2 h-40 w-1 -translate-y-1/2 overflow-hidden rounded-full bg-white/20">
           <div
             className="absolute w-full rounded-full bg-white transition-all duration-300"
-            style={{
-              height: 28,
-              top: (index / (clips.length - 1)) * (160 - 28),
-            }}
+            style={{ height: 28, top: (index / (clips.data.length - 1)) * (160 - 28) }}
           />
         </div>
       )}
 
-      {index === 0 && (
+      {index === 0 && clips.data.length > 1 && (
         <div className="pointer-events-none absolute inset-x-0 top-24 flex flex-col items-center gap-1 text-white/70">
           <ChevronUp size={18} className="animate-pulse" />
-          <span className="text-2xs font-semibold">위로 밀어서 다음 하이라이트 보기</span>
+          <span className="text-2xs font-semibold">위로 밀어서 다음 클립 보기</span>
         </div>
       )}
-
     </div>
   )
 }

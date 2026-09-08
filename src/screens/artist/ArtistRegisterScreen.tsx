@@ -7,6 +7,7 @@ import { Button, IconButton } from '@/components/ui/Button'
 import { MultiChoiceWithOther, SingleChoiceWithOther } from '@/components/ui/ChipsWithOther'
 import { Gauge, Label, TextArea, TextInput } from '@/components/ui/Field'
 import { useAuthStore } from '@/hooks/useAuth'
+import { addClips } from '@/hooks/useClips'
 import { describeDbError, supabase } from '@/lib/supabase'
 import { toast } from '@/store/useToast'
 import { GENRES } from '@/types'
@@ -68,23 +69,37 @@ export function ArtistRegisterScreen() {
       const uid = useAuthStore.getState().userId
       if (!uid) return
       setSubmitting(true)
-      const { error } = await supabase.from('artists').insert({
-        owner_id: uid,
-        team_name: draft.teamName.trim(),
-        genre: draft.genre,
-        member_count: artistNumOrNull(draft.memberCount, ARTIST_LIMITS.memberCount) ?? 1,
-        duration_min: artistNumOrNull(draft.durationMin, ARTIST_LIMITS.durationMin) ?? 60,
-        bio: draft.bio.trim(),
-        setlist: draft.setlist,
-        needs: draft.needs,
-        photos: draft.photos,
-        clip_urls: draft.clipUrls,
-      })
-      setSubmitting(false)
+      const { data: created, error } = await supabase
+        .from('artists')
+        .insert({
+          owner_id: uid,
+          team_name: draft.teamName.trim(),
+          genre: draft.genre,
+          member_count: artistNumOrNull(draft.memberCount, ARTIST_LIMITS.memberCount) ?? 1,
+          duration_min: artistNumOrNull(draft.durationMin, ARTIST_LIMITS.durationMin) ?? 60,
+          bio: draft.bio.trim(),
+          setlist: draft.setlist,
+          needs: draft.needs,
+          photos: draft.photos,
+          // 클립은 artist_clips 표가 원천입니다. 이 컬럼은 예전 데이터 호환용으로만
+          // 링크를 남겨둡니다.
+          clip_urls: draft.clipUrls.filter((c) => c.kind === 'link').map((c) => c.url),
+        })
+        .select('id')
+        .single()
 
-      if (error) {
+      if (error || !created) {
+        setSubmitting(false)
         toast('등록에 실패했어요', 'error', describeDbError(error))
         return
+      }
+
+      // 클립은 팀이 만들어진 뒤에 넣습니다 — artist_id 가 있어야 하고, RLS 도
+      // 팀 주인인지 확인합니다. 실패해도 팀 등록 자체는 되돌리지 않습니다.
+      const clipErr = await addClips(created.id, draft.clipUrls)
+      setSubmitting(false)
+      if (clipErr) {
+        toast('팀은 등록했지만 클립을 저장하지 못했어요', 'warn', clipErr)
       }
       clear()
       toast('등록을 접수했어요', 'success', '운영자 확인 후 공개됩니다')
@@ -191,8 +206,12 @@ export function ArtistRegisterScreen() {
       </div>
 
       <div>
-        <Label hint="공연 영상이 있으면 수락 확률이 크게 올라갑니다">영상 링크</Label>
-        <ClipLinkEditor urls={draft.clipUrls} onChange={(clipUrls) => patch({ clipUrls })} />
+        <Label hint="관객의 클립 탭에도 그대로 올라갑니다">클립 · 공연 영상</Label>
+        <ClipLinkEditor
+          clips={draft.clipUrls}
+          onChange={(clipUrls) => patch({ clipUrls })}
+          userId={userId}
+        />
       </div>
     </div>,
   ][step]

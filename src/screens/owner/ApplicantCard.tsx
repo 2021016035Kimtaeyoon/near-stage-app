@@ -1,9 +1,18 @@
-import { CheckCircle2, CircleHelp, ExternalLink, Music4, TriangleAlert, XCircle } from 'lucide-react'
+import {
+  CheckCircle2,
+  CircleHelp,
+  ExternalLink,
+  Music4,
+  Play,
+  TriangleAlert,
+  XCircle,
+} from 'lucide-react'
 import { useState } from 'react'
 import { Tag } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { TextInput } from '@/components/ui/Field'
 import { rejectApplication, type Applicant } from '@/hooks/useApplications'
+import { useArtistClips } from '@/hooks/useClips'
 import { matchNeeds, matchSummary, type VenueEquipment } from '@/lib/needMatch'
 import { toast } from '@/store/useToast'
 
@@ -33,6 +42,9 @@ export function ApplicantCard({
   const [busy, setBusy] = useState(false)
 
   const a = applicant.artist
+  // 올린 영상과 링크가 함께 옵니다. clip_urls(링크)만 보면 파일로 올린 팀이
+  // "영상 없음"으로 보여서 수락률이 떨어집니다.
+  const clips = useArtistClips(a.id)
   const match = matchNeeds(a.needs, equipment)
   const decided = applicant.status !== 'pending'
 
@@ -81,20 +93,33 @@ export function ApplicantCard({
             {a.genre} · {a.memberCount}명 · {a.durationMin}분
           </p>
           {a.bio && <p className="mt-1 line-clamp-2 text-2xs leading-relaxed text-ink-3">{a.bio}</p>}
-          {a.clipUrls.length > 0 && (
+          {clips.data.length > 0 && (
             <div className="mt-1.5 flex flex-wrap gap-1.5">
-              {a.clipUrls.slice(0, 3).map((u) => (
-                <a
-                  key={u}
-                  href={u}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-2xs font-semibold text-gold-text"
-                >
-                  영상 보기
-                  <ExternalLink size={10} />
-                </a>
-              ))}
+              {clips.data.slice(0, 3).map((c) =>
+                c.kind === 'upload' ? (
+                  <a
+                    key={c.id}
+                    href={c.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-2xs font-semibold text-gold-text"
+                  >
+                    올린 영상{c.durationSec ? ` ${c.durationSec}초` : ''}
+                    <Play size={10} />
+                  </a>
+                ) : (
+                  <a
+                    key={c.id}
+                    href={c.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-2xs font-semibold text-gold-text"
+                  >
+                    영상 보기
+                    <ExternalLink size={10} />
+                  </a>
+                ),
+              )}
             </div>
           )}
         </div>

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import type { NewClip } from '@/hooks/useClips'
 import { GENRES } from '@/types'
 
 /**
@@ -19,7 +20,8 @@ export interface ArtistDraft {
   // ③ 필요 장비·사진·영상
   needs: string[]
   photos: string[]
-  clipUrls: string[]
+  /** 링크와 올린 영상을 함께 담습니다 (기존 초안 호환을 위해 이름은 유지) */
+  clipUrls: NewClip[]
 }
 
 export const EMPTY_ARTIST_DRAFT: ArtistDraft = {
@@ -60,12 +62,28 @@ export const NEED_OPTIONS = [
 
 const DRAFT_KEY = 'ns-artist-draft'
 
+/**
+ * 예전 초안은 clipUrls 가 문자열 배열이었습니다. 그대로 읽으면 c.url 이 undefined 라
+ * 등록 화면이 깨집니다 — 저장해 둔 초안을 열었다가 폼이 망가지는 건 최악입니다.
+ */
+function normalizeClips(raw: unknown): NewClip[] {
+  if (!Array.isArray(raw)) return []
+  return raw
+    .map((c): NewClip | null => {
+      if (typeof c === 'string') return { kind: 'link', url: c, thumbUrl: clipThumbnail(c) }
+      if (c && typeof c === 'object' && typeof (c as NewClip).url === 'string') return c as NewClip
+      return null
+    })
+    .filter((c): c is NewClip => c !== null)
+}
+
 export function useArtistDraft() {
   const [draft, setDraft] = useState<ArtistDraft>(() => {
     try {
       const raw = localStorage.getItem(DRAFT_KEY)
       if (!raw) return EMPTY_ARTIST_DRAFT
-      return { ...EMPTY_ARTIST_DRAFT, ...(JSON.parse(raw) as Partial<ArtistDraft>) }
+      const saved = JSON.parse(raw) as Partial<ArtistDraft>
+      return { ...EMPTY_ARTIST_DRAFT, ...saved, clipUrls: normalizeClips(saved.clipUrls) }
     } catch {
       return EMPTY_ARTIST_DRAFT
     }
