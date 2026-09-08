@@ -138,8 +138,8 @@ export function PhotoMeasureSheet({
     <BottomSheet
       open={open}
       onClose={onClose}
-      title={`사진으로 ${what} 재기`}
-      subtitle="사진 속 기준 대상과 비교해 길이를 계산합니다"
+      title="사진으로 공간등록하기"
+      subtitle={`사진 한 장으로 ${what}를 재고, 그 사진을 공간 사진으로 함께 올립니다`}
       footer={
         phase === 'done' ? (
           <div className="flex gap-2">
@@ -155,7 +155,7 @@ export function PhotoMeasureSheet({
                 onClose()
               }}
             >
-              {meters.toFixed(1)}m 로 입력
+              {meters.toFixed(1)}m 로 입력하고 사진 등록
             </Button>
           </div>
         ) : undefined
@@ -168,8 +168,8 @@ export function PhotoMeasureSheet({
           className="flex h-40 w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border-strong bg-surface"
         >
           <Camera size={26} className="text-ink-3" />
-          <span className="text-sm font-bold">사진 찍기 · 고르기</span>
-          <span className="text-2xs text-ink-3">이 사진은 공간 사진으로도 함께 등록됩니다</span>
+          <span className="text-sm font-bold">공간 사진 찍기 · 고르기</span>
+          <span className="text-2xs text-ink-3">치수를 재는 데 쓰고, 공간 사진으로도 함께 등록됩니다</span>
         </button>
       ) : (
         <>

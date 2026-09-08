@@ -327,7 +327,10 @@ export function StepPhotos({
   )
 }
 
-/** 사진으로 재기 진입 버튼 — 숫자를 직접 아는 사장님은 그냥 입력하면 됩니다 */
+/**
+ * 사진 한 장으로 치수도 재고 공간 사진도 등록하는 진입 버튼.
+ * 숫자를 직접 아는 사장님은 위 칸에 그냥 입력하면 됩니다.
+ */
 function MeasureButton({ onClick }: { onClick: () => void }) {
   return (
     <button
@@ -336,7 +339,7 @@ function MeasureButton({ onClick }: { onClick: () => void }) {
       className="mt-1.5 flex w-full items-center justify-center gap-1 rounded-lg border border-border bg-surface py-1.5 text-2xs font-bold text-ink-2"
     >
       <Camera size={12} />
-      사진으로 재기
+      사진으로 공간등록하기
     </button>
   )
 }
