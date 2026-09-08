@@ -1,103 +1,88 @@
-import { useMemo } from 'react'
-import { Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts'
-import { TrendingUp } from 'lucide-react'
-import type { WeeklyVisitStat } from '@/types'
-
-const BRAND = '#FFC42E'
-const MUTED = '#D1D1D9'
-
-interface TooltipPayload {
-  payload: WeeklyVisitStat
-}
-
-function ChartTooltip({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) {
-  if (!active || !payload?.length) return null
-  const d = payload[0].payload
-  return (
-    <div className="rounded-lg border border-border bg-surface-1 px-3 py-2 text-xs shadow-lg">
-      <p className="font-bold">{d.weekLabel}</p>
-      <p className="tnum mt-0.5 text-ink-2">
-        방문객 {d.visitors.toLocaleString('ko-KR')}명
-      </p>
-      <p className={d.hadShow ? 'mt-0.5 font-semibold text-gold-text' : 'mt-0.5 text-ink-3'}>
-        {d.hadShow ? '공연 있던 주' : '공연 없던 주'}
-      </p>
-    </div>
-  )
-}
+import type { VenueShow } from '@/hooks/useVenueStats'
 
 /**
- * ★ 성과 리포트 — 이 화면이 시연의 하이라이트입니다.
- * 최근 8주 주간 방문객을 공연 유무로 구분해 보여주고,
- * "공연이 있으면 손님이 이만큼 더 옵니다"를 숫자로 증명합니다.
+ * 공연별 참석 예정 vs 실제 방문객 (§14).
+ *
+ * ★ 예전에는 "공연 있던 주 / 없던 주 평균 방문객"을 비교했습니다. 그럴싸했지만
+ *   공연이 없던 날의 방문객 수를 우리가 알 방법이 없습니다. 알 수 없는 값을 그린
+ *   그래프는 사장님이 그걸 근거로 결정을 내리게 만들기 때문에, 없는 것보다 나쁩니다.
+ *
+ * 그래서 실제로 아는 두 값만 나란히 둡니다 — 앱에서 오겠다고 누른 수, 그리고
+ * 사장님이 적어준 실제 방문객.
  */
-export function PerformanceChart({ stats }: { stats: WeeklyVisitStat[] }) {
-  const { avgWith, avgWithout, pct } = useMemo(() => {
-    const withShow = stats.filter((s) => s.hadShow).map((s) => s.visitors)
-    const withoutShow = stats.filter((s) => !s.hadShow).map((s) => s.visitors)
-    const avg = (arr: number[]) => (arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : 0)
-    const a = avg(withShow)
-    const b = avg(withoutShow)
-    return {
-      avgWith: Math.round(a),
-      avgWithout: Math.round(b),
-      pct: b > 0 ? Math.round(((a - b) / b) * 100) : 0,
-    }
-  }, [stats])
+export function PerformanceChart({ shows }: { shows: VenueShow[] }) {
+  // 방문객을 적은 공연만. 안 적은 공연을 0 으로 그리면 "손님이 없었다"로 읽힙니다
+  const rows = shows.filter((s) => s.visitorCount !== null).slice(0, 8).reverse()
+
+  if (rows.length === 0) {
+    return (
+      <div className="card p-4">
+        <p className="text-2xs leading-relaxed text-ink-2">
+          공연이 끝난 뒤 <b>실제로 몇 분이 오셨는지</b> 적어주시면 여기에 쌓입니다. 두세 번만
+          모여도 어느 요일·어느 장르가 우리 가게에 맞는지 보이기 시작합니다.
+        </p>
+      </div>
+    )
+  }
+
+  const max = Math.max(...rows.map((r) => Math.max(r.goingCount, r.visitorCount ?? 0)), 1)
 
   return (
     <div className="card p-4">
-      <div className="mb-1 flex items-center gap-1.5">
-        <TrendingUp size={15} className="text-gold-text" />
-        <h3 className="text-[15px] font-bold">주간 방문객 성과 리포트</h3>
-      </div>
-      <p className="mb-3 text-2xs text-ink-3">최근 8주 · 공연이 있던 주 vs 없던 주</p>
-
-      <div style={{ width: '100%', height: 168 }}>
-        <ResponsiveContainer>
-          <BarChart data={stats} margin={{ top: 4, right: 4, left: -24, bottom: 0 }}>
-            <CartesianGrid vertical={false} stroke="#E5E5EA" />
-            <XAxis
-              dataKey="weekLabel"
-              tick={{ fontSize: 9, fill: '#8B8B96' }}
-              axisLine={{ stroke: '#E5E5EA' }}
-              tickLine={false}
-              interval={0}
-            />
-            <YAxis
-              tick={{ fontSize: 9, fill: '#8B8B96' }}
-              axisLine={false}
-              tickLine={false}
-              width={30}
-            />
-            <Tooltip content={<ChartTooltip />} cursor={{ fill: 'rgba(23,23,28,0.04)' }} />
-            <Bar dataKey="visitors" radius={[6, 6, 0, 0]} maxBarSize={28}>
-              {stats.map((s, i) => (
-                <Cell key={i} fill={s.hadShow ? BRAND : MUTED} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="mt-2 flex items-center gap-3 text-2xs text-ink-3">
-        <span className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full" style={{ background: BRAND }} />
-          공연 있던 주 (평균 {avgWith.toLocaleString('ko-KR')}명)
+      <div className="mb-3 flex items-center gap-3 text-2xs text-ink-3">
+        <span className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-sm bg-surface-2 ring-1 ring-border-strong" />
+          참석 예정
         </span>
-        <span className="flex items-center gap-1">
-          <span className="h-2 w-2 rounded-full" style={{ background: MUTED }} />
-          없던 주 (평균 {avgWithout.toLocaleString('ko-KR')}명)
+        <span className="flex items-center gap-1.5">
+          <span className="bg-gold-500 h-2.5 w-2.5 rounded-sm" />
+          실제 방문
         </span>
       </div>
 
-      <div className="mt-3 rounded-xl bg-surface-2 p-3">
-        <p className="text-[13px] font-semibold leading-relaxed">
-          공연이 있던 주 평균 방문객이 없던 주보다{' '}
-          <span className="text-gold-text">{pct > 0 ? `${pct}%` : `${Math.abs(pct)}%`}</span>{' '}
-          {pct >= 0 ? '높습니다' : '낮습니다'}.
-        </p>
+      <div className="space-y-3">
+        {rows.map((r) => {
+          const d = new Date(r.startsAt)
+          const actual = r.visitorCount ?? 0
+          return (
+            <div key={r.id}>
+              <div className="mb-1 flex items-baseline justify-between gap-2">
+                <span className="tnum shrink-0 text-2xs font-bold text-ink-2">
+                  {d.getMonth() + 1}.{d.getDate()}
+                </span>
+                <span className="min-w-0 flex-1 truncate text-2xs text-ink-3">{r.artistName}</span>
+                <span className="tnum shrink-0 text-2xs font-bold">
+                  {actual}명
+                  {r.goingCount > 0 && (
+                    <span className="ml-1 font-semibold text-ink-3">
+                      (예정 {r.goingCount})
+                    </span>
+                  )}
+                </span>
+              </div>
+              <div className="space-y-1">
+                <div className="h-2 overflow-hidden rounded-full bg-surface-2">
+                  <div
+                    className="h-full rounded-full bg-border-strong"
+                    style={{ width: `${(r.goingCount / max) * 100}%` }}
+                  />
+                </div>
+                <div className="h-2 overflow-hidden rounded-full bg-surface-2">
+                  <div
+                    className="bg-gold-500 h-full rounded-full"
+                    style={{ width: `${(actual / max) * 100}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+          )
+        })}
       </div>
+
+      <p className="mt-3 text-2xs leading-relaxed text-ink-3">
+        참석 예정은 앱에서 누른 수라 실제와 다릅니다. 두 숫자의 차이가 큰 날이 있으면 그날
+        무슨 일이 있었는지 메모에 적어두세요.
+      </p>
     </div>
   )
 }
