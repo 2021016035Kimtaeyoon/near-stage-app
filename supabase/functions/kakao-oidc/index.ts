@@ -25,10 +25,14 @@
 const KAKAO_TOKEN_URL = 'https://kauth.kakao.com/oauth/token'
 
 /** 로그인 화면을 띄울 수 있는 출처만 허용합니다 */
+// ★ 배포 주소를 추가하고 재배포해야 합니다. 없으면 카카오 로그인의 토큰 교환이
+//   CORS 로 막힙니다 — 로그인 창은 뜨는데 돌아와서 아무 일도 일어나지 않습니다.
+//   "*" 로 열지 않는 이유: 이 함수는 우리 카카오 시크릿을 들고 코드를 교환합니다.
 const ALLOWED_ORIGINS = [
   'http://localhost:5250',
   'http://localhost:5173',
   'https://2021016035kimtaeyoon.github.io',
+  // TODO(배포): Cloudflare Pages 주소를 여기에 추가 — 예 'https://near-stage.pages.dev'
 ]
 
 function corsHeaders(origin: string | null): Record<string, string> {

@@ -1,0 +1,17 @@
+# Cloudflare Pages 응답 헤더.
+#
+# CSP 는 넣지 않았습니다. 지도 타일(OSM), Supabase, 유튜브 임베드, 카카오 주소 검색이
+# 각각 다른 출처를 쓰는데, 한 곳만 빠뜨려도 그 기능이 조용히 죽습니다. 조일 때는
+# 브라우저 콘솔로 실제 출처를 다 모은 뒤에 하는 게 맞습니다.
+
+/*
+  X-Content-Type-Options: nosniff
+  Referrer-Policy: strict-origin-when-cross-origin
+  # 우리 페이지가 남의 사이트 안에 끼워지는 것을 막습니다 (우리가 iframe 을 쓰는 것과 무관)
+  X-Frame-Options: DENY
+  # 위치는 우리 페이지 안에서만. 카메라·마이크는 쓰지 않습니다
+  Permissions-Policy: geolocation=(self), camera=(), microphone=(), payment=()
+
+# 해시가 붙은 빌드 산출물은 영구 캐시해도 안전합니다
+/assets/*
+  Cache-Control: public, max-age=31536000, immutable
