@@ -7,6 +7,7 @@ import { Gauge } from '@/components/ui/Field'
 import { useAuthStore } from '@/hooks/useAuth'
 import { describeDbError, supabase } from '@/lib/supabase'
 import { toast } from '@/store/useToast'
+import { uploadPhoto } from '@/lib/uploadPhoto'
 import { PhotoUploader } from './PhotoUploader'
 import { StepBasic, StepEquipment, StepPhotos, StepScale } from './VenueSteps'
 import { LIMITS, completeness, numOrNull, stepErrors, useVenueDraft } from './venueDraft'
@@ -32,6 +33,23 @@ export function VenueRegisterScreen() {
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
+
+  /**
+   * 치수를 재는 데 쓴 사진을 공간 사진으로도 올립니다.
+   * 이미 찍은 사진이니 한 번 더 고르게 하지 않습니다.
+   */
+  const useMeasurePhoto = (f: File) => {
+    const uid = useAuthStore.getState().userId
+    if (!uid) return
+    void uploadPhoto('venue-photos', uid, f)
+      .then(({ url }) => {
+        patch({ photos: [...draft.photos, url] })
+        toast('사진도 함께 등록했어요', 'success')
+      })
+      .catch((e: unknown) => {
+        toast('사진을 올리지 못했어요', 'error', e instanceof Error ? e.message : undefined)
+      })
+  }
 
   const percent = completeness(draft)
 
@@ -110,7 +128,7 @@ export function VenueRegisterScreen() {
   const stepBody = [
     <StepBasic key="0" draft={draft} patch={patch} />,
     <StepScale key="1" draft={draft} patch={patch} />,
-    <StepEquipment key="2" draft={draft} patch={patch} />,
+    <StepEquipment key="2" draft={draft} patch={patch} onMeasurePhoto={useMeasurePhoto} />,
     <StepPhotos
       key="3"
       draft={draft}

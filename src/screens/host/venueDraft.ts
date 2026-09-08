@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { VENUE_CATEGORIES, type Genre, type SoundproofGrade, type VenueCategory } from '@/types'
+import { VENUE_CATEGORIES } from '@/types'
 
 /**
  * 공간 등록 폼의 입력값.
@@ -11,7 +11,11 @@ import { VENUE_CATEGORIES, type Genre, type SoundproofGrade, type VenueCategory 
 export interface VenueDraft {
   // ① 기본정보
   name: string
-  category: VenueCategory
+  /**
+   * 목록에 없는 형태의 공간도 있습니다(복합문화공간, 서점, 공방…). 그래서 자유
+   * 문자열입니다. DB 컬럼도 text 라 그대로 들어갑니다.
+   */
+  category: string
   address: string
   addressDetail: string
   district: string
@@ -20,7 +24,8 @@ export interface VenueDraft {
   // ② 규모·조건
   capacity: string
   rentalFee: string
-  preferredGenres: Genre[]
+  /** 우리 장르 목록 밖의 것도 담깁니다 ('기타'로 직접 입력한 값) */
+  preferredGenres: string[]
   // ③ 장비
   stageWidthM: string
   ceilingHeightM: string
@@ -29,7 +34,7 @@ export interface VenueDraft {
   mic: string
   piano: boolean
   projector: boolean
-  soundproof: SoundproofGrade
+  soundproof: string
   rehearsalAllowed: boolean
   // ④ 사진·소개
   photos: string[]

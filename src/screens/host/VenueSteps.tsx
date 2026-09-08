@@ -1,18 +1,15 @@
-import { MapPin, Search } from 'lucide-react'
+import { Camera, MapPin, Search } from 'lucide-react'
 import { useState } from 'react'
 import { GenreTag } from '@/components/ui/Badge'
-import { Chip, Toggle } from '@/components/ui/Chip'
+import { MultiChoiceWithOther, SingleChoiceWithOther } from '@/components/ui/ChipsWithOther'
+import { Toggle } from '@/components/ui/Chip'
 import { Label, Stepper, TextArea, TextInput } from '@/components/ui/Field'
 import { DEFAULT_MAP_CENTER } from '@/config/brand'
 import { geocodeAddress, openAddressSearch } from '@/lib/kakaoAddress'
 import { toast } from '@/store/useToast'
-import {
-  GENRES,
-  VENUE_CATEGORIES,
-  type Genre,
-  type SoundproofGrade,
-  type VenueCategory,
-} from '@/types'
+import { GENRES, VENUE_CATEGORIES, type Genre } from '@/types'
+import { AreaHelper } from './AreaHelper'
+import { PhotoMeasureSheet } from './PhotoMeasureSheet'
 import { PinPicker } from './PinPicker'
 import { LIMITS, type VenueDraft } from './venueDraft'
 
@@ -66,13 +63,12 @@ export function StepBasic({ draft, patch }: { draft: VenueDraft; patch: Patch })
 
       <div>
         <Label>어떤 공간인가요</Label>
-        <div className="flex flex-wrap gap-1.5">
-          {VENUE_CATEGORIES.map((c: VenueCategory) => (
-            <Chip key={c} active={draft.category === c} onClick={() => patch({ category: c })}>
-              {c}
-            </Chip>
-          ))}
-        </div>
+        <SingleChoiceWithOther
+          options={VENUE_CATEGORIES}
+          value={draft.category}
+          onChange={(category) => patch({ category })}
+          placeholder="예) 복합문화공간, 서점, 공방"
+        />
       </div>
 
       <div>
@@ -124,13 +120,6 @@ export function StepBasic({ draft, patch }: { draft: VenueDraft; patch: Patch })
 /* ─────────────── ② 규모·조건 ─────────────── */
 
 export function StepScale({ draft, patch }: { draft: VenueDraft; patch: Patch }) {
-  const toggleGenre = (g: Genre) =>
-    patch({
-      preferredGenres: draft.preferredGenres.includes(g)
-        ? draft.preferredGenres.filter((x) => x !== g)
-        : [...draft.preferredGenres, g],
-    })
-
   return (
     <div className="space-y-5">
       <div>
@@ -144,6 +133,9 @@ export function StepScale({ draft, patch }: { draft: VenueDraft; patch: Patch })
           min={LIMITS.capacity.min}
           max={LIMITS.capacity.max}
         />
+        <div className="mt-2">
+          <AreaHelper onApply={(n) => patch({ capacity: String(n) })} />
+        </div>
       </div>
 
       <div>
@@ -166,15 +158,16 @@ export function StepScale({ draft, patch }: { draft: VenueDraft; patch: Patch })
         <Label hint="고르지 않아도 됩니다. 고르면 그 장르 팀에게 먼저 보입니다">
           이런 공연을 받고 싶어요
         </Label>
-        <div className="flex flex-wrap gap-1.5">
-          {GENRES.map((g) => (
-            <button key={g} type="button" onClick={() => toggleGenre(g)} className="tap">
-              <span className={draft.preferredGenres.includes(g) ? 'opacity-100' : 'opacity-45'}>
-                <GenreTag genre={g} />
-              </span>
-            </button>
-          ))}
-        </div>
+        <MultiChoiceWithOther
+          options={GENRES}
+          values={draft.preferredGenres}
+          onChange={(preferredGenres) => patch({ preferredGenres })}
+          renderOption={(o, active) => (
+            <span className={active ? 'opacity-100' : 'opacity-45'}>
+              <GenreTag genre={o as Genre} />
+            </span>
+          )}
+        />
       </div>
     </div>
   )
@@ -182,9 +175,20 @@ export function StepScale({ draft, patch }: { draft: VenueDraft; patch: Patch })
 
 /* ─────────────── ③ 장비 ─────────────── */
 
-const SOUNDPROOF: SoundproofGrade[] = ['좋음', '보통', '취약']
+const SOUNDPROOF = ['좋음', '보통', '취약'] as const
 
-export function StepEquipment({ draft, patch }: { draft: VenueDraft; patch: Patch }) {
+export function StepEquipment({
+  draft,
+  patch,
+  onMeasurePhoto,
+}: {
+  draft: VenueDraft
+  patch: Patch
+  /** 측정에 쓴 사진을 공간 사진으로도 올립니다 */
+  onMeasurePhoto?: (file: File) => void
+}) {
+  const [measuring, setMeasuring] = useState<'천장 높이' | '무대 가로' | null>(null)
+
   return (
     <div className="space-y-5">
       <p className="rounded-xl bg-surface-2 p-3 text-xs leading-relaxed text-ink-2">
@@ -204,6 +208,7 @@ export function StepEquipment({ draft, patch }: { draft: VenueDraft; patch: Patc
             onChange={(e) => patch({ stageWidthM: e.target.value })}
             placeholder="예) 3"
           />
+          <MeasureButton onClick={() => setMeasuring('무대 가로')} />
         </div>
         <div>
           <Label>천장 높이 (m)</Label>
@@ -215,8 +220,19 @@ export function StepEquipment({ draft, patch }: { draft: VenueDraft; patch: Patc
             onChange={(e) => patch({ ceilingHeightM: e.target.value })}
             placeholder={`${LIMITS.ceilingHeightM.min}~${LIMITS.ceilingHeightM.max}`}
           />
+          <MeasureButton onClick={() => setMeasuring('천장 높이')} />
         </div>
       </div>
+
+      <PhotoMeasureSheet
+        open={measuring !== null}
+        onClose={() => setMeasuring(null)}
+        what={measuring ?? '천장 높이'}
+        onResult={(m) =>
+          patch(measuring === '무대 가로' ? { stageWidthM: String(m) } : { ceilingHeightM: String(m) })
+        }
+        onUsePhoto={onMeasurePhoto}
+      />
 
       <div>
         <Label hint="분전반에 적혀 있거나, 한 번에 쓸 수 있는 전력량입니다">
@@ -266,13 +282,12 @@ export function StepEquipment({ draft, patch }: { draft: VenueDraft; patch: Patc
 
       <div>
         <Label hint="옆집이나 위층에 소리가 얼마나 새는지">방음</Label>
-        <div className="flex gap-1.5">
-          {SOUNDPROOF.map((s) => (
-            <Chip key={s} active={draft.soundproof === s} onClick={() => patch({ soundproof: s })}>
-              {s}
-            </Chip>
-          ))}
-        </div>
+        <SingleChoiceWithOther
+          options={SOUNDPROOF}
+          value={draft.soundproof}
+          onChange={(soundproof) => patch({ soundproof })}
+          placeholder="예) 모르겠어요, 밤에만 취약"
+        />
       </div>
     </div>
   )
@@ -309,5 +324,19 @@ export function StepPhotos({
         <p className="tnum mt-1 text-right text-2xs text-ink-3">{draft.description.length}/600</p>
       </div>
     </div>
+  )
+}
+
+/** 사진으로 재기 진입 버튼 — 숫자를 직접 아는 사장님은 그냥 입력하면 됩니다 */
+function MeasureButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="mt-1.5 flex w-full items-center justify-center gap-1 rounded-lg border border-border bg-surface py-1.5 text-2xs font-bold text-ink-2"
+    >
+      <Camera size={12} />
+      사진으로 재기
+    </button>
   )
 }
