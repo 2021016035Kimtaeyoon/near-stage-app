@@ -17,7 +17,8 @@
 -- ============================================================
 
 -- ─────────── ① 뷰: 취소만 제외 ───────────
--- 컬럼 구성은 그대로라 create or replace 로 충분합니다 (0004 와 달리 순서 변경 없음).
+-- 컬럼 목록은 0007 기준 그대로 두고 WHERE 만 바꿉니다.
+-- (컬럼을 하나라도 빠뜨리면 42P16 cannot drop columns from view 가 납니다.)
 
 create or replace view public.v_public_shows
 with (security_invoker = false)
@@ -36,6 +37,9 @@ select
   s.source,
   s.kopis_id,
   s.external_url,
+  s.poster_url,
+  s.price_note,
+  s.genre_raw,
   s.created_at,
   coalesce(v.name, s.venue_name_raw)    as venue_name,
   coalesce(v.address, s.venue_addr_raw) as venue_address,
@@ -59,6 +63,8 @@ left join lateral (
   where x.show_id = s.id and x.status <> 'canceled'
 ) att on true
 left join lateral (
+  -- 이 공간의 모든 공연에 달린 공간 리뷰 평균. venues 에는 평점 컬럼이 없고
+  -- 리뷰가 유일한 원천입니다 (하드코딩된 평점을 두지 않기 위함).
   select round(avg(r.rating)::numeric, 1) as venue_rating
   from public.reviews r
   join public.shows s2 on s2.id = r.show_id
