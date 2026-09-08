@@ -1,5 +1,5 @@
 import { ArrowRight, Music4, Store } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useAppNavigate } from '@/lib/appLink'
 import { cn } from '@/lib/cn'
 
 /**
@@ -9,7 +9,8 @@ import { cn } from '@/lib/cn'
  * 멈춰도 손 닿는 곳에 같은 버튼 세 개가 있어야 합니다.
  */
 export function LandingCtaRow({ className, tone = 'light' }: { className?: string; tone?: 'light' | 'dark' }) {
-  const navigate = useNavigate()
+  // 화면 크기에 맞는 경로로 보냅니다 — 폰에서 /desktop 으로 가면 안내 화면에 막힙니다
+  const go = useAppNavigate()
   const outline =
     tone === 'dark'
       ? 'border-white/25 text-white'
@@ -18,7 +19,7 @@ export function LandingCtaRow({ className, tone = 'light' }: { className?: strin
   return (
     <div className={cn('mx-auto flex w-full max-w-md flex-col gap-2.5', className)}>
       <button
-        onClick={() => navigate('/desktop')}
+        onClick={() => go('/')}
         className="bg-gold-500 flex h-[54px] items-center justify-center gap-2 rounded-2xl text-[15px] font-bold text-gold-ink"
       >
         공연 보러가기
@@ -26,7 +27,7 @@ export function LandingCtaRow({ className, tone = 'light' }: { className?: strin
       </button>
       <div className="flex gap-2.5">
         <button
-          onClick={() => navigate('/desktop/host/venue/new')}
+          onClick={() => go('/host/venue/new')}
           className={cn(
             'flex h-[54px] flex-1 items-center justify-center gap-1.5 rounded-2xl border text-[14px] font-bold',
             outline,
@@ -36,7 +37,7 @@ export function LandingCtaRow({ className, tone = 'light' }: { className?: strin
           우리 가게 등록하기
         </button>
         <button
-          onClick={() => navigate('/desktop/artist/new')}
+          onClick={() => go('/artist/new')}
           className={cn(
             'flex h-[54px] flex-1 items-center justify-center gap-1.5 rounded-2xl border text-[14px] font-bold',
             outline,

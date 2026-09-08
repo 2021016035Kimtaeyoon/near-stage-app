@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { CalendarClock, Flame, MapPinned, Sparkles, Star, TrendingUp, Users2 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useAppNavigate } from '@/lib/appLink'
 import { SourceBadge } from '@/components/ui/Badge'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { SERVICE_NAME, SERVICE_TAGLINE } from '@/config/brand'
@@ -191,7 +191,7 @@ export function FeaturesSection() {
 }
 
 export function ClosingSection() {
-  const navigate = useNavigate()
+  const go = useAppNavigate()
   return (
     <section className="border-t border-border bg-[#0F0F14] py-20 text-white">
       <ScrollReveal className="mx-auto max-w-3xl px-6 text-center">
@@ -202,11 +202,11 @@ export function ClosingSection() {
         <motion.button
           whileHover={{ y: -4, boxShadow: '0 24px 56px rgba(255,196,46,.45)' }}
           whileTap={{ scale: 0.97 }}
-          onClick={() => navigate('/desktop')}
+          onClick={() => go('/')}
           className="bg-gold-500 mt-8 rounded-full px-8 py-4 text-[15px] font-bold text-gold-ink"
           style={{ boxShadow: '0 16px 40px rgba(255,196,46,.35)' }}
         >
-          웹으로 둘러보기 →
+          지금 둘러보기 →
         </motion.button>
       </ScrollReveal>
 

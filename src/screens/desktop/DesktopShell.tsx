@@ -6,7 +6,7 @@ import { LogoMark } from '@/components/shell/LogoMark'
 import { ROLE_DESCRIPTION, ROLE_LABEL, TABS } from '@/config/nav'
 import { cn } from '@/lib/cn'
 import { useIsDesktop } from '@/lib/useMediaQuery'
-import { unreadNotificationCount } from '@/store/selectors'
+import { useNotifications } from '@/hooks/useNotifications'
 import { useAppStore } from '@/store/useAppStore'
 import type { Role } from '@/types'
 
@@ -22,9 +22,8 @@ export function DesktopShell({ children }: { children: ReactNode }) {
   const location = useLocation()
   const role = useAppStore((s) => s.role)
   const setRole = useAppStore((s) => s.setRole)
-  const notifications = useAppStore((s) => s.notifications)
-  const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
-  const unread = unreadNotificationCount(notifications, role, followedPerformerIds)
+  // 실제 미읽음 수 (§12). 예전에는 목 스토어를 읽어 항상 0 이었습니다
+  const { unread } = useNotifications()
   const isDesktop = useIsDesktop()
   const subPath = location.pathname.replace(/^\/desktop/, '') || '/'
 

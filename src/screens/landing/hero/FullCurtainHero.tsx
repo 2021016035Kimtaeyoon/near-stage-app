@@ -1,6 +1,6 @@
 import { cubicBezier, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from 'framer-motion'
 import { useEffect, useRef, useState, type RefObject } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useAppNavigate } from '@/lib/appLink'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { CURTAIN_IMAGE, CurtainPanelSurface, SpotLight, StageBackdrop } from './stageParts'
@@ -92,7 +92,7 @@ function lightFlicker(range: [number, number]): [number[], number[]] {
  * 타이밍 상수는 ./heroTimeline.ts, 자세한 설명은 ./ANIMATION.md 참고.
  */
 export function FullCurtainHero() {
-  const navigate = useNavigate()
+  const go = useAppNavigate()
   const ref = useRef<HTMLElement>(null)
   const prefersReducedMotion = useReducedMotion()
   const isMobile = useMediaQuery('(max-width: 767px)')
@@ -238,7 +238,7 @@ export function FullCurtainHero() {
   const heroHeightClass = isMobile ? 'h-[432dvh]' : 'h-[605dvh]'
 
   if (prefersReducedMotion) {
-    return <StaticHeroFallback onNavigate={navigate} />
+    return <StaticHeroFallback onNavigate={go} />
   }
 
   const logoWidthClass = isMobile ? 'w-[220px]' : shortViewport ? 'w-[260px]' : 'w-[330px]'
@@ -326,17 +326,11 @@ export function FullCurtainHero() {
             <p className="max-w-md text-[15px] font-semibold text-white/80">{HERO_TAGLINE}</p>
             <div className={`pointer-events-auto flex flex-wrap items-center justify-center gap-3 ${ctaGapClass}`}>
               <button
-                onClick={() => navigate('/desktop')}
+                onClick={() => go('/')}
                 className="bg-gold-500 rounded-full px-7 py-4 text-[15px] font-bold text-gold-ink"
                 style={{ boxShadow: '0 16px 40px rgba(255,196,46,.4)' }}
               >
-                웹으로 둘러보기 →
-              </button>
-              <button
-                onClick={() => navigate('/')}
-                className="rounded-full border border-white/25 px-7 py-4 text-[15px] font-bold text-white transition-colors hover:bg-white/10"
-              >
-                모바일 앱 체험하기
+                지금 둘러보기 →
               </button>
             </div>
           </motion.div>
@@ -364,17 +358,11 @@ export function FullCurtainHero() {
                 {panel.withCta && (
                   <div className="mt-7 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
                     <button
-                      onClick={() => navigate('/desktop')}
+                      onClick={() => go('/')}
                       className="bg-gold-500 rounded-full px-7 py-4 text-[15px] font-bold text-gold-ink"
                       style={{ boxShadow: '0 16px 40px rgba(255,196,46,.4)' }}
                     >
-                      웹으로 둘러보기 →
-                    </button>
-                    <button
-                      onClick={() => navigate('/')}
-                      className="rounded-full border border-white/25 px-7 py-4 text-[15px] font-bold text-white transition-colors hover:bg-white/10"
-                    >
-                      모바일 앱 체험하기
+                      지금 둘러보기 →
                     </button>
                   </div>
                 )}
@@ -545,11 +533,10 @@ function StaticHeroFallback({ onNavigate }: { onNavigate: (path: string) => void
         <LogoMark dark className="w-[260px] sm:w-[320px]" />
         <p className="mt-6 text-[15px] font-semibold text-white/80">{HERO_TAGLINE}</p>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-          <button onClick={() => onNavigate('/desktop')} className="bg-gold-500 rounded-full px-7 py-4 text-[15px] font-bold text-gold-ink">
-            웹으로 둘러보기 →
-          </button>
-          <button onClick={() => onNavigate('/')} className="rounded-full border border-white/25 px-7 py-4 text-[15px] font-bold text-white">
-            모바일 앱 체험하기
+          {/* 예전에는 '웹으로 둘러보기'와 '모바일 앱 체험하기'가 따로였습니다. 이제는
+              화면 크기를 보고 알아서 고르므로 버튼 하나로 충분합니다 */}
+          <button onClick={() => onNavigate('/')} className="bg-gold-500 rounded-full px-7 py-4 text-[15px] font-bold text-gold-ink">
+            지금 둘러보기 →
           </button>
         </div>
       </div>
@@ -563,11 +550,8 @@ function StaticHeroFallback({ onNavigate }: { onNavigate: (path: string) => void
             <p className="text-gold-text mt-2 text-[15px] font-bold">{panel.solution}</p>
             {panel.withCta && (
               <div className="mt-6 flex flex-wrap items-center justify-center gap-3 sm:justify-start">
-                <button onClick={() => onNavigate('/desktop')} className="bg-gold-500 rounded-full px-7 py-4 text-[15px] font-bold text-gold-ink">
-                  웹으로 둘러보기 →
-                </button>
-                <button onClick={() => onNavigate('/')} className="rounded-full border border-white/25 px-7 py-4 text-[15px] font-bold text-white">
-                  모바일 앱 체험하기
+                <button onClick={() => onNavigate('/')} className="bg-gold-500 rounded-full px-7 py-4 text-[15px] font-bold text-gold-ink">
+                  지금 둘러보기 →
                 </button>
               </div>
             )}

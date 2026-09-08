@@ -1,5 +1,5 @@
 import { MapPin } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useAppNavigate } from '@/lib/appLink'
 import { ShowPoster } from '@/components/ui/ShowPoster'
 import { usePublicShows } from '@/hooks/usePublicShows'
 import { humanDateTime } from '@/lib/datetime'
@@ -15,7 +15,7 @@ import { ScrollReveal } from './ScrollReveal'
  * v_public_shows 만 읽으므로 승인 안 된 공간·아티스트의 공연은 애초에 오지 않습니다.
  */
 export function UpcomingShowsPreview() {
-  const navigate = useNavigate()
+  const go = useAppNavigate()
   const { data, loading } = usePublicShows()
   const nowIso = useNow()
 
@@ -40,7 +40,7 @@ export function UpcomingShowsPreview() {
           return (
             <button
               key={show.id}
-              onClick={() => navigate(`/desktop/audience/show/${show.id}`)}
+              onClick={() => go(`/audience/show/${show.id}`)}
               className="card overflow-hidden text-left"
             >
               <ShowPoster

@@ -1,6 +1,6 @@
 import { motion, useMotionValue } from 'framer-motion'
 import { ArrowRight, Music4, Store } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { useAppNavigate } from '@/lib/appLink'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { FREE_TRIAL_NOTICE } from '@/config/brand'
 import { HERO_TAGLINE } from '../heroTimeline'
@@ -15,7 +15,7 @@ import { CurtainPanelSurface, SpotLight, StageBackdrop } from './stageParts'
  * 같은 브랜드로 보이게 합니다. 커튼은 이미 열려 양옆에 걸려 있는 상태입니다.
  */
 export function CompactHero() {
-  const navigate = useNavigate()
+  const go = useAppNavigate()
   // 무대 조명은 고정 밝기 — 스크롤 연출이 없으므로 MotionValue를 상수로 넣습니다
   const full = useMotionValue(1)
 
@@ -59,7 +59,7 @@ export function CompactHero() {
           className="mt-8 flex w-full max-w-md flex-col items-stretch gap-2.5 sm:mt-9"
         >
           <button
-            onClick={() => navigate('/desktop')}
+            onClick={() => go('/')}
             className="bg-gold-500 flex h-[54px] items-center justify-center gap-2 rounded-2xl text-[15px] font-bold text-gold-ink"
           >
             공연 보러가기
@@ -67,14 +67,14 @@ export function CompactHero() {
           </button>
           <div className="flex gap-2.5">
             <button
-              onClick={() => navigate('/desktop/host/venue/new')}
+              onClick={() => go('/host/venue/new')}
               className="flex h-[54px] flex-1 items-center justify-center gap-1.5 rounded-2xl border border-white/25 text-[14px] font-bold text-white"
             >
               <Store size={16} />
               우리 가게 등록하기
             </button>
             <button
-              onClick={() => navigate('/desktop/artist/new')}
+              onClick={() => go('/artist/new')}
               className="flex h-[54px] flex-1 items-center justify-center gap-1.5 rounded-2xl border border-white/25 text-[14px] font-bold text-white"
             >
               <Music4 size={16} />
