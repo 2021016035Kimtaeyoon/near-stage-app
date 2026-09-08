@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { create } from 'zustand'
-import { supabase, isSupabaseConfigured } from '@/lib/supabase'
+import { describeDbError, isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { UserProfile } from '@/types'
 
 /**
@@ -163,4 +163,31 @@ export async function signInWith(provider: AuthProvider): Promise<{ error: strin
 
 export async function signOut(): Promise<void> {
   await supabase.auth.signOut()
+}
+
+/**
+ * 표시 이름 변경.
+ *
+ * ★ 카카오 닉네임이 그대로 박혀서 바꿀 방법이 없었습니다. 본명이 들어간 경우
+ *   공연 리뷰와 댓글에 그대로 노출됩니다 — 바꿀 수 있어야 합니다.
+ *
+ * profiles_update_own 이 본인 행만 허용합니다(0003).
+ */
+export async function updateDisplayName(name: string): Promise<string | null> {
+  const uid = useAuthStore.getState().userId
+  if (!uid) return '로그인이 필요합니다'
+  const trimmed = name.trim()
+  if (!trimmed) return '이름을 비워둘 수 없어요'
+  if (trimmed.length > 20) return '20자 이하로 적어주세요'
+
+  const { error } = await supabase
+    .from('profiles')
+    .update({ display_name: trimmed })
+    .eq('id', uid)
+  if (error) return describeDbError(error)
+
+  // 화면에 바로 반영합니다. 다시 읽어오면 한 박자 늦게 바뀝니다.
+  const cur = useAuthStore.getState().profile
+  if (cur) useAuthStore.setState({ profile: { ...cur, displayName: trimmed } })
+  return null
 }

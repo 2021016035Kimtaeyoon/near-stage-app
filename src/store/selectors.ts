@@ -1,5 +1,5 @@
 import { DEFAULT_USER_LOCATION } from '@/config/brand'
-import { tonightRange, weekendRange } from '@/lib/datetime'
+import { showEndMs, tonightRange, weekendRange } from '@/lib/datetime'
 import { distanceKm } from '@/lib/geo'
 import type {
   AppNotification,
@@ -82,7 +82,8 @@ export function getShowStatus(show: Show, nowIso: string): Show['status'] {
   if (show.status === '모집중' || show.status === '매칭완료') return show.status
   const now = new Date(nowIso).getTime()
   const start = new Date(show.startAt).getTime()
-  const end = start + show.durationMin * 60_000
+  // 등록 공연은 기간이 길어서 시작 시각 + 길이로 보면 첫날 뒤에 전부 종료가 됩니다
+  const end = showEndMs(show)
   if (now < start) return '공연확정'
   if (now < end) return '진행중'
   return '종료'
@@ -165,9 +166,11 @@ export function filterShows(
   const q = filter.query.trim().toLowerCase()
 
   const filtered = items.filter(({ show, place, distanceKm: d, performer }) => {
+    // 취소된 공연은 목록에서 뺍니다. 상세는 열립니다 — 참석 예정을 눌러둔 분이
+    // 사유를 봐야 하니까요.
+    if (show.status === '종료' && show.cancelReason) return false
     // 이미 끝난 공연은 목록에서 제외
-    const end = new Date(show.startAt).getTime() + show.durationMin * 60_000
-    if (end < now) return false
+    if (showEndMs(show) < now) return false
     if (range) {
       const start = new Date(show.startAt).getTime()
       if (start < range.from || start > range.to) return false

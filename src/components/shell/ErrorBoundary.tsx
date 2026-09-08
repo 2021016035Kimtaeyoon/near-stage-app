@@ -1,4 +1,5 @@
 import { Component, type ReactNode } from 'react'
+import { reportError } from '@/lib/reportError'
 import { LogoMark } from './LogoMark'
 
 interface Props {
@@ -26,6 +27,8 @@ ${error.stack ?? ''}` : String(error),
   override componentDidCatch(error: unknown, info: { componentStack?: string | null }) {
     // 개발 중에는 어느 컴포넌트가 죽었는지 화면에서 바로 보여야 고칠 수 있습니다.
     console.error(error, info.componentStack)
+    // ★ 배포 후에는 사용자가 말해주지 않으면 크래시를 알 수 없습니다. 서버에 남깁니다.
+    reportError(error, info.componentStack ?? undefined)
   }
 
   override render() {

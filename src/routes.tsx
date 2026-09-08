@@ -131,6 +131,14 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           }
         />
         <Route
+          path="/artist/:artistId/edit"
+          element={
+            <PageTransition>
+              <ArtistRegisterScreen />
+            </PageTransition>
+          }
+        />
+        <Route
           path="/artist/:artistId/clips"
           element={
             <PageTransition>
@@ -150,6 +158,14 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
         {/* 호스트 — 공간 등록 (§8-1) */}
         <Route
           path="/host/venue/new"
+          element={
+            <PageTransition>
+              <VenueRegisterScreen />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/host/venue/:venueId/edit"
           element={
             <PageTransition>
               <VenueRegisterScreen />

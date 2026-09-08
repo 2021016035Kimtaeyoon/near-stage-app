@@ -78,10 +78,15 @@ function normalizeClips(raw: unknown): NewClip[] {
     .filter((c): c is NewClip => c !== null)
 }
 
-export function useArtistDraft() {
+/**
+ * ★ 수정 모드(editId)는 저장 키를 분리합니다. 같은 키를 쓰면 기존 팀을 불러오는
+ *   순간 새로 쓰던 등록 초안이 덮여 사라집니다.
+ */
+export function useArtistDraft(editId?: string) {
+  const key = editId ? `${DRAFT_KEY}-edit-${editId}` : DRAFT_KEY
   const [draft, setDraft] = useState<ArtistDraft>(() => {
     try {
-      const raw = localStorage.getItem(DRAFT_KEY)
+      const raw = localStorage.getItem(key)
       if (!raw) return EMPTY_ARTIST_DRAFT
       const saved = JSON.parse(raw) as Partial<ArtistDraft>
       return { ...EMPTY_ARTIST_DRAFT, ...saved, clipUrls: normalizeClips(saved.clipUrls) }
@@ -92,23 +97,26 @@ export function useArtistDraft() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+      localStorage.setItem(key, JSON.stringify(draft))
     } catch {
       /* 저장이 막혀도 폼은 그대로 동작해야 합니다 */
     }
-  }, [draft])
+  }, [draft, key])
 
   const patch = useCallback((p: Partial<ArtistDraft>) => setDraft((d) => ({ ...d, ...p })), [])
   const clear = useCallback(() => {
     setDraft(EMPTY_ARTIST_DRAFT)
     try {
-      localStorage.removeItem(DRAFT_KEY)
+      localStorage.removeItem(key)
     } catch {
       /* 무시 */
     }
-  }, [])
+  }, [key])
 
-  return { draft, patch, clear }
+  /** 서버에서 불러온 값으로 폼을 채웁니다 (수정 모드 첫 진입) */
+  const load = useCallback((next: ArtistDraft) => setDraft(next), [])
+
+  return { draft, patch, clear, load }
 }
 
 function numOrNull(raw: string, range: { min: number; max: number }): number | null {
@@ -177,4 +185,27 @@ export function artistCompleteness(draft: ArtistDraft): number {
     draft.clipUrls.length > 0,
   ]
   return Math.round((checks.filter(Boolean).length / checks.length) * 100)
+}
+
+/**
+ * DB 행 → 폼 값 (수정 모드).
+ *
+ * 클립은 여기서 다루지 않습니다 — artist_clips 표가 원천이고, 클립 관리 화면에서
+ * 따로 올리고 지웁니다. 여기 넣으면 저장할 때마다 같은 클립이 다시 들어갑니다.
+ */
+export function artistRowToDraft(row: Record<string, unknown>): ArtistDraft {
+  const str = (v: unknown) => (v === null || v === undefined ? '' : String(v))
+  const arr = (v: unknown) => (Array.isArray(v) ? (v as string[]) : [])
+  return {
+    ...EMPTY_ARTIST_DRAFT,
+    teamName: str(row.team_name),
+    genre: str(row.genre),
+    memberCount: str(row.member_count),
+    durationMin: str(row.duration_min),
+    bio: str(row.bio),
+    setlist: arr(row.setlist),
+    needs: arr(row.needs),
+    photos: arr(row.photos),
+    clipUrls: [],
+  }
 }

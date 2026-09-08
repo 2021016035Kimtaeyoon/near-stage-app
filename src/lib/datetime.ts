@@ -133,3 +133,29 @@ export function showPriceLabel(source: 'own' | 'kopis', priceNote?: string): str
   // 우리 무대는 플랫폼을 통한 결제가 없습니다. 티켓이 있으면 현장에서 냅니다.
   return '참가비 없음'
 }
+
+/**
+ * 공연이 끝났는지.
+ *
+ * ★ 판단이 화면 10곳에 흩어져 있었고, 전부 `startAt + durationMin` 만 봤습니다.
+ *   등록 공연(KOPIS)은 대학로 연극처럼 두 달을 공연하는 경우가 있어서, 시작 시각
+ *   하나로 보면 첫날이 지난 순간 전부 "끝난 공연"이 되어 지도에서 사라집니다.
+ *   실제로 등록 공연 100건이 그렇게 사라져 있었습니다.
+ *
+ *   공연 기간(runEndsAt)이 있으면 그걸 우선합니다.
+ */
+export function showEndMs(show: {
+  startAt: string
+  durationMin: number
+  runEndsAt?: string | null
+}): number {
+  if (show.runEndsAt) return new Date(show.runEndsAt).getTime()
+  return new Date(show.startAt).getTime() + show.durationMin * 60_000
+}
+
+export function isShowOver(
+  show: { startAt: string; durationMin: number; runEndsAt?: string | null },
+  nowIso: string,
+): boolean {
+  return showEndMs(show) < new Date(nowIso).getTime()
+}

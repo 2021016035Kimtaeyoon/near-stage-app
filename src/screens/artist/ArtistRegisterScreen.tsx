@@ -1,6 +1,6 @@
 import { AlertCircle, ChevronLeft } from 'lucide-react'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Screen, ScreenBody } from '@/components/shell/ScreenHeader'
 import { GenreTag } from '@/components/ui/Badge'
 import { Button, IconButton } from '@/components/ui/Button'
@@ -18,6 +18,7 @@ import {
   artistCompleteness,
   artistNumOrNull,
   artistStepErrors,
+  artistRowToDraft,
   useArtistDraft,
 } from './artistDraft'
 import { ClipLinkEditor } from './ClipLinkEditor'
@@ -38,13 +39,41 @@ export function ArtistRegisterScreen() {
   const navigate = useNavigate()
   const userId = useAuthStore((s) => s.userId)
   const requireAuth = useAuthStore((s) => s.requireAuth)
-  const { draft, patch, clear } = useArtistDraft()
+  // 수정 모드 — /artist/:artistId/edit
+  const { artistId } = useParams<{ artistId: string }>()
+  const isEdit = !!artistId
+  const { draft, patch, clear, load } = useArtistDraft(artistId)
+  const [loaded, setLoaded] = useState(!isEdit)
 
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
   const [errors, setErrors] = useState<string[]>([])
 
   const percent = artistCompleteness(draft)
+
+  // 수정 모드 첫 진입에 서버 값을 채웁니다. 고치던 초안이 있으면 그대로 씁니다.
+  useEffect(() => {
+    if (!isEdit || loaded) return
+    let alive = true
+    void supabase
+      .from('artists')
+      .select('*')
+      .eq('id', artistId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!alive) return
+        setLoaded(true)
+        if (error || !data) {
+          toast('팀을 불러오지 못했어요', 'error', error ? describeDbError(error) : undefined)
+          return
+        }
+        if (draft.teamName.trim()) return
+        load(artistRowToDraft(data))
+      })
+    return () => {
+      alive = false
+    }
+  }, [isEdit, loaded, artistId, load, draft.teamName])
 
   const goNext = () => {
     const errs = artistStepErrors(draft, step)
@@ -69,9 +98,7 @@ export function ArtistRegisterScreen() {
       const uid = useAuthStore.getState().userId
       if (!uid) return
       setSubmitting(true)
-      const { data: created, error } = await supabase
-        .from('artists')
-        .insert({
+      const payload = {
           owner_id: uid,
           team_name: draft.teamName.trim(),
           genre: draft.genre,
@@ -84,9 +111,11 @@ export function ArtistRegisterScreen() {
           // 클립은 artist_clips 표가 원천입니다. 이 컬럼은 예전 데이터 호환용으로만
           // 링크를 남겨둡니다.
           clip_urls: draft.clipUrls.filter((c) => c.kind === 'link').map((c) => c.url),
-        })
-        .select('id')
-        .single()
+      }
+
+      const { data: created, error } = isEdit
+        ? await supabase.from('artists').update(payload).eq('id', artistId).select('id').single()
+        : await supabase.from('artists').insert(payload).select('id').single()
 
       if (error || !created) {
         setSubmitting(false)
@@ -96,13 +125,18 @@ export function ArtistRegisterScreen() {
 
       // 클립은 팀이 만들어진 뒤에 넣습니다 — artist_id 가 있어야 하고, RLS 도
       // 팀 주인인지 확인합니다. 실패해도 팀 등록 자체는 되돌리지 않습니다.
-      const clipErr = await addClips(created.id, draft.clipUrls)
+      // 수정 모드에서는 클립을 다시 넣지 않습니다 — 클립 관리 화면이 원천입니다
+      const clipErr = isEdit ? null : await addClips(created.id, draft.clipUrls)
       setSubmitting(false)
       if (clipErr) {
         toast('팀은 등록했지만 클립을 저장하지 못했어요', 'warn', clipErr)
       }
       clear()
-      toast('등록을 접수했어요', 'success', '운영자 확인 후 공개됩니다')
+      toast(
+        isEdit ? '저장했어요' : '등록을 접수했어요',
+        'success',
+        isEdit ? '바뀐 내용이 반영됩니다' : '운영자 확인 후 공개됩니다',
+      )
       navigate('/artist/me', { replace: true })
     })
   }
@@ -224,7 +258,7 @@ export function ArtistRegisterScreen() {
             <ChevronLeft size={22} />
           </IconButton>
           <div className="min-w-0 flex-1">
-            <h1 className="text-[16px] font-bold">공연팀 등록</h1>
+            <h1 className="text-[16px] font-bold">{isEdit ? '팀 정보 수정' : '공연팀 등록'}</h1>
             <p className="tnum mt-0.5 text-2xs text-ink-3">
               {step + 1} / {STEPS.length} · {STEPS[step]}
             </p>
@@ -281,7 +315,7 @@ export function ArtistRegisterScreen() {
             </Button>
           ) : (
             <Button variant="brand" full loading={submitting} onClick={submit}>
-              등록하기
+              {isEdit ? '저장하기' : '등록하기'}
             </Button>
           )}
         </div>

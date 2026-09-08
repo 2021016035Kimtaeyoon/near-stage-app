@@ -296,3 +296,67 @@ export async function setReportStatus(
     .eq('id', reportId)
   return error ? describeDbError(error) : null
 }
+
+/* ───────────────── 클라이언트 오류 ───────────────── */
+
+export interface ClientError {
+  id: string
+  route: string
+  message: string
+  stack: string
+  agent: string
+  createdAt: string
+}
+
+/**
+ * 사용자가 겪은 크래시.
+ *
+ * ★ 개인정보가 없습니다. 사용자 id 를 저장하지 않아서 "누가" 는 알 수 없고
+ *   "어디가" 만 압니다 — 고치는 데 필요한 건 그것뿐입니다.
+ */
+export function useClientErrors(): Query<ClientError[]> {
+  const isAdmin = useAuthStore((s) => s.profile?.isAdmin ?? false)
+  const [data, setData] = useState<ClientError[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [tick, setTick] = useState(0)
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !isAdmin) {
+      setLoading(false)
+      return
+    }
+    let alive = true
+    setLoading(true)
+    void supabase
+      .from('client_errors')
+      .select('id,route,message,stack,agent,created_at')
+      .order('created_at', { ascending: false })
+      .limit(100)
+      .then(({ data: rows, error: err }) => {
+        if (!alive) return
+        setLoading(false)
+        if (err) {
+          setError(describeDbError(err))
+          return
+        }
+        setError(null)
+        setData(
+          (rows ?? []).map((r) => ({
+            id: r.id,
+            route: r.route,
+            message: r.message,
+            stack: r.stack ?? '',
+            agent: r.agent ?? '',
+            createdAt: r.created_at,
+          })),
+        )
+      })
+    return () => {
+      alive = false
+    }
+  }, [isAdmin, tick])
+
+  const refresh = useCallback(() => setTick((n) => n + 1), [])
+  return { data, loading, error, refresh }
+}

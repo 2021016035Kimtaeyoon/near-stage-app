@@ -1,4 +1,4 @@
-import { ChevronLeft, Flag, PenLine } from 'lucide-react'
+import { CalendarX, ChevronLeft, Flag, PenLine } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Screen, ScreenBody } from '@/components/shell/ScreenHeader'
@@ -6,6 +6,7 @@ import { TabBarSpacer } from '@/components/shell/TabBar'
 import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { ReportSheet } from '@/components/ui/ReportSheet'
+import { useMyArtists, useMyVenues } from '@/hooks/useMyResources'
 import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
 import { useAuthStore } from '@/hooks/useAuth'
 import {
@@ -18,11 +19,12 @@ import {
 import { useArtist } from '@/hooks/useArtist'
 import { useShowReviews, type ShowReview } from '@/hooks/useReviews'
 import { usePublicShow } from '@/hooks/usePublicShows'
-import { showPriceLabel } from '@/lib/datetime'
+import { isShowOver, showPriceLabel } from '@/lib/datetime'
 import { useNow } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
 import type { Review } from '@/types'
 import { KopisCastBlock, PerformerBlock } from './PerformerBlock'
+import { ShowCancelModal } from './ShowCancelModal'
 import { ReviewTabs } from './ReviewTabs'
 import { ShowDetailHero } from './ShowDetailHero'
 import { VenueBlock } from './VenueBlock'
@@ -52,6 +54,10 @@ export function ShowDetail() {
   const [busy, setBusy] = useState(false)
   const [headcount, setHeadcount] = useState(1)
   const [reportOpen, setReportOpen] = useState(false)
+  const [cancelOpen, setCancelOpen] = useState(false)
+  // 이 공연의 당사자만 취소할 수 있습니다 (DB 도 같은 조건으로 막습니다)
+  const myVenues = useMyVenues()
+  const myArtists = useMyArtists()
 
   const show = meta?.show ?? null
   const place = meta?.place ?? null
@@ -114,6 +120,10 @@ export function ShowDetail() {
   }
 
   const isKopis = show.source === 'kopis'
+  const canceled = !!show.cancelReason
+  const isMyShow =
+    myVenues.data.some((v) => v.id === show.venueId) ||
+    (!!performer && myArtists.data.some((a) => a.id === performer.id))
   const liked = likes.data.includes(show.id)
   const following = performer ? follows.data.includes(performer.id) : false
   const mine = attendances.data.find((a) => a.showId === show.id)
@@ -121,8 +131,7 @@ export function ShowDetail() {
   const seatsLeft = Math.max(0, show.capacity - show.reservedCount)
   const soldOut = !isKopis && !going && seatsLeft <= 0
 
-  const endedAt = new Date(show.startAt).getTime() + show.durationMin * 60_000
-  const ended = endedAt < new Date(nowIso).getTime()
+  const ended = isShowOver(show, nowIso)
   const canReview = ended && !isKopis && !!mine && mine.status !== 'canceled'
 
   // 이미 등록했으면 그때 적은 인원을 기본값으로 씁니다
@@ -178,6 +187,16 @@ export function ShowDetail() {
           onToggleLike={() => requireAuth(() => void likes.toggle(show.id))}
         />
 
+        {canceled && (
+          <div className="mx-4 mt-4 rounded-xl border border-danger/35 bg-danger/10 p-3.5">
+            <p className="flex items-center gap-1.5 text-[13px] font-bold text-danger">
+              <CalendarX size={14} />
+              이 공연은 취소되었습니다
+            </p>
+            <p className="mt-1.5 text-2xs leading-relaxed text-ink-2">{show.cancelReason}</p>
+          </div>
+        )}
+
         {performer ? (
           <PerformerBlock
             artist={artist.data}
@@ -221,6 +240,18 @@ export function ShowDetail() {
             </p>
           )}
         </section>
+
+        {isMyShow && !canceled && !ended && (
+          <Button
+            variant="outline"
+            full
+            className="mt-6"
+            leading={<CalendarX size={14} />}
+            onClick={() => setCancelOpen(true)}
+          >
+            공연 취소하기
+          </Button>
+        )}
 
         {/* 신고 (§16). 눈에 잘 띄지 않게 두되 찾을 수 있는 자리에 둡니다 */}
         <button
@@ -288,11 +319,13 @@ export function ShowDetail() {
               variant={going ? 'outline' : 'brand'}
               size="lg"
               loading={busy}
-              disabled={ended || soldOut}
+              disabled={ended || soldOut || canceled}
               onClick={toggleGoing}
               className="shrink-0"
             >
-              {ended
+              {canceled
+                ? '취소된 공연'
+                : ended
                 ? '종료되었어요'
                 : going
                   ? '참석 취소'
@@ -303,6 +336,15 @@ export function ShowDetail() {
           )}
         </div>
       </div>
+      <ShowCancelModal
+        open={cancelOpen}
+        onClose={() => setCancelOpen(false)}
+        showId={show.id}
+        showTitle={show.title}
+        goingCount={show.reservedCount}
+        onDone={refresh}
+      />
+
       <ReportSheet
         open={reportOpen}
         onClose={() => setReportOpen(false)}

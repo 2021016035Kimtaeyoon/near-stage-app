@@ -1,4 +1,4 @@
-import { AlertCircle, Clock, MapPin, Plus, XCircle } from 'lucide-react'
+import { AlertCircle, CalendarCheck, Clock, MapPin, Pencil, Plus, XCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
@@ -75,7 +75,8 @@ export function MyVenuesScreen() {
                 <VenueRow
                   key={v.id}
                   venue={v}
-                  onOpen={() => navigate(`/host/venue/${v.id}/slots`)}
+                  onSlots={() => navigate(`/host/venue/${v.id}/slots`)}
+                  onEdit={() => navigate(`/host/venue/${v.id}/edit`)}
                 />
               ))}
             </div>
@@ -91,7 +92,15 @@ export function MyVenuesScreen() {
   )
 }
 
-function VenueRow({ venue, onOpen }: { venue: MyVenue; onOpen: () => void }) {
+function VenueRow({
+  venue,
+  onSlots,
+  onEdit,
+}: {
+  venue: MyVenue
+  onSlots: () => void
+  onEdit: () => void
+}) {
   const badge = {
     pending: {
       icon: Clock,
@@ -118,7 +127,7 @@ function VenueRow({ venue, onOpen }: { venue: MyVenue; onOpen: () => void }) {
 
   return (
     <div className="card overflow-hidden">
-      <button onClick={onOpen} className="flex w-full items-center gap-3 px-4 py-3.5 text-left">
+      <button onClick={onSlots} className="flex w-full items-center gap-3 px-4 py-3.5 text-left">
         {venue.photos[0] ? (
           <img
             src={venue.photos[0]}
@@ -152,6 +161,25 @@ function VenueRow({ venue, onOpen }: { venue: MyVenue; onOpen: () => void }) {
         <AlertCircle size={11} className="mt-0.5 shrink-0" />
         {badge.note}
       </p>
+
+      {/* ★ 등록 후 정보를 고칠 방법이 없었습니다. 전화번호가 바뀌거나 마이크를 새로
+          사도 손댈 수 없었습니다. */}
+      <div className="flex divide-x divide-border border-t border-border">
+        <button
+          onClick={onSlots}
+          className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-2xs font-bold"
+        >
+          <CalendarCheck size={13} className="text-gold-text" />
+          가능 시간
+        </button>
+        <button
+          onClick={onEdit}
+          className="flex flex-1 items-center justify-center gap-1.5 py-2.5 text-2xs font-bold"
+        >
+          <Pencil size={13} className="text-ink-3" />
+          정보 수정
+        </button>
+      </div>
     </div>
   )
 }

@@ -169,3 +169,21 @@ export function summarize(shows: VenueShow[], nowIso: string): VenueSummary {
 
   return { monthShows, monthGoing, reportedVisitors, reportedShows, awaitingReport }
 }
+
+/**
+ * 공연 취소.
+ *
+ * ★ 상태만 바꾸지 않습니다. fn_cancel_show 가 트랜잭션으로 슬롯을 다시 열고
+ *   참석 예정을 눌러둔 관객과 상대방에게 사유를 알립니다. 상태만 바꾸면 그 시간이
+ *   영구히 잠기고, 관객은 모르고 찾아옵니다.
+ *
+ * 호스트와 아티스트 양쪽 다 부를 수 있습니다 — 못 오게 된 쪽은 아티스트인 경우가
+ * 더 많습니다.
+ */
+export async function cancelShow(showId: string, reason: string): Promise<string | null> {
+  const { error } = await supabase.rpc('fn_cancel_show', {
+    p_show_id: showId,
+    p_reason: reason,
+  })
+  return error ? describeDbError(error) : null
+}

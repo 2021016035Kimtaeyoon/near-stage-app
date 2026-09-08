@@ -1,6 +1,7 @@
 import { ChevronLeft } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
+import { isShowOver } from '@/lib/datetime'
 import { Screen } from '@/components/shell/ScreenHeader'
 import { Button, IconButton } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -38,9 +39,7 @@ export function ReviewCompose() {
   const show = meta?.show ?? null
   const place = meta?.place ?? null
   const mine = attendances.data.find((a) => a.showId === showId)
-  const ended = show
-    ? new Date(show.startAt).getTime() + show.durationMin * 60_000 < new Date(nowIso).getTime()
-    : false
+  const ended = show ? isShowOver(show, nowIso) : false
 
   const header = (title: string, onBack: () => void) => (
     <div className="flex items-center gap-2 border-b border-border px-4 pb-3 pt-12">

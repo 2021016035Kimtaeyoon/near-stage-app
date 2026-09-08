@@ -15,7 +15,7 @@ import {
 } from '@/hooks/useEngagement'
 import { usePublicShow } from '@/hooks/usePublicShows'
 import { useShowReviews, type ShowReview } from '@/hooks/useReviews'
-import { showPriceLabel } from '@/lib/datetime'
+import { isShowOver, showPriceLabel } from '@/lib/datetime'
 import { KopisCastBlock, PerformerBlock } from '@/screens/audience/PerformerBlock'
 import { ReviewTabs } from '@/screens/audience/ReviewTabs'
 import { ShowDetailHero } from '@/screens/audience/ShowDetailHero'
@@ -91,9 +91,7 @@ export function DesktopShowDetailModal({
   const mine = show ? attendances.data.find((a) => a.showId === show.id) : undefined
   const going = mine?.status === 'going'
   const seatsLeft = show ? Math.max(0, show.capacity - show.reservedCount) : 0
-  const ended = show
-    ? new Date(show.startAt).getTime() + show.durationMin * 60_000 < new Date(nowIso).getTime()
-    : false
+  const ended = show ? isShowOver(show, nowIso) : false
   const soldOut = !isKopis && !going && seatsLeft <= 0
 
   const toggleGoing = () => {

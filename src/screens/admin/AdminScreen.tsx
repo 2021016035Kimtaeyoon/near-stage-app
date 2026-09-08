@@ -10,6 +10,7 @@ import {
   useAdminQueue,
   useAdminReports,
   useAdminStats,
+  useClientErrors,
   type AdminReport,
   type AdminStats,
 } from '@/hooks/useAdmin'
@@ -18,7 +19,7 @@ import { useAuthStore } from '@/hooks/useAuth'
 import { toast } from '@/store/useToast'
 import { AdminArtistCard, AdminVenueCard } from './AdminCards'
 
-type Tab = 'pending' | 'reports' | 'all' | 'stats'
+type Tab = 'pending' | 'reports' | 'all' | 'stats' | 'errors'
 
 /**
  * 운영자 화면 (§9).
@@ -38,6 +39,7 @@ export function AdminScreen() {
   const queue = useAdminQueue()
   const stats = useAdminStats()
   const reports = useAdminReports()
+  const errors = useClientErrors()
 
   if (loadingAuth) {
     return (
@@ -74,6 +76,7 @@ export function AdminScreen() {
     queue.refresh()
     stats.refresh()
     reports.refresh()
+    errors.refresh()
   }
 
   return (
@@ -104,6 +107,7 @@ export function AdminScreen() {
             { value: 'reports', label: `신고 ${openReports}` },
             { value: 'all', label: '전체' },
             { value: 'stats', label: '지표' },
+            { value: 'errors', label: `오류 ${errors.data.length}` },
           ]}
         />
 
@@ -127,6 +131,8 @@ export function AdminScreen() {
             />
           ) : tab === 'reports' ? (
             <ReportList reports={reports} onDone={refreshAll} />
+          ) : tab === 'errors' ? (
+            <ErrorList errors={errors} />
           ) : tab === 'stats' ? (
             <StatsPanel stats={stats} />
           ) : tab === 'pending' ? (
@@ -325,6 +331,86 @@ function ReportList({
           ))}
         </>
       )}
+    </div>
+  )
+}
+
+/**
+ * 사용자가 겪은 크래시 (§18).
+ *
+ * ★ 이게 없으면 배포 후 크래시를 사용자가 말해줘야 압니다. 실제로 공연 상세가
+ *   며칠 동안 열리지 않았는데 아무도 몰랐습니다.
+ *
+ * 같은 화면·같은 메시지를 한 줄로 묶어 보여줍니다 — 100건이 전부 같은 버그인
+ * 경우가 대부분이고, 그때 목록을 스크롤하는 건 시간 낭비입니다.
+ */
+function ErrorList({ errors }: { errors: ReturnType<typeof useClientErrors> }) {
+  if (errors.loading) return <div className="h-24 animate-pulse rounded-2xl bg-surface-2" />
+  if (errors.error) {
+    return <EmptyState art="search" title="불러오지 못했어요" description={errors.error} />
+  }
+  if (errors.data.length === 0) {
+    return (
+      <EmptyState
+        art="stage"
+        title="기록된 오류가 없어요"
+        description="사용자 화면이 죽으면 여기에 남습니다. 30일이 지난 기록은 자동으로 지워집니다."
+      />
+    )
+  }
+
+  // 화면 + 메시지로 묶습니다
+  const groups = new Map<
+    string,
+    { route: string; message: string; count: number; last: string; agent: string; stack: string }
+  >()
+  for (const e of errors.data) {
+    const key = `${e.route}|${e.message}`
+    const g = groups.get(key)
+    if (g) g.count++
+    else
+      groups.set(key, {
+        route: e.route,
+        message: e.message,
+        count: 1,
+        last: e.createdAt,
+        agent: e.agent,
+        stack: e.stack,
+      })
+  }
+  const rows = [...groups.values()].sort((a, b) => b.count - a.count)
+
+  return (
+    <div className="space-y-2.5">
+      <p className="text-2xs text-ink-3">
+        같은 화면·같은 메시지를 한 줄로 묶었습니다. 최근 100건 기준.
+      </p>
+      {rows.map((g) => (
+        <div key={g.route + g.message} className="card p-3.5">
+          <div className="flex items-start justify-between gap-2">
+            <span className="min-w-0 flex-1 break-all font-mono text-2xs font-bold text-gold-text">
+              {g.route}
+            </span>
+            <Tag tone={g.count > 3 ? 'danger' : 'warn'}>{g.count}회</Tag>
+          </div>
+          <p className="mt-1.5 break-all text-[13px] font-semibold leading-relaxed text-danger">
+            {g.message}
+          </p>
+          <p className="tnum mt-1 text-2xs text-ink-3">
+            {g.agent} · 최근 {new Date(g.last).toLocaleString('ko-KR')}
+          </p>
+          {g.stack && (
+            <details className="mt-2">
+              <summary className="cursor-pointer text-2xs font-semibold text-ink-3">
+                스택 보기
+              </summary>
+              <pre className="mt-1.5 max-h-40 overflow-auto whitespace-pre-wrap rounded-lg bg-surface-2 p-2 text-[10px] leading-relaxed text-ink-2">
+                {g.stack}
+              </pre>
+            </details>
+          )}
+        </div>
+      ))}
     </div>
   )
 }

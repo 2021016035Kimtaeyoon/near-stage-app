@@ -76,11 +76,17 @@ export const LIMITS = {
 
 const DRAFT_KEY = 'ns-venue-draft'
 
-/** 임시저장 — 4스텝을 채우다 창을 닫아도 다시 채우게 하지 않습니다 */
-export function useVenueDraft() {
+/**
+ * 임시저장 — 4스텝을 채우다 창을 닫아도 다시 채우게 하지 않습니다.
+ *
+ * ★ 수정 모드(editId)는 저장 키를 분리합니다. 같은 키를 쓰면 기존 공간을 불러오는
+ *   순간 새로 쓰던 등록 초안이 덮여 사라집니다.
+ */
+export function useVenueDraft(editId?: string) {
+  const key = editId ? `${DRAFT_KEY}-edit-${editId}` : DRAFT_KEY
   const [draft, setDraft] = useState<VenueDraft>(() => {
     try {
-      const raw = localStorage.getItem(DRAFT_KEY)
+      const raw = localStorage.getItem(key)
       if (!raw) return EMPTY_DRAFT
       // 저장된 형태가 낡았을 수 있으니 기본값 위에 덮습니다
       return { ...EMPTY_DRAFT, ...(JSON.parse(raw) as Partial<VenueDraft>) }
@@ -91,23 +97,26 @@ export function useVenueDraft() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(draft))
+      localStorage.setItem(key, JSON.stringify(draft))
     } catch {
       // 시크릿 모드 등에서 저장이 막혀도 폼은 그대로 동작해야 합니다
     }
-  }, [draft])
+  }, [draft, key])
 
   const patch = useCallback((p: Partial<VenueDraft>) => setDraft((d) => ({ ...d, ...p })), [])
   const clear = useCallback(() => {
     setDraft(EMPTY_DRAFT)
     try {
-      localStorage.removeItem(DRAFT_KEY)
+      localStorage.removeItem(key)
     } catch {
       /* 무시 */
     }
-  }, [])
+  }, [key])
 
-  return { draft, patch, clear }
+  /** 서버에서 불러온 값으로 폼을 채웁니다 (수정 모드 첫 진입) */
+  const load = useCallback((next: VenueDraft) => setDraft(next), [])
+
+  return { draft, patch, clear, load }
 }
 
 /** 숫자 입력을 범위 안의 수로. 비었거나 숫자가 아니면 null */
@@ -171,4 +180,40 @@ export function completeness(draft: VenueDraft): number {
     draft.description.trim().length >= 20,
   ]
   return Math.round((checks.filter(Boolean).length / checks.length) * 100)
+}
+
+/**
+ * DB 행 → 폼 값 (수정 모드).
+ *
+ * ★ 주소는 저장할 때 `주소 + 상세`를 한 문자열로 합쳤습니다. 다시 나눌 방법이
+ *   없어서 전체를 address 에 넣고 addressDetail 은 비웁니다. 사장님이 상세를
+ *   다시 적으면 그때 또 합쳐지므로, 저장을 반복해도 중복되지 않습니다.
+ */
+export function venueRowToDraft(row: Record<string, unknown>): VenueDraft {
+  const eq = (row.equipment ?? {}) as Record<string, unknown>
+  const str = (v: unknown) => (v === null || v === undefined ? '' : String(v))
+  return {
+    ...EMPTY_DRAFT,
+    name: str(row.name),
+    category: str(row.category),
+    address: str(row.address),
+    addressDetail: '',
+    district: EMPTY_DRAFT.district,
+    lat: typeof row.lat === 'number' ? row.lat : null,
+    lng: typeof row.lng === 'number' ? row.lng : null,
+    capacity: str(row.capacity),
+    rentalFee: str(row.rental_fee),
+    preferredGenres: Array.isArray(row.preferred_genres) ? (row.preferred_genres as string[]) : [],
+    stageWidthM: str(eq.stageWidthM),
+    ceilingHeightM: str(eq.ceilingHeightM),
+    powerKw: str(eq.powerKw),
+    sound: eq.sound === true,
+    mic: str(eq.mic),
+    piano: eq.piano === true,
+    projector: eq.projector === true,
+    soundproof: str(eq.soundproof) || EMPTY_DRAFT.soundproof,
+    rehearsalAllowed: eq.rehearsalAllowed === true,
+    photos: Array.isArray(row.photos) ? (row.photos as string[]) : [],
+    description: str(row.description),
+  }
 }

@@ -1,3 +1,4 @@
+import { showEndMs } from '@/lib/datetime'
 import { DEFAULT_USER_LOCATION } from '@/config/brand'
 import { distanceKm } from '@/lib/geo'
 import { resolvePlace } from '@/store/selectors'
@@ -60,8 +61,7 @@ export function showMatchesSavedFilter(
   venues: Venue[],
   nowIso: string,
 ): boolean {
-  const end = new Date(show.startAt).getTime() + show.durationMin * 60_000
-  if (end < new Date(nowIso).getTime()) return false
+  if (showEndMs(show) < new Date(nowIso).getTime()) return false
   if (f.ownOnly && show.source !== 'own') return false
   // 장르를 모르는 공연(등록 공연의 목록 밖 분류)은 장르 조건에 걸리지 않습니다.
   // 밴드를 찾는 사람에게 분류 불명 공연을 밀어넣지 않기 위함입니다.

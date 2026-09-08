@@ -7,7 +7,7 @@ import { ShowPoster } from '@/components/ui/ShowPoster'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyAttendances } from '@/hooks/useEngagement'
 import { usePublicShows } from '@/hooks/usePublicShows'
-import { humanDateTime } from '@/lib/datetime'
+import { humanDateTime, showEndMs } from '@/lib/datetime'
 import { useNow } from '@/store/useAppStore'
 
 /**
@@ -76,7 +76,7 @@ export function MyReservations() {
     <div className="space-y-2.5">
       {rows.map(({ attendance, meta }) => {
         const show = meta.show
-        const ended = new Date(show.startAt).getTime() + show.durationMin * 60_000 < now
+        const ended = showEndMs(show) < now
         const canceled = attendance.status === 'canceled'
         const canReview = ended && !canceled && show.source === 'own'
 

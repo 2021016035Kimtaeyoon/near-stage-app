@@ -1,4 +1,4 @@
-import { AlertCircle, Clock, Music4, Plus, Video, XCircle } from 'lucide-react'
+import { AlertCircle, Clock, Music4, Pencil, Plus, Video, XCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
@@ -77,6 +77,7 @@ export function MyArtistsScreen() {
                   artist={a}
                   onOpen={() => navigate('/performer/posts')}
                   onClips={() => navigate(`/artist/${a.id}/clips`)}
+                  onEdit={() => navigate(`/artist/${a.id}/edit`)}
                 />
               ))}
             </div>
@@ -102,10 +103,12 @@ function ArtistRow({
   artist,
   onOpen,
   onClips,
+  onEdit,
 }: {
   artist: MyArtist
   onOpen: () => void
   onClips: () => void
+  onEdit: () => void
 }) {
   const badge = {
     pending: {
@@ -172,6 +175,15 @@ function ArtistRow({
         <Video size={14} className="shrink-0 text-gold-text" />
         <span className="flex-1 text-2xs font-bold">클립 올리기 · 관리</span>
         <span className="text-2xs text-ink-3">관객 클립 탭에 노출</span>
+      </button>
+
+      {/* ★ 등록 후 소개글·셋리스트를 고칠 방법이 없었습니다 */}
+      <button
+        onClick={onEdit}
+        className="flex w-full items-center gap-2 border-t border-border px-4 py-2.5 text-left"
+      >
+        <Pencil size={14} className="shrink-0 text-ink-3" />
+        <span className="flex-1 text-2xs font-bold">팀 정보 수정</span>
       </button>
     </div>
   )

@@ -12,6 +12,15 @@ export const FULLSCREEN_PREFIXES = [
   '/chat/',
 ]
 
+/**
+ * 수정 화면은 id 가 가운데 끼어 있어서(/host/venue/<id>/edit) 접두사로 잡히지
+ * 않습니다. 등록과 같은 폼이라 하단 탭을 숨겨야 합니다.
+ */
+const FULLSCREEN_SUFFIXES = ['/edit']
+
 export function isFullscreenRoute(pathname: string): boolean {
-  return FULLSCREEN_PREFIXES.some((p) => pathname.startsWith(p))
+  return (
+    FULLSCREEN_PREFIXES.some((p) => pathname.startsWith(p)) ||
+    FULLSCREEN_SUFFIXES.some((sfx) => pathname.endsWith(sfx))
+  )
 }

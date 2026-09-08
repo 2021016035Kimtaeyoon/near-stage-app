@@ -1,8 +1,8 @@
 {
   "name": "NEAR:STAGE",
   "short_name": "NEAR:STAGE",
-  "description": "공연할 곳이 없는 공연자와 손님이 필요한 공간을 잇는 3면 마켓플레이스",
-  "start_url": "./",
+  "description": "공연할 곳이 없는 아티스트와 손님이 필요한 공간을 연결하고, 그렇게 만들어진 공연을 지도로 보여줍니다.",
+  "start_url": "./#/landing",
   "display": "standalone",
   "background_color": "#FFFFFF",
   "theme_color": "#FFFFFF",

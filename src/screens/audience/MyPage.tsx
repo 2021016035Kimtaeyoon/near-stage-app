@@ -4,7 +4,8 @@ import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeade
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { Segmented } from '@/components/ui/Chip'
 import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
-import { unreadNotificationCount } from '@/store/selectors'
+import { useMyAttendances, useMyFollows, useMyLikes } from '@/hooks/useEngagement'
+import { useNotifications } from '@/hooks/useNotifications'
 import { useAppStore } from '@/store/useAppStore'
 import { useAuthStore } from '@/hooks/useAuth'
 import { NotificationList } from '@/screens/common/NotificationList'
@@ -18,15 +19,15 @@ type Tab = 'reservation' | 'liked' | 'follow' | 'noti'
 
 export function MyPage() {
   const [tab, setTab] = useState<Tab>('reservation')
-  const reservations = useAppStore((s) => s.reservations)
-  const likedShowIds = useAppStore((s) => s.likedShowIds)
-  const followedPerformerIds = useAppStore((s) => s.followedPerformerIds)
-  const notifications = useAppStore((s) => s.notifications)
+  // ★ 예전에는 목 스토어를 읽어서 네 숫자가 로그인해도 전부 0 이었습니다
+  const attendances = useMyAttendances()
+  const likes = useMyLikes()
+  const follows = useMyFollows()
+  const { unread } = useNotifications()
   const profile = useAuthStore((s) => s.profile)
   const theme = useAppStore((s) => s.theme)
   const setTheme = useAppStore((s) => s.setTheme)
 
-  const unread = unreadNotificationCount(notifications, 'audience', followedPerformerIds)
 
   return (
     <Screen>
@@ -38,9 +39,12 @@ export function MyPage() {
         <AccountCard />
 
         <div className="card mb-4 grid grid-cols-4 divide-x divide-border overflow-hidden">
-          <Stat label="참석 예정" value={reservations.filter((r) => r.status !== '취소').length} />
-          <Stat label="좋아요" value={likedShowIds.length} />
-          <Stat label="팔로우" value={followedPerformerIds.length} />
+          <Stat
+            label="참석 예정"
+            value={attendances.data.filter((a) => a.status !== 'canceled').length}
+          />
+          <Stat label="좋아요" value={likes.data.length} />
+          <Stat label="팔로우" value={follows.data.length} />
           <Stat label="알림" value={unread} />
         </div>
 

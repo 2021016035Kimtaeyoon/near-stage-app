@@ -2,7 +2,7 @@ import { MapPin } from 'lucide-react'
 import { useAppNavigate } from '@/lib/appLink'
 import { ShowPoster } from '@/components/ui/ShowPoster'
 import { usePublicShows } from '@/hooks/usePublicShows'
-import { humanDateTime } from '@/lib/datetime'
+import { humanDateTime, showEndMs } from '@/lib/datetime'
 import { useNow } from '@/store/useAppStore'
 import { ScrollReveal } from './ScrollReveal'
 
@@ -21,7 +21,7 @@ export function UpcomingShowsPreview() {
 
   const now = new Date(nowIso).getTime()
   const upcoming = data
-    .filter((x) => new Date(x.show.startAt).getTime() + x.show.durationMin * 60_000 >= now)
+    .filter((x) => showEndMs(x.show) >= now)
     .slice(0, 4)
 
   // 불러오는 중이거나 공연이 없으면 섹션 자체를 숨깁니다.

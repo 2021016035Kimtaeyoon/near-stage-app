@@ -188,13 +188,20 @@ Deno.serve(async () => {
         }
 
         const t = firstTime(guidance)
-        // ★ 이미 시작된 장기공연(대학로 연극 등)은 prfpdfrom 이 과거입니다. 그대로 쓰면
-        //   "끝난 공연"으로 걸러져 오늘 저녁에 하는 공연이 지도에서 사라집니다.
-        //   그래서 시작일이 지났으면 오늘로 당깁니다 — 다음 회차가 오늘이니까요.
-        const runStart = item.prfpdfrom.replace(/./g, '-')
-        const today = new Date().toISOString().slice(0, 10)
-        const showDate = runStart < today ? today.replace(/-/g, '.') : item.prfpdfrom
-        const startsAt = toIsoKst(showDate, t?.hour, t?.minute)
+        // ★ 원본 기간을 그대로 저장합니다.
+        //
+        //   예전에는 "시작일이 지났으면 오늘로 당긴다"고 했습니다. 두 가지가 잘못됐습니다.
+        //   ① 위 정규식이 깨져 있어서(모든 문자를 바꿔 "----------") 시작일과 무관하게
+        //      항상 오늘로 당겨졌습니다.
+        //   ② 애초에 그 방식은 매일 동기화가 도는 것에 의존합니다. 크론이 하루
+        //      실패하면 모든 공연이 과거가 되어 지도가 빕니다.
+        //
+        //   대학로 연극은 두 달을 공연합니다. 하루짜리 시각 하나로 표현하려 한 것이
+        //   잘못이었고, 기간(run_ends_at)을 함께 저장하면 크론이 며칠 멈춰도
+        //   목록이 비지 않습니다.
+        const startsAt = toIsoKst(item.prfpdfrom, t?.hour, t?.minute)
+        // 마지막 공연일 23:59 까지 목록에 남깁니다
+        const runEndsAt = toIsoKst(item.prfpdto, 23, 59)
         if (!startsAt) {
           stats.failed++
           continue
@@ -207,6 +214,7 @@ Deno.serve(async () => {
             title: item.prfnm,
             description: story || `${item.genrenm} · ${item.prfpdfrom} ~ ${item.prfpdto}`,
             starts_at: startsAt,
+            run_ends_at: runEndsAt,
             duration_min: runtime,
             capacity: 0,
             status: 'confirmed',

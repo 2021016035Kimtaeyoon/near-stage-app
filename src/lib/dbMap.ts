@@ -16,6 +16,8 @@ export interface PublicShowRow {
   title: string
   description: string
   starts_at: string
+  run_ends_at: string | null
+  cancel_reason: string | null
   duration_min: number
   capacity: number
   status: 'confirmed' | 'ongoing' | 'ended' | 'canceled'
@@ -102,6 +104,8 @@ export function rowToShow(row: PublicShowRow): Show {
     ticketPrice: 0,
     capacity: row.capacity,
     reservedCount: row.going_count,
+    runEndsAt: row.run_ends_at,
+    cancelReason: row.cancel_reason,
     likes: row.like_count,
     status: STATUS_LABEL[row.status],
     source: row.source,
@@ -133,8 +137,8 @@ export function rowToPlace(row: PublicShowRow): ShowPlace | null {
 
 /** v_public_shows 에서 항상 이 컬럼 목록으로 조회합니다 */
 export const PUBLIC_SHOW_COLUMNS =
-  'id,venue_id,artist_id,slot_id,title,description,starts_at,duration_min,capacity,' +
-  'status,source,kopis_id,external_url,poster_url,price_note,genre_raw,created_at,' +
+  'id,venue_id,artist_id,slot_id,title,description,starts_at,run_ends_at,duration_min,capacity,' +
+  'status,cancel_reason,source,kopis_id,external_url,poster_url,price_note,genre_raw,created_at,' +
   'venue_name,venue_address,lat,lng,' +
   'venue_category,venue_rating,artist_name,artist_genre,artist_photos,' +
   'going_count,like_count,avg_rating,review_count'

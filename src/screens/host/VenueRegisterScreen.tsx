@@ -1,6 +1,6 @@
 import { AlertCircle, ChevronLeft } from 'lucide-react'
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Screen, ScreenBody } from '@/components/shell/ScreenHeader'
 import { Button, IconButton } from '@/components/ui/Button'
 import { Gauge } from '@/components/ui/Field'
@@ -10,7 +10,14 @@ import { toast } from '@/store/useToast'
 import { uploadPhoto } from '@/lib/uploadPhoto'
 import { PhotoUploader } from './PhotoUploader'
 import { StepBasic, StepEquipment, StepPhotos, StepScale } from './VenueSteps'
-import { LIMITS, completeness, numOrNull, stepErrors, useVenueDraft } from './venueDraft'
+import {
+  LIMITS,
+  completeness,
+  numOrNull,
+  stepErrors,
+  useVenueDraft,
+  venueRowToDraft,
+} from './venueDraft'
 
 const STEPS = ['기본 정보', '규모·조건', '장비', '사진·소개'] as const
 
@@ -28,7 +35,11 @@ export function VenueRegisterScreen() {
   const navigate = useNavigate()
   const userId = useAuthStore((s) => s.userId)
   const requireAuth = useAuthStore((s) => s.requireAuth)
-  const { draft, patch, clear } = useVenueDraft()
+  // 수정 모드 — /host/venue/:venueId/edit
+  const { venueId } = useParams<{ venueId: string }>()
+  const isEdit = !!venueId
+  const { draft, patch, clear, load } = useVenueDraft(venueId)
+  const [loaded, setLoaded] = useState(!isEdit)
 
   const [step, setStep] = useState(0)
   const [submitting, setSubmitting] = useState(false)
@@ -63,6 +74,31 @@ export function VenueRegisterScreen() {
     }
   }
 
+  // 수정 모드 첫 진입에 서버 값을 폼에 채웁니다. 이미 채워둔 초안이 있으면
+  // 그대로 씁니다 — 고치다 창을 닫은 내용을 서버 값으로 덮으면 안 됩니다.
+  useEffect(() => {
+    if (!isEdit || loaded) return
+    let alive = true
+    void supabase
+      .from('venues')
+      .select('*')
+      .eq('id', venueId)
+      .maybeSingle()
+      .then(({ data, error }) => {
+        if (!alive) return
+        setLoaded(true)
+        if (error || !data) {
+          toast('공간을 불러오지 못했어요', 'error', error ? describeDbError(error) : undefined)
+          return
+        }
+        if (draft.name.trim()) return // 고치던 내용이 있으면 유지
+        load(venueRowToDraft(data))
+      })
+    return () => {
+      alive = false
+    }
+  }, [isEdit, loaded, venueId, load, draft.name])
+
   const submit = () => {
     // 모든 스텝의 필수 조건을 마지막에 한 번 더 확인합니다
     const all = [0, 1, 2].flatMap((s) => stepErrors(draft, s))
@@ -77,9 +113,7 @@ export function VenueRegisterScreen() {
       const uid = useAuthStore.getState().userId
       if (!uid) return
       setSubmitting(true)
-      const { data, error } = await supabase
-        .from('venues')
-        .insert({
+      const payload = {
           owner_id: uid,
           name: draft.name.trim(),
           category: draft.category,
@@ -105,9 +139,11 @@ export function VenueRegisterScreen() {
           // status 는 보내지 않습니다. DB 트리거가 조건을 보고 즉시 공개할지
           // 심사 대기로 둘지 판정합니다(0009_venue_auto_approve.sql).
           // 클라이언트가 정할 값이 아닙니다.
-        })
-        .select('status')
-        .single()
+      }
+
+      const { data, error } = isEdit
+        ? await supabase.from('venues').update(payload).eq('id', venueId).select('status').single()
+        : await supabase.from('venues').insert(payload).select('status').single()
       setSubmitting(false)
 
       if (error) {
@@ -116,7 +152,9 @@ export function VenueRegisterScreen() {
       }
       clear()
       // 판정 결과를 읽어와 안내합니다 — 추측해서 말하면 화면과 실제가 어긋납니다
-      if (data?.status === 'approved') {
+      if (isEdit) {
+        toast('저장했어요', 'success', data?.status === 'approved' ? '바뀐 내용이 바로 반영됩니다' : '확인이 필요해 심사 대기로 들어갔어요')
+      } else if (data?.status === 'approved') {
         toast('등록됐어요', 'success', '지금부터 지도에 공개됩니다')
       } else {
         toast('등록을 접수했어요', 'success', '확인이 필요해 잠시 심사 대기로 들어갔어요')
@@ -161,7 +199,7 @@ export function VenueRegisterScreen() {
             <ChevronLeft size={22} />
           </IconButton>
           <div className="min-w-0 flex-1">
-            <h1 className="text-[16px] font-bold">우리 가게 등록</h1>
+            <h1 className="text-[16px] font-bold">{isEdit ? '공간 정보 수정' : '우리 가게 등록'}</h1>
             <p className="tnum mt-0.5 text-2xs text-ink-3">
               {step + 1} / {STEPS.length} · {STEPS[step]}
             </p>
@@ -212,7 +250,7 @@ export function VenueRegisterScreen() {
             </Button>
           ) : (
             <Button variant="brand" full loading={submitting} onClick={submit}>
-              등록하기
+              {isEdit ? '저장하기' : '등록하기'}
             </Button>
           )}
         </div>
