@@ -13,6 +13,8 @@ import { ShowDetail } from '@/screens/audience/ShowDetail'
 import { ChatListScreen } from '@/screens/common/ChatListScreen'
 import { ChatThreadScreen } from '@/screens/common/ChatThreadScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
+import { ArtistRegisterScreen } from '@/screens/artist/ArtistRegisterScreen'
+import { MyArtistsScreen } from '@/screens/artist/MyArtistsScreen'
 import { MyVenuesScreen } from '@/screens/host/MyVenuesScreen'
 import { VenueRegisterScreen } from '@/screens/host/VenueRegisterScreen'
 import { OwnerApplicantsScreen } from '@/screens/owner/OwnerApplicantsScreen'
@@ -92,6 +94,24 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           element={
             <PageTransition>
               <MyPage />
+            </PageTransition>
+          }
+        />
+
+        {/* 아티스트 — 팀 등록 (§8-2) */}
+        <Route
+          path="/artist/new"
+          element={
+            <PageTransition>
+              <ArtistRegisterScreen />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/artist/me"
+          element={
+            <PageTransition>
+              <MyArtistsScreen />
             </PageTransition>
           }
         />

@@ -58,6 +58,13 @@ export const TABS: Record<Role, TabItem[]> = {
     { to: '/chat', label: '채팅', icon: MessageSquare, matches: ['/chat'] },
   ],
   performer: [
+    // ★ 팀을 등록하기 전에는 장소 탐색이 의미가 없습니다. 지원하려면 팀이 있어야 합니다.
+    {
+      to: '/artist/me',
+      label: '내 팀',
+      icon: UserCircle,
+      matches: ['/artist/me', '/performer/profile'],
+    },
     {
       to: '/performer/explore',
       label: '장소 탐색',
@@ -77,7 +84,6 @@ export const TABS: Record<Role, TabItem[]> = {
       matches: ['/performer/activity'],
     },
     { to: '/chat', label: '채팅', icon: MessageSquare, matches: ['/chat'] },
-    { to: '/performer/profile', label: '프로필', icon: UserCircle, matches: ['/performer/profile'] },
   ],
 }
 
@@ -109,5 +115,5 @@ export const ROLE_DESKTOP_HOME: Record<Role, string> = {
 export const ROLE_HOME: Record<Role, string> = {
   audience: '/audience/home',
   owner: '/host/venue',
-  performer: '/performer/explore',
+  performer: '/artist/me',
 }
