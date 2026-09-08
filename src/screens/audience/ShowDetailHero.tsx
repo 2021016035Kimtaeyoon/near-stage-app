@@ -2,7 +2,7 @@ import { Heart, Share2 } from 'lucide-react'
 import { GenreTag, SourceBadge, StatusDot } from '@/components/ui/Badge'
 import { IconButton } from '@/components/ui/Button'
 import { ShowPoster } from '@/components/ui/ShowPoster'
-import { countdownLabel, humanDateTime } from '@/lib/datetime'
+import { countdownLabel, showWhenLabel } from '@/lib/datetime'
 import { shareShow } from '@/lib/share'
 import type { Show } from '@/types'
 
@@ -19,7 +19,7 @@ export function ShowDetailHero({
   liked: boolean
   onToggleLike: () => void
 }) {
-  const countdown = countdownLabel(show.startAt, nowIso, show.durationMin)
+  const countdown = countdownLabel(show, nowIso)
   const live = countdown === '진행 중'
 
   return (
@@ -85,7 +85,7 @@ export function ShowDetailHero({
         </div>
         <h1 className="mt-2 text-xl font-extrabold leading-snug">{show.title}</h1>
         <p className="tnum mt-1 text-sm font-semibold text-ink-2">
-          {humanDateTime(show.startAt, nowIso)} · {show.durationMin}분
+          {showWhenLabel(show, nowIso)} · {show.durationMin}분
         </p>
         <p className="mt-2.5 text-[13px] leading-relaxed text-ink-2">{show.description}</p>
       </div>

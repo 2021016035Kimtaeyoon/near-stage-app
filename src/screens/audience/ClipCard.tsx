@@ -242,7 +242,7 @@ export function ClipCard({
                 {upcomingShow.title}
               </span>
               <span className="tnum block text-2xs text-white/70">
-                {countdownLabel(upcomingShow.startAt, nowIso, upcomingShow.durationMin)}
+                {countdownLabel(upcomingShow, nowIso)}
               </span>
             </span>
             <span className="shrink-0 text-2xs font-bold text-gold-text">보러가기</span>

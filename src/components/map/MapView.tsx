@@ -15,6 +15,14 @@ interface Props {
   onSearchHere?: (center: { lat: number; lng: number }, radiusKm: number) => void
   /** 조작 버튼을 위에서 내릴 높이(px). 검색 바를 피하도록 부르는 쪽이 정합니다 */
   controlsTop?: number
+  /**
+   * 지도가 처음 열릴 위치. 내 위치(origin)와 다를 수 있습니다.
+   *
+   * ★ 예전에는 항상 내 위치(권한 없으면 연남동)를 중심으로 열었습니다. 실제
+   *   공연이 안산에 있으면 지도가 서울을 보여주고 핀이 하나도 안 보입니다.
+   *   "가장 가까운 공연"을 중심으로 열어야 첫 화면에 무대가 보입니다.
+   */
+  center?: { lat: number; lng: number }
   selectedId: string | null
   onSelect: (showId: string | null) => void
   highlightShowId?: string | null
@@ -59,6 +67,7 @@ export function MapView({
   origin = DEFAULT_MAP_CENTER,
   onSearchHere,
   controlsTop,
+  center,
   selectedId,
   onSelect,
   highlightShowId = null,
@@ -86,7 +95,7 @@ export function MapView({
       )}
     >
       <MapContainer
-        center={[origin.lat, origin.lng]}
+        center={[(center ?? origin).lat, (center ?? origin).lng]}
         zoom={15}
         zoomControl={false}
         attributionControl
@@ -134,7 +143,12 @@ export function MapView({
         ))}
 
         <MapEffects selected={selected} onReady={onReady} />
-        <MapControls origin={origin} onSearchHere={onSearchHere} topOffset={controlsTop} />
+        <MapControls
+          origin={origin}
+          initialCenter={center ?? origin}
+          onSearchHere={onSearchHere}
+          topOffset={controlsTop}
+        />
       </MapContainer>
 
       {tilesFailed && (

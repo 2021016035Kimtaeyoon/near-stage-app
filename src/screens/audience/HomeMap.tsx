@@ -15,9 +15,9 @@ import { computeTrendingKeywords } from '@/lib/trending'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyLikes } from '@/hooks/useEngagement'
 import { usePublicShows, useViewerLocation } from '@/hooks/usePublicShows'
-import { DEFAULT_FILTER, filterShows } from '@/store/selectors'
+import { DEFAULT_FILTER, filterShows, relaxSuggestion } from '@/store/selectors'
 import { useAppStore, useNow } from '@/store/useAppStore'
-import type { SortKey } from '@/types'
+import type { AudienceFilter, SortKey } from '@/types'
 import { FilterChips } from './FilterChips'
 import { FilterSheet } from './FilterSheet'
 import { OwnShowsBanner, RecentlyViewedRow, TrendingRow } from './HomeFeedSections'
@@ -74,6 +74,19 @@ export function HomeMap() {
     [all, searchCenter],
   )
   const results = useMemo(() => filterShows(scoped, filter, nowIso), [scoped, filter, nowIso])
+  // 결과가 0이면 무엇을 풀면 몇 건이 나오는지 미리 계산해 둡니다
+  // ★ 지도 초기 중심 — 내 위치가 아니라 "가장 가까운 공연"입니다. 근처에 공연이
+  //   없을 때 빈 지도를 보여주지 않기 위함입니다. 내 위치 마커와 거리 계산은
+  //   그대로 origin 을 씁니다.
+  const mapCenter = useMemo(() => {
+    const nearest = [...results].sort((a, b) => a.distanceKm - b.distanceKm)[0]
+    return nearest ? { lat: nearest.place.lat, lng: nearest.place.lng } : origin
+  }, [results, origin])
+
+  const relax = useMemo(
+    () => (results.length === 0 ? relaxSuggestion(scoped, filter, nowIso) : null),
+    [results.length, scoped, filter, nowIso],
+  )
   const trending = useMemo(() => computeTrendingKeywords(all), [all])
 
   const upcoming = useMemo(() => all.filter((a) => a.show.startAt >= nowIso), [all, nowIso])
@@ -111,6 +124,7 @@ export function HomeMap() {
           <MapView
             items={results}
             origin={origin}
+            center={mapCenter}
             // 지도/리스트 토글이 top-[136px] 에 높이 40 으로 있습니다. 그 아래로.
             controlsTop={188}
             onSearchHere={(center) => {
@@ -147,6 +161,8 @@ export function HomeMap() {
             error={error}
             onRetry={refresh}
             hasAnyShow={all.length > 0}
+            relax={relax}
+            onRelax={setFilter}
           />
           <TabBarSpacer />
         </div>
@@ -306,6 +322,8 @@ export function HomeMap() {
               error={error}
               onRetry={refresh}
               hasAnyShow={all.length > 0}
+              relax={relax}
+              onRelax={setFilter}
             />
           </div>
         </SnapSheet>
@@ -334,6 +352,8 @@ function ResultList({
   error,
   onRetry,
   hasAnyShow,
+  relax,
+  onRelax,
 }: {
   results: ReturnType<typeof filterShows>
   nowIso: string
@@ -347,6 +367,9 @@ function ResultList({
   onRetry: () => void
   /** 필터를 걷어내면 공연이 하나라도 있는지 — 빈 상태 문구를 가르는 기준 */
   hasAnyShow: boolean
+  /** 조건을 한 단계 풀면 몇 건이 나오는지 */
+  relax?: { label: string; patch: Partial<AudienceFilter>; count: number } | null
+  onRelax?: (patch: Partial<AudienceFilter>) => void
 }) {
   if (loading) {
     return (
@@ -386,15 +409,31 @@ function ResultList({
     return (
       <EmptyState
         art="search"
-        title="조건에 맞는 공연이 없어요"
-        description="거리를 넓히거나 기간을 ‘전체’로 바꿔보세요."
+        title="이 조건에는 공연이 없어요"
+        description={
+          relax
+            ? `${relax.label.replace(/ 보기$|하기$/, '')}면 ${relax.count}건이 있어요.`
+            : '거리를 넓히거나 기간을 ‘전체’로 바꿔보세요.'
+        }
         action={
-          <button
-            onClick={onReset}
-            className="rounded-xl border border-border-strong px-4 py-2.5 text-xs font-bold"
-          >
-            필터 초기화
-          </button>
+          <div className="flex flex-wrap items-center justify-center gap-2">
+            {/* ★ 빈 화면만 보여주면 "공연이 없는 서비스"로 결론 내리고 떠납니다.
+                무엇을 풀면 몇 건이 나오는지 한 번에 눌러 볼 수 있게 합니다. */}
+            {relax && (
+              <button
+                onClick={() => onRelax?.(relax.patch)}
+                className="bg-gold-500 rounded-xl px-4 py-2.5 text-xs font-bold text-gold-ink"
+              >
+                {relax.label} ({relax.count})
+              </button>
+            )}
+            <button
+              onClick={onReset}
+              className="rounded-xl border border-border-strong px-4 py-2.5 text-xs font-bold"
+            >
+              필터 초기화
+            </button>
+          </div>
         }
       />
     )

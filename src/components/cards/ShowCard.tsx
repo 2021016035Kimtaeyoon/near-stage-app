@@ -3,7 +3,7 @@ import { GenreTag, SourceBadge, StatusDot } from '@/components/ui/Badge'
 import { Rating } from '@/components/ui/PosterArt'
 import { ShowPoster } from '@/components/ui/ShowPoster'
 import { cn } from '@/lib/cn'
-import { countdownLabel, humanDateTime, showPriceLabel } from '@/lib/datetime'
+import { countdownLabel, showPriceLabel, showWhenLabel } from '@/lib/datetime'
 import { distanceLabel } from '@/lib/geo'
 import type { ShowWithMeta } from '@/store/selectors'
 
@@ -28,7 +28,7 @@ export function ShowCard({
   compact = false,
 }: Props) {
   const { show, place, distanceKm: d, performer, rating } = item
-  const countdown = countdownLabel(show.startAt, nowIso, show.durationMin)
+  const countdown = countdownLabel(show, nowIso)
   const live = countdown === '진행 중'
   const seatsLeft = Math.max(0, show.capacity - show.reservedCount)
   // 등록 공연은 우리가 정원을 모릅니다. capacity 0 을 "매진"으로 표시하면 거짓이 됩니다.
@@ -76,7 +76,7 @@ export function ShowCard({
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <GenreTag genre={show.genre} size="sm" />
             {rating !== null && <Rating value={rating} size={11} />}
-            <span className="tnum text-2xs text-ink-3">{humanDateTime(show.startAt, nowIso)}</span>
+            <span className="tnum text-2xs text-ink-3">{showWhenLabel(show, nowIso)}</span>
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             <span
@@ -140,7 +140,7 @@ export function ShowMiniCard({
         <SourceBadge source={show.source} size="sm" />
         <div className="mt-1 truncate text-[13px] font-bold leading-snug">{show.title}</div>
         <div className="tnum mt-0.5 truncate text-2xs text-ink-2">
-          {humanDateTime(show.startAt, nowIso)} · {place.name}
+          {showWhenLabel(show, nowIso)} · {place.name}
         </div>
         <div className="tnum mt-0.5 text-2xs text-ink-3">
           {distanceLabel(d)} · {showPriceLabel(show.source, show.priceNote)}

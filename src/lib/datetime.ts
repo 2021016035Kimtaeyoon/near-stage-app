@@ -53,11 +53,21 @@ export function relativeFromNow(iso: string, nowIso: string): string {
 }
 
 /** 공연 시작까지 남은 시간 라벨. 이미 시작했으면 '진행 중' */
-export function countdownLabel(startIso: string, nowIso: string, durationMin: number): string {
-  const start = new Date(startIso).getTime()
+/**
+ * ★ 공연 객체를 받습니다. 예전에는 (startAt, now, durationMin) 세 값만 받아서,
+ *   두 달 공연하는 등록 공연이 첫날 지나면 전부 "종료"로 표시됐습니다. 실제로
+ *   오늘 저녁에 하는 공연이 목록에서 "종료"로 떠 있었습니다.
+ *
+ *   showEndMs 가 공연 기간(run_ends_at)을 알고 있으므로 그걸 씁니다.
+ */
+export function countdownLabel(
+  show: { startAt: string; durationMin: number; runEndsAt?: string | null },
+  nowIso: string,
+): string {
+  const start = new Date(show.startAt).getTime()
   const now = new Date(nowIso).getTime()
   const diffMin = Math.round((start - now) / 60000)
-  if (diffMin <= 0 && now < start + durationMin * 60000) return '진행 중'
+  if (diffMin <= 0 && now < showEndMs(show)) return '진행 중'
   if (diffMin <= 0) return '종료'
   if (diffMin < 60) return `${diffMin}분 후 시작`
   const hours = Math.floor(diffMin / 60)
@@ -158,4 +168,26 @@ export function isShowOver(
   nowIso: string,
 ): boolean {
   return showEndMs(show) < new Date(nowIso).getTime()
+}
+
+/**
+ * 목록·상세에 보여줄 "언제" 문구.
+ *
+ * ★ 등록 공연은 기간 공연이 많습니다. 시작 시각만 보여주면 두 달 공연하는 연극이
+ *   "어제 11:00"으로 떠서, 이미 지난 공연처럼 읽힙니다. 기간 중이면 "언제까지
+ *   하는지"가 관객에게 필요한 정보입니다.
+ */
+export function showWhenLabel(
+  show: { startAt: string; durationMin: number; runEndsAt?: string | null },
+  nowIso: string,
+): string {
+  const now = new Date(nowIso).getTime()
+  const start = new Date(show.startAt).getTime()
+
+  // 기간 공연이고 이미 시작했다면 "언제까지"
+  if (show.runEndsAt && start <= now) {
+    const end = new Date(show.runEndsAt)
+    return `${end.getMonth() + 1}월 ${end.getDate()}일까지`
+  }
+  return humanDateTime(show.startAt, nowIso)
 }

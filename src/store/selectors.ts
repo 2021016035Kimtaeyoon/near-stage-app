@@ -144,9 +144,19 @@ export function withMeta(
   return out
 }
 
+/**
+ * 처음 들어온 사람이 보는 기본값.
+ *
+ * ★ 예전 기본값은 "오늘 밤 + 2km" 였습니다. 기본 지도 중심(연남동)과 실제 등록된
+ *   공간이 30km 떨어져 있어서, 링크를 받아 처음 연 사람은 무조건 "조건에 맞는
+ *   공연이 없어요"를 봤습니다. 유입이 첫 화면에서 전부 죽습니다.
+ *
+ *   거리를 전체로 엽니다. "오늘 밤"은 이 서비스의 성격이라 남겨두고, 결과가 0이면
+ *   무엇을 풀면 몇 건이 나오는지 화면이 알려줍니다(relaxSuggestion).
+ */
 export const DEFAULT_FILTER: AudienceFilter = {
   when: 'tonight',
-  distance: 2,
+  distance: 0,
   genres: [],
   ownOnly: false,
   query: '',
@@ -172,8 +182,11 @@ export function filterShows(
     // 이미 끝난 공연은 목록에서 제외
     if (showEndMs(show) < now) return false
     if (range) {
+      // ★ 시작 시각만 보면 안 됩니다. 등록 공연은 두 달을 공연하는 경우가 있어서,
+      //   9월 1일 시작해 11월까지 하는 연극이 "오늘 밤"에 절대 걸리지 않았습니다.
+      //   기간이 겹치는지를 봐야 오늘 저녁에 실제로 하는 공연이 나옵니다.
       const start = new Date(show.startAt).getTime()
-      if (start < range.from || start > range.to) return false
+      if (showEndMs(show) < range.from || start > range.to) return false
     }
     if (filter.distance !== 0 && d > filter.distance) return false
     // 장르를 모르는 공연(등록 공연의 목록 밖 분류)은 장르 필터에 걸리지 않습니다
@@ -238,4 +251,40 @@ function recommendScore(item: ShowWithMeta, now: number): number {
 export function averageRating(ratings: number[]): number {
   if (ratings.length === 0) return 0
   return Math.round((ratings.reduce((a, b) => a + b, 0) / ratings.length) * 10) / 10
+}
+
+/**
+ * 결과가 0일 때 한 단계 넓힌 조건을 찾아 알려줍니다.
+ *
+ * ★ 빈 화면을 그냥 보여주면 사용자는 "공연이 없는 서비스"라고 결론 내리고 떠납니다.
+ *   조건을 조여서 0이 된 것인지, 정말 공연이 없는 것인지 구분해서 말해줘야 합니다.
+ *
+ * ★ 자동으로 적용하지 않고 "무엇을 풀면 몇 건이 나오는지"만 돌려줍니다. 사용자가
+ *   고른 조건을 몰래 바꾸면 지금 보고 있는 목록이 무엇인지 알 수 없게 됩니다.
+ */
+export function relaxSuggestion(
+  items: ShowWithMeta[],
+  filter: AudienceFilter,
+  nowIso: string,
+): { label: string; patch: Partial<AudienceFilter>; count: number } | null {
+  if (items.length === 0) return null
+
+  // 좁힌 순서의 역순으로 하나씩 풀어봅니다. 먼저 결과가 나오는 것을 제안합니다.
+  const candidates: Array<{ label: string; patch: Partial<AudienceFilter> }> = []
+  if (filter.query.trim()) candidates.push({ label: '검색어 지우기', patch: { query: '' } })
+  if (filter.genres.length > 0) candidates.push({ label: '장르 조건 풀기', patch: { genres: [] } })
+  if (filter.ownOnly) candidates.push({ label: '등록 공연까지 보기', patch: { ownOnly: false } })
+  if (filter.when !== 'all') candidates.push({ label: '전체 기간으로 보기', patch: { when: 'all' } })
+  if (filter.distance !== 0) candidates.push({ label: '거리 전체로 보기', patch: { distance: 0 } })
+
+  for (const c of candidates) {
+    const n = filterShows(items, { ...filter, ...c.patch }, nowIso).length
+    if (n > 0) return { ...c, count: n }
+  }
+
+  // 하나만 풀어도 안 되면 전부 풉니다
+  const relaxed: AudienceFilter = { ...DEFAULT_FILTER, when: 'all' }
+  const all = filterShows(items, relaxed, nowIso).length
+  if (all > 0) return { label: '조건 모두 풀기', patch: relaxed, count: all }
+  return null
 }

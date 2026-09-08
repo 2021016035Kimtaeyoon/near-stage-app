@@ -16,11 +16,19 @@ import { useMap, useMapEvents } from 'react-leaflet'
  */
 export function MapControls({
   origin,
+  initialCenter,
   onSearchHere,
   topOffset = 24,
 }: {
   /** 내 위치 (브라우저에서만 계산합니다 — 서버로 보내지 않습니다) */
   origin: { lat: number; lng: number }
+  /**
+   * 처음 맞출 위치. 보통 "가장 가까운 공연"입니다.
+   *
+   * ★ 내 위치로 열면 근처에 공연이 없을 때 빈 지도가 뜹니다. 처음은 공연이
+   *   보이는 곳에서 시작하고, "내 위치로" 버튼은 그대로 내 위치로 갑니다.
+   */
+  initialCenter?: { lat: number; lng: number }
   /** 보이는 지역으로 다시 찾기. 지도 중심과 반경(km)을 넘깁니다 */
   onSearchHere?: (center: { lat: number; lng: number }, radiusKm: number) => void
   /**
@@ -41,10 +49,11 @@ export function MapControls({
   })
 
   // 내 위치를 알게 되면(권한 허용) 한 번 그쪽으로 맞춰줍니다
+  const first = initialCenter ?? origin
   useEffect(() => {
-    map.setView([origin.lat, origin.lng], map.getZoom(), { animate: false })
+    map.setView([first.lat, first.lng], map.getZoom(), { animate: false })
     setMoved(false)
-  }, [map, origin.lat, origin.lng])
+  }, [map, first.lat, first.lng])
 
   const toOrigin = () => {
     map.flyTo([origin.lat, origin.lng], 15, { duration: 0.6 })
