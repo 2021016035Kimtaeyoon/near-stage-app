@@ -146,10 +146,10 @@ export function ClipCard({
         </a>
       )}
 
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-2/5 bg-gradient-to-t from-black/85 to-transparent" />
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/45 to-transparent" />
 
       {/* 오른쪽 액션 열 */}
-      <div className="absolute bottom-32 right-3 z-20 flex flex-col items-center gap-5">
+      <div className="absolute bottom-[200px] right-3 z-20 flex flex-col items-center gap-5">
         <button onClick={onToggleLike} aria-label="좋아요" className="flex flex-col items-center gap-1">
           <Heart size={30} className={liked ? 'fill-danger text-danger' : 'text-white drop-shadow'} />
           <span className="tnum text-2xs font-bold text-white drop-shadow">{likeCount}</span>
@@ -177,7 +177,9 @@ export function ClipCard({
       </div>
 
       {/* 아래 정보 */}
-      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-4 pb-[calc(var(--safe-bottom)+18px)]">
+      {/* ★ 하단 탭(76px) 위로 올립니다. 예전에는 '보러가기' 배너가 탭 아래 깔려서
+          눌러도 '알림' 탭이 눌렸습니다. 클립은 메인 탭이라 탭바를 숨길 수 없습니다. */}
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 z-20 px-4 pb-[calc(var(--safe-bottom)+90px)]">
         <div className="pointer-events-auto flex items-center gap-2.5">
           {clip.artistPhotos[0] ? (
             <img
