@@ -1,15 +1,18 @@
 import { ChevronUp } from 'lucide-react'
-import { useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useClipFeed } from '@/hooks/useClips'
+import { useMyClipLikes } from '@/hooks/useClipSocial'
 import { useMyFollows } from '@/hooks/useEngagement'
 import { usePublicShows } from '@/hooks/usePublicShows'
+import { shareClip } from '@/lib/share'
 import { useNow } from '@/store/useAppStore'
 import type { Show } from '@/types'
 import { ClipCard } from './ClipCard'
+import { ClipComments } from './ClipComments'
 
 const WEEK_MS = 7 * 24 * 60 * 60 * 1000
 
@@ -25,17 +28,20 @@ const WEEK_MS = 7 * 24 * 60 * 60 * 1000
  */
 export function ClipFeed() {
   const navigate = useNavigate()
+  const { clipId } = useParams<{ clipId: string }>()
   const nowIso = useNow()
   const requireAuth = useAuthStore((s) => s.requireAuth)
   const clips = useClipFeed()
+  const likes = useMyClipLikes()
   const follows = useMyFollows()
   const shows = usePublicShows()
 
   const containerRef = useRef<HTMLDivElement>(null)
   const [index, setIndex] = useState(0)
   const [muted, setMuted] = useState(true)
-  // 클립 좋아요는 공연 좋아요와 다른 가벼운 반응이라 화면 안에서만 셉니다
-  const [likedClips, setLikedClips] = useState<Set<string>>(new Set())
+  const [commentsFor, setCommentsFor] = useState<string | null>(null)
+  // 공유 링크로 들어온 클립으로 한 번만 이동합니다
+  const jumped = useRef(false)
 
   // 팀별 "가장 가까운 이번 주 공연"
   const upcomingByArtist = useMemo(() => {
@@ -50,6 +56,18 @@ export function ClipFeed() {
     }
     return map
   }, [shows.data, nowIso])
+
+  // 공유 링크(#/audience/clips/:clipId)로 들어오면 그 클립부터 보여줍니다
+  useEffect(() => {
+    if (jumped.current || !clipId || clips.data.length === 0) return
+    const i = clips.data.findIndex((c) => c.id === clipId)
+    if (i < 0) return
+    jumped.current = true
+    const el = containerRef.current
+    if (!el) return
+    el.scrollTop = i * el.clientHeight
+    setIndex(i)
+  }, [clipId, clips.data])
 
   const handleScroll = () => {
     const el = containerRef.current
@@ -99,30 +117,33 @@ export function ClipFeed() {
         onScroll={handleScroll}
         className="no-scrollbar h-full w-full snap-y snap-mandatory overflow-y-scroll overscroll-y-contain"
       >
-        {clips.data.map((clip, i) => (
-          <div key={clip.id} className="h-full w-full snap-start snap-always">
-            <ClipCard
-              clip={clip}
-              active={i === index}
-              muted={muted}
-              onToggleMute={() => setMuted((m) => !m)}
-              liked={likedClips.has(clip.id)}
-              following={follows.data.includes(clip.artistId)}
-              onToggleLike={() =>
-                setLikedClips((prev) => {
-                  const next = new Set(prev)
-                  if (next.has(clip.id)) next.delete(clip.id)
-                  else next.add(clip.id)
-                  return next
-                })
-              }
-              onToggleFollow={() => requireAuth(() => void follows.toggle(clip.artistId))}
-              upcomingShow={upcomingByArtist.get(clip.artistId) ?? null}
-              nowIso={nowIso}
-              onOpenShow={(showId) => navigate(`/audience/show/${showId}`)}
-            />
-          </div>
-        ))}
+        {clips.data.map((clip, i) => {
+          const liked = likes.data.includes(clip.id)
+          // 집계는 서버 값이지만, 방금 누른 하트는 즉시 반영돼야 합니다.
+          // 서버 값에 내 반응만 더해 보여줍니다.
+          const serverLiked = clip.likeCount
+          const likeCount = liked ? serverLiked + 1 : serverLiked
+          return (
+            <div key={clip.id} className="h-full w-full snap-start snap-always">
+              <ClipCard
+                clip={clip}
+                active={i === index}
+                muted={muted}
+                onToggleMute={() => setMuted((m) => !m)}
+                liked={liked}
+                likeCount={likeCount}
+                following={follows.data.includes(clip.artistId)}
+                onToggleLike={() => requireAuth(() => void likes.toggle(clip.id))}
+                onToggleFollow={() => requireAuth(() => void follows.toggle(clip.artistId))}
+                onOpenComments={() => setCommentsFor(clip.id)}
+                onShare={() => void shareClip(clip)}
+                upcomingShow={upcomingByArtist.get(clip.artistId) ?? null}
+                nowIso={nowIso}
+                onOpenShow={(showId) => navigate(`/audience/show/${showId}`)}
+              />
+            </div>
+          )
+        })}
       </div>
 
       {clips.data.length > 1 && (
@@ -140,6 +161,13 @@ export function ClipFeed() {
           <span className="text-2xs font-semibold">위로 밀어서 다음 클립 보기</span>
         </div>
       )}
+
+      <ClipComments
+        clipId={commentsFor}
+        open={commentsFor !== null}
+        onClose={() => setCommentsFor(null)}
+        onCountChange={() => clips.refresh()}
+      />
     </div>
   )
 }

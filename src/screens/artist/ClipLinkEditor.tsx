@@ -9,7 +9,8 @@ import {
   uploadClip,
   validateClipFile,
 } from '@/lib/uploadClip'
-import { clipThumbnail, validateClipUrl } from './artistDraft'
+import { clipThumbnail } from '@/lib/clipEmbed'
+import { validateClipUrl } from './artistDraft'
 
 /**
  * 클립 등록 — 영상 파일을 올리거나, 외부 링크를 붙입니다.
@@ -20,8 +21,8 @@ import { clipThumbnail, validateClipUrl } from './artistDraft'
  *     모바일 데이터를 30MB 다 쓰고 실패를 봅니다.
  *   - 운영자가 신고받은 클립을 지울 수 있게 DB 정책을 열어뒀습니다(0014).
  *
- * 링크 클립은 임베드하지 않고 원본으로 보냅니다. 각 플랫폼의 임베드 정책이 자주
- * 바뀌어서, 어느 날 조용히 재생이 막히는 것보다 원본으로 보내는 편이 오래 갑니다.
+ * 링크 클립은 유튜브·비메오만 앱 안에서 재생됩니다. 인스타그램·틱톡은 자동재생되는
+ * 임베드를 제공하지 않아 카드로 두고 원본으로 보냅니다.
  */
 export function ClipLinkEditor({
   clips,

@@ -1,0 +1,152 @@
+import { Send, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { BottomSheet } from '@/components/ui/BottomSheet'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { useAuthStore } from '@/hooks/useAuth'
+import { addComment, deleteComment, useClipComments } from '@/hooks/useClipSocial'
+import { relativeFromNow } from '@/lib/datetime'
+import { useNow } from '@/store/useAppStore'
+import { toast } from '@/store/useToast'
+
+/**
+ * 클립 댓글 시트.
+ *
+ * 새 댓글은 Realtime 으로 바로 붙습니다 — 댓글창에서 새로고침을 시키면 아무도
+ * 두 번째 댓글을 안 답니다.
+ *
+ * 지우기는 본인 댓글과 자기 클립에 달린 댓글만 보입니다. 자기 무대 아래 달린
+ * 악플을 못 지우면 클립을 안 올립니다.
+ */
+export function ClipComments({
+  clipId,
+  open,
+  onClose,
+  onCountChange,
+}: {
+  clipId: string | null
+  open: boolean
+  onClose: () => void
+  onCountChange?: (n: number) => void
+}) {
+  const nowIso = useNow()
+  const userId = useAuthStore((s) => s.userId)
+  const requireAuth = useAuthStore((s) => s.requireAuth)
+  const { data, loading, refresh } = useClipComments(open ? clipId : null)
+  const [text, setText] = useState('')
+  const [busy, setBusy] = useState(false)
+
+  const submit = () => {
+    const body = text.trim()
+    if (!body || !clipId) return
+    requireAuth(async () => {
+      setBusy(true)
+      const err = await addComment(clipId, body)
+      setBusy(false)
+      if (err) {
+        toast('댓글을 남기지 못했어요', 'error', err)
+        return
+      }
+      setText('')
+      refresh()
+      onCountChange?.(data.length + 1)
+    })
+  }
+
+  const remove = async (id: string) => {
+    const err = await deleteComment(id)
+    if (err) {
+      toast('지우지 못했어요', 'error', err)
+      return
+    }
+    refresh()
+    onCountChange?.(Math.max(0, data.length - 1))
+  }
+
+  return (
+    <BottomSheet
+      open={open}
+      onClose={onClose}
+      title={`댓글 ${data.length}`}
+      maxHeightPct={78}
+      footer={
+        <div className="flex items-end gap-2">
+          <textarea
+            rows={1}
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                submit()
+              }
+            }}
+            placeholder={userId ? '댓글 달기…' : '로그인하고 댓글 달기'}
+            maxLength={500}
+            className="max-h-24 min-h-[42px] flex-1 resize-none rounded-2xl border border-border bg-surface px-3.5 py-2.5 text-sm outline-none"
+          />
+          <button
+            onClick={submit}
+            disabled={!text.trim() || busy}
+            aria-label="보내기"
+            className="bg-gold-500 flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full text-gold-ink disabled:opacity-40"
+          >
+            <Send size={17} />
+          </button>
+        </div>
+      }
+    >
+      {loading ? (
+        <div className="space-y-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-12 animate-pulse rounded-xl bg-surface-2" />
+          ))}
+        </div>
+      ) : data.length === 0 ? (
+        <EmptyState
+          art="chat"
+          title="아직 댓글이 없어요"
+          description="이 무대를 본 소감을 가장 먼저 남겨보세요."
+        />
+      ) : (
+        <div className="space-y-3">
+          {data.map((c) => (
+            <div key={c.id} className="flex items-start gap-2.5">
+              {c.authorAvatar ? (
+                <img
+                  src={c.authorAvatar}
+                  alt=""
+                  loading="lazy"
+                  className="h-8 w-8 shrink-0 rounded-full object-cover"
+                />
+              ) : (
+                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-2xs font-bold text-ink-3">
+                  {c.authorName.slice(0, 1)}
+                </span>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="flex items-center gap-1.5">
+                  <span className="truncate text-2xs font-bold">{c.authorName}</span>
+                  <span className="tnum shrink-0 text-2xs text-ink-3">
+                    {relativeFromNow(c.createdAt, nowIso)}
+                  </span>
+                </p>
+                <p className="mt-0.5 whitespace-pre-wrap break-words text-[13px] leading-relaxed text-ink-2">
+                  {c.body}
+                </p>
+              </div>
+              {c.isMine && (
+                <button
+                  onClick={() => void remove(c.id)}
+                  aria-label="댓글 지우기"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-3"
+                >
+                  <Trash2 size={13} />
+                </button>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </BottomSheet>
+  )
+}

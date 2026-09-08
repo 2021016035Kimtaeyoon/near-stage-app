@@ -37,3 +37,39 @@ export async function shareShow(show: Show): Promise<void> {
     toast('링크를 복사하지 못했어요', 'error', '주소창의 링크를 직접 복사해주세요')
   }
 }
+
+/** 클립 딥링크 — 그 클립부터 열리는 주소 */
+export function clipDeepLink(clipId: string): string {
+  const { origin, pathname } = window.location
+  return `${origin}${pathname}#/audience/clips/${clipId}`
+}
+
+/**
+ * 클립 공유. 공유할 게 영상 자체가 아니라 "이 팀의 이 무대"라서, 문구에 팀 이름을
+ * 넣습니다 — 링크만 던지면 받은 사람이 뭘 볼지 모릅니다.
+ */
+export async function shareClip(clip: {
+  id: string
+  title: string
+  artistName: string
+}): Promise<void> {
+  const url = clipDeepLink(clip.id)
+  const title = `${clip.artistName} · ${SERVICE_NAME}`
+  const text = clip.title || `${clip.artistName}의 무대를 보세요`
+
+  if (navigator.share) {
+    try {
+      await navigator.share({ title, text, url })
+      return
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') return
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(url)
+    toast('링크가 복사되었습니다', 'success', url)
+  } catch {
+    toast('링크를 복사하지 못했어요', 'error', '주소창의 링크를 직접 복사해주세요')
+  }
+}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import type { NewClip } from '@/hooks/useClips'
+import { clipThumbnail } from '@/lib/clipEmbed'
 import { GENRES } from '@/types'
 
 /**
@@ -160,29 +161,8 @@ export function validateClipUrl(raw: string): string | null {
   return null
 }
 
-/** 유튜브 링크에서 영상 id — 썸네일 주소를 만들 때 씁니다 */
-export function youtubeId(raw: string): string | null {
-  try {
-    const u = new URL(raw.startsWith('http') ? raw : `https://${raw}`)
-    const host = u.hostname.replace(/^www\./, '')
-    if (host === 'youtu.be') return u.pathname.slice(1) || null
-    if (host.endsWith('youtube.com')) {
-      const v = u.searchParams.get('v')
-      if (v) return v
-      // /shorts/<id> · /embed/<id>
-      const m = u.pathname.match(/\/(?:shorts|embed)\/([^/?]+)/)
-      return m ? m[1] : null
-    }
-  } catch {
-    /* 무시 */
-  }
-  return null
-}
-
-export function clipThumbnail(url: string): string | null {
-  const id = youtubeId(url)
-  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null
-}
+// youtubeId·clipThumbnail 은 lib/clipEmbed 로 옮겼습니다 — 임베드 주소를 만드는
+// 로직과 같은 파싱을 두 벌 두면 한쪽만 고치는 일이 생깁니다.
 
 export function artistCompleteness(draft: ArtistDraft): number {
   const checks: boolean[] = [

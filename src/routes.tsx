@@ -60,6 +60,14 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           }
         />
         <Route
+          path="/audience/clips/:clipId"
+          element={
+            <PageTransition>
+              <ClipFeed />
+            </PageTransition>
+          }
+        />
+        <Route
           path="/audience/clips"
           element={
             <PageTransition>

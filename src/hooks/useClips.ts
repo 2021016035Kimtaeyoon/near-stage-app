@@ -26,6 +26,8 @@ export interface Clip {
   artistName: string
   artistGenre: string
   artistPhotos: string[]
+  likeCount: number
+  commentCount: number
 }
 
 type ArtistJoin = { team_name: string; genre: string; photos: string[] | null }
@@ -43,11 +45,18 @@ type Row = {
   title: string | null
   duration_sec: number | null
   created_at: string
-  artists: ArtistJoin | ArtistJoin[] | null
+  artists?: ArtistJoin | ArtistJoin[] | null
+  artist_name?: string | null
+  artist_genre?: string | null
+  artist_photos?: string[] | null
+  like_count?: number
+  comment_count?: number
 }
 
 function toClip(r: Row): Clip {
-  const a = one(r.artists)
+  // 피드는 v_clip_feed(집계 포함), 팀 상세는 artist_clips + 조인으로 옵니다.
+  // 두 모양을 한 군데서 풉니다.
+  const a = one(r.artists ?? null)
   return {
     id: r.id,
     artistId: r.artist_id,
@@ -57,9 +66,11 @@ function toClip(r: Row): Clip {
     title: r.title ?? '',
     durationSec: r.duration_sec,
     createdAt: r.created_at,
-    artistName: a?.team_name ?? '이름 없는 팀',
-    artistGenre: a?.genre ?? '',
-    artistPhotos: a?.photos ?? [],
+    artistName: a?.team_name ?? r.artist_name ?? '이름 없는 팀',
+    artistGenre: a?.genre ?? r.artist_genre ?? '',
+    artistPhotos: a?.photos ?? r.artist_photos ?? [],
+    likeCount: r.like_count ?? 0,
+    commentCount: r.comment_count ?? 0,
   }
 }
 
@@ -79,9 +90,9 @@ export function useClipFeed(limit = 60): Query<Clip[]> {
     let alive = true
     setLoading(true)
     void supabase
-      .from('artist_clips')
+      .from('v_clip_feed')
       .select(
-        'id,artist_id,kind,url,thumb_url,title,duration_sec,created_at,artists!artist_clips_artist_id_fkey(team_name,genre,photos)',
+        'id,artist_id,kind,url,thumb_url,title,duration_sec,created_at,artist_name,artist_genre,artist_photos,like_count,comment_count',
       )
       .order('created_at', { ascending: false })
       .limit(limit)

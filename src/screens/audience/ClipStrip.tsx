@@ -2,6 +2,7 @@ import { ExternalLink, Play, Video, X } from 'lucide-react'
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
 import type { Clip } from '@/hooks/useClips'
+import { clipEmbed } from '@/lib/clipEmbed'
 
 /**
  * 공연 상세에 붙는 클립 가로 목록.
@@ -22,7 +23,7 @@ export function ClipStrip({ clips }: { clips: Clip[] }) {
       <h4 className="mb-1.5 text-xs font-bold text-ink-2">클립 ({clips.length})</h4>
       <div className="no-scrollbar -mx-4 flex gap-2 overflow-x-auto px-4">
         {clips.map((c) =>
-          c.kind === 'upload' ? (
+          c.kind === 'upload' || clipEmbed(c.url, false, true).src ? (
             <button
               key={c.id}
               onClick={() => setPlaying(c)}
@@ -67,14 +68,24 @@ export function ClipStrip({ clips }: { clips: Clip[] }) {
             </button>
             {/* 전체화면에서는 소리를 켜고 시작합니다 — 사용자가 직접 눌러서 연 화면이라
                 자동재생 정책에도 걸리지 않고, 무음으로 트는 게 오히려 이상합니다 */}
-            <video
-              src={playing.url}
-              poster={playing.thumbUrl ?? undefined}
-              controls
-              autoPlay
-              playsInline
-              className="max-h-full w-full object-contain"
-            />
+            {playing.kind === 'upload' ? (
+              <video
+                src={playing.url}
+                poster={playing.thumbUrl ?? undefined}
+                controls
+                autoPlay
+                playsInline
+                className="max-h-full w-full object-contain"
+              />
+            ) : (
+              <iframe
+                src={clipEmbed(playing.url, true, false).src ?? undefined}
+                title={playing.title || playing.artistName}
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                allowFullScreen
+                className="aspect-video w-full border-0"
+              />
+            )}
           </div>,
           document.body,
         )}
