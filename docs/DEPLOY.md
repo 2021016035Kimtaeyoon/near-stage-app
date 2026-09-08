@@ -112,10 +112,18 @@ OpenStreetMap 으로 넘어갈 뿐입니다(정확도가 조금 낮습니다). �
 두면 됩니다. **구글은 우리 도메인이 아니라 Supabase 콜백을 봅니다.**
 추가 작업 없습니다.
 
-### ⑤ Edge Function — 허용 출처
+### ⑤ 카카오 — 사이트 도메인 (메시지 링크에도 씁니다)
 
-`supabase/functions/kakao-oidc/index.ts` 의 `ALLOWED_ORIGINS` 에 배포 주소를
-추가하고 재배포하세요. 없으면 카카오 로그인의 토큰 교환이 CORS 로 막힙니다.
+참석 예정 확인 메시지 안의 링크 도메인이 **카카오 콘솔의 사이트 도메인에 등록돼
+있어야** 합니다. 등록되지 않은 주소를 넣으면 카카오가 전송을 거절합니다.
+
+③번에서 사이트 도메인을 배포 주소로 바꾸면 이것도 함께 해결됩니다.
+
+### ⑥ Edge Function — 허용 출처
+
+`kakao-oidc` 와 `kakao-memo` **두 함수 모두** `ALLOWED_ORIGINS` 에 배포 주소를
+추가하고 재배포하세요. 없으면 카카오 로그인의 토큰 교환과 확인 메시지 전송이
+CORS 로 막힙니다.
 
 <https://supabase.com/dashboard/project/rbsywpjywbylmuacrkkh/functions>
 

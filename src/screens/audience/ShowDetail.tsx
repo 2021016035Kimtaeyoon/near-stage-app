@@ -19,7 +19,8 @@ import {
 import { useArtist } from '@/hooks/useArtist'
 import { useShowReviews, type ShowReview } from '@/hooks/useReviews'
 import { usePublicShow } from '@/hooks/usePublicShows'
-import { isShowOver, showPriceLabel } from '@/lib/datetime'
+import { humanDateTime, isShowOver, showPriceLabel } from '@/lib/datetime'
+import { canSendKakaoMemo, sendAttendanceMemo } from '@/lib/kakaoMemo'
 import { useNow } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
 import type { Review } from '@/types'
@@ -161,11 +162,30 @@ export function ShowDetail() {
         toast('처리하지 못했어요', 'error', err)
         return
       }
-      toast(
-        going ? '참석 예정을 취소했어요' : '참석 예정으로 등록했어요',
-        'success',
-        going ? undefined : `${headcount}명으로 알려드렸어요`,
-      )
+      if (going) {
+        toast('참석 예정을 취소했어요', 'success')
+      } else {
+        // ★ 카카오톡 확인 메시지는 덤입니다. 실패해도 조용히 넘어갑니다 —
+        //   구글로 로그인했거나 메시지 동의를 거절했으면 보낼 수 없고, 그건
+        //   사용자가 지금 할 수 있는 일이 아닙니다.
+        const withKakao = canSendKakaoMemo()
+        toast(
+          '참석 예정으로 등록했어요',
+          'success',
+          withKakao
+            ? `${headcount}명 · 카카오톡으로도 보내드려요`
+            : `${headcount}명으로 알려드렸어요`,
+        )
+        if (withKakao) {
+          void sendAttendanceMemo({
+            showId: show.id,
+            title: show.title,
+            whenLabel: humanDateTime(show.startAt, nowIso),
+            venueName: place.name,
+            headcount,
+          })
+        }
+      }
       attendances.refresh()
       refresh()
     })

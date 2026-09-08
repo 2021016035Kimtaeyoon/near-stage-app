@@ -57,7 +57,9 @@ export function startKakaoLogin(): void {
   url.searchParams.set('redirect_uri', redirectUri())
   url.searchParams.set('response_type', 'code')
   // ★ 우리가 직접 만들기 때문에 account_email 을 넣지 않습니다. 이게 이 방식의 이유입니다.
-  url.searchParams.set('scope', 'openid profile_nickname profile_image')
+  // ★ talk_message: 참석 예정 확인 메시지를 본인 카톡으로 보내기 위한 동의항목입니다.
+  //   동의를 거절해도 로그인은 됩니다 — 그때는 메시지만 안 갑니다.
+  url.searchParams.set('scope', 'openid profile_nickname profile_image talk_message')
   url.searchParams.set('nonce', nonce)
   window.location.assign(url.toString())
 }
@@ -110,10 +112,52 @@ export function useKakaoCallback(): void {
           toast('카카오 로그인에 실패했어요', 'error', signInError.message)
           return
         }
+        // ★ 카카오 access_token 은 sessionStorage 에만 둡니다. DB 에 저장하지
+        //   않으므로 탭을 닫으면 사라집니다. 나중에 보내는 리마인드를 하려면
+        //   refresh_token 보관이 필요하고, 그건 별도 결정입니다.
+        if (data.access_token) saveKakaoToken(data.access_token)
         toast('카카오로 로그인했어요', 'success')
       } catch (e) {
         toast('카카오 로그인에 실패했어요', 'error', e instanceof Error ? e.message : undefined)
       }
     })()
   }, [])
+}
+
+/* ───────────────── 카카오톡 메시지용 토큰 ───────────────── */
+
+const KAKAO_TOKEN_KEY = 'ns-kakao-access-token'
+
+/**
+ * ★ sessionStorage 에만 둡니다.
+ *
+ *   DB 에 넣으면 사용자의 카카오 자격증명을 우리가 보관하는 것이 되고,
+ *   개인정보처리방침에 항목을 추가해야 합니다. 탭을 닫으면 사라지는 대신,
+ *   "지금 이 세션에서 누른 참석 예정"에는 메시지를 보낼 수 있습니다.
+ *
+ *   access_token 은 6시간이면 만료됩니다. 만료된 토큰으로 보내면 카카오가
+ *   -401 을 주고, 우리는 조용히 넘어갑니다(알림은 덤이니까요).
+ */
+export function saveKakaoToken(token: string): void {
+  try {
+    sessionStorage.setItem(KAKAO_TOKEN_KEY, token)
+  } catch {
+    /* 저장이 막혀도 앱은 그대로 동작해야 합니다 */
+  }
+}
+
+export function getKakaoToken(): string | null {
+  try {
+    return sessionStorage.getItem(KAKAO_TOKEN_KEY)
+  } catch {
+    return null
+  }
+}
+
+export function clearKakaoToken(): void {
+  try {
+    sessionStorage.removeItem(KAKAO_TOKEN_KEY)
+  } catch {
+    /* 무시 */
+  }
 }

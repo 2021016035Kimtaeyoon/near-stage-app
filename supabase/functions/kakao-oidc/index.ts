@@ -106,6 +106,17 @@ Deno.serve(async (req) => {
     )
   }
 
-  // id_token 만 돌려줍니다. access_token 은 우리가 쓸 일이 없어 넘기지 않습니다.
-  return Response.json({ id_token: json.id_token }, { headers: cors })
+  // ★ access_token 도 함께 돌려줍니다.
+  //
+  //   카카오톡 "나에게 보내기"(참석 예정 확인 메시지)에 필요합니다. 프론트는 이
+  //   토큰을 sessionStorage 에만 두고 DB 에 저장하지 않습니다 — 탭을 닫으면
+  //   사라집니다. 나중에 보내는 리마인드를 하려면 refresh_token 을 보관해야
+  //   하는데, 그건 자격증명을 우리가 들고 있는 것이라 개인정보처리방침에 항목을
+  //   추가해야 합니다. 그건 별도 결정입니다.
+  //
+  //   신분 확인은 여전히 id_token 이 합니다. access_token 은 메시지 전송에만 씁니다.
+  return Response.json(
+    { id_token: json.id_token, access_token: json.access_token ?? null },
+    { headers: cors },
+  )
 })
