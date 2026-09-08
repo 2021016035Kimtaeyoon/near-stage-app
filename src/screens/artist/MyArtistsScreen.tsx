@@ -1,4 +1,4 @@
-import { AlertCircle, Clock, Music4, Plus, XCircle } from 'lucide-react'
+import { AlertCircle, Clock, Music4, Plus, Video, XCircle } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
@@ -72,7 +72,12 @@ export function MyArtistsScreen() {
           <>
             <div className="space-y-2.5">
               {data.map((a) => (
-                <ArtistRow key={a.id} artist={a} onOpen={() => navigate('/performer/posts')} />
+                <ArtistRow
+                  key={a.id}
+                  artist={a}
+                  onOpen={() => navigate('/performer/posts')}
+                  onClips={() => navigate(`/artist/${a.id}/clips`)}
+                />
               ))}
             </div>
             <Button
@@ -93,7 +98,15 @@ export function MyArtistsScreen() {
   )
 }
 
-function ArtistRow({ artist, onOpen }: { artist: MyArtist; onOpen: () => void }) {
+function ArtistRow({
+  artist,
+  onOpen,
+  onClips,
+}: {
+  artist: MyArtist
+  onOpen: () => void
+  onClips: () => void
+}) {
   const badge = {
     pending: {
       icon: Clock,
@@ -150,6 +163,16 @@ function ArtistRow({ artist, onOpen }: { artist: MyArtist; onOpen: () => void })
         <AlertCircle size={11} className="mt-0.5 shrink-0" />
         {badge.note}
       </p>
+
+      {/* 클립은 공연이 끝나야 생깁니다. 등록할 때만 넣을 수 있으면 영영 못 올립니다 */}
+      <button
+        onClick={onClips}
+        className="flex w-full items-center gap-2 border-t border-border px-4 py-2.5 text-left"
+      >
+        <Video size={14} className="shrink-0 text-gold-text" />
+        <span className="flex-1 text-2xs font-bold">클립 올리기 · 관리</span>
+        <span className="text-2xs text-ink-3">관객 클립 탭에 노출</span>
+      </button>
     </div>
   )
 }

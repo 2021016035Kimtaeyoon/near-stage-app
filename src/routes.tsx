@@ -13,6 +13,7 @@ import { ChatListScreen } from '@/screens/common/ChatListScreen'
 import { ChatThreadScreen } from '@/screens/common/ChatThreadScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
 import { AdminScreen } from '@/screens/admin/AdminScreen'
+import { ArtistClipsScreen } from '@/screens/artist/ArtistClipsScreen'
 import { ArtistRegisterScreen } from '@/screens/artist/ArtistRegisterScreen'
 import { MyArtistsScreen } from '@/screens/artist/MyArtistsScreen'
 import { MyVenuesScreen } from '@/screens/host/MyVenuesScreen'
@@ -107,6 +108,14 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           element={
             <PageTransition>
               <ArtistRegisterScreen />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/artist/:artistId/clips"
+          element={
+            <PageTransition>
+              <ArtistClipsScreen />
             </PageTransition>
           }
         />
