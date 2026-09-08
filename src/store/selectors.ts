@@ -4,6 +4,7 @@ import { distanceKm } from '@/lib/geo'
 import type {
   AppNotification,
   AudienceFilter,
+  Genre,
   Performer,
   Role,
   Show,
@@ -87,11 +88,26 @@ export function getShowStatus(show: Show, nowIso: string): Show['status'] {
   return '종료'
 }
 
+/**
+ * 목록에 실려 오는 아티스트 정보 — 이름·장르·사진뿐입니다.
+ *
+ * ★ 예전에는 이 자리에 Performer 를 `as` 로 억지로 끼워 넣었습니다. 실제로는 네
+ *   필드만 채워져 있는데 타입은 전부 있다고 말해서, 공연 상세가 undefined 에
+ *   .toLocaleString() 을 부르며 통째로 크래시했습니다. 컴파일러가 잡을 수 있도록
+ *   있는 것만 있다고 적습니다. 전체 정보가 필요하면 useArtist 로 따로 읽습니다.
+ */
+export interface ShowArtistBrief {
+  id: string
+  teamName: string
+  genre: Genre | null
+  photoSeed: string
+}
+
 export interface ShowWithMeta {
   show: Show
   place: ShowPlace
   distanceKm: number
-  performer: Performer | null
+  performer: ShowArtistBrief | null
   /**
    * 공간·공연자 평점 평균. 등록 공연(KOPIS)은 우리 플랫폼에 등록된 평점 데이터가
    * 없으므로 null — 별점순 정렬 시 자연스럽게 맨 뒤로 밀립니다.

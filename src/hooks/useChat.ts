@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useId, useState } from 'react'
 import { useAuthStore } from '@/hooks/useAuth'
 import { describeDbError, isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Query } from './usePublicShows'
@@ -123,6 +123,7 @@ export function useChatThread(threadId: string | undefined): {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tick, setTick] = useState(0)
+  const channelId = useId()
 
   useEffect(() => {
     if (!isSupabaseConfigured || !threadId || !userId) {
@@ -193,7 +194,7 @@ export function useChatThread(threadId: string | undefined): {
   useEffect(() => {
     if (!isSupabaseConfigured || !threadId || !userId) return
     const ch = supabase
-      .channel(`thread-${threadId}`)
+      .channel(`thread-${threadId}-${channelId}`)
       .on(
         'postgres_changes',
         {
@@ -233,7 +234,7 @@ export function useChatThread(threadId: string | undefined): {
     return () => {
       void supabase.removeChannel(ch)
     }
-  }, [threadId, userId])
+  }, [threadId, userId, channelId])
 
   const refresh = useCallback(() => setTick((n) => n + 1), [])
   return { thread, messages, loading, error, refresh }

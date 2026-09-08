@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useId, useState } from 'react'
 import { useAuthStore } from '@/hooks/useAuth'
 import { describeDbError, isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Query } from './usePublicShows'
@@ -30,6 +30,7 @@ export function useNotifications(): Query<AppNotice[]> & { unread: number } {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [tick, setTick] = useState(0)
+  const channelId = useId()
 
   useEffect(() => {
     if (!isSupabaseConfigured || !userId) {
@@ -75,7 +76,7 @@ export function useNotifications(): Query<AppNotice[]> & { unread: number } {
   useEffect(() => {
     if (!isSupabaseConfigured || !userId) return
     const ch = supabase
-      .channel(`notif-${userId}`)
+      .channel(`notif-${userId}-${channelId}`)
       .on(
         'postgres_changes',
         {
@@ -90,7 +91,7 @@ export function useNotifications(): Query<AppNotice[]> & { unread: number } {
     return () => {
       void supabase.removeChannel(ch)
     }
-  }, [userId])
+  }, [userId, channelId])
 
   const refresh = useCallback(() => setTick((n) => n + 1), [])
   const unread = data.filter((n) => !n.readAt).length

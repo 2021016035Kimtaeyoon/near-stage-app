@@ -1,10 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useId, useMemo, useRef, useState } from 'react'
 import { DEFAULT_MAP_CENTER } from '@/config/brand'
 import { distanceKm } from '@/lib/geo'
 import { PUBLIC_SHOW_COLUMNS, rowToPlace, rowToShow, type PublicShowRow } from '@/lib/dbMap'
 import { describeDbError, isSupabaseConfigured, supabase } from '@/lib/supabase'
-import type { ShowWithMeta } from '@/store/selectors'
-import type { Performer } from '@/types'
+import type { ShowArtistBrief, ShowWithMeta } from '@/store/selectors'
 
 /**
  * 데이터 훅의 공통 반환 모양.
@@ -64,6 +63,7 @@ export function usePublicShows(): Query<ShowWithMeta[]> {
   const [error, setError] = useState<string | null>(null)
   const [tick, setTick] = useState(0)
   const origin = useViewerLocation()
+  const channelId = useId()
   const alive = useRef(true)
 
   useEffect(() => {
@@ -104,8 +104,12 @@ export function usePublicShows(): Query<ShowWithMeta[]> {
   //   승인 여부·집계가 payload 에는 없습니다).
   useEffect(() => {
     if (!isSupabaseConfigured) return
+  // ★ 채널 이름에 이 컴포넌트만의 id 를 붙입니다. 이름이 같으면 supabase-js 가
+  //   같은 채널 객체를 돌려주는데, 이미 subscribe() 된 채널에 .on() 을 부르면
+  //   예외가 납니다 — 같은 훅을 쓰는 화면이 둘 이상 뜨는 순간(데스크톱 홈+상세
+  //   모달, 탭 배지+알림 목록) 앱 전체가 죽습니다.
     const ch = supabase
-      .channel('public-shows')
+      .channel(`public-shows-${channelId}`)
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'shows' },
@@ -115,7 +119,7 @@ export function usePublicShows(): Query<ShowWithMeta[]> {
     return () => {
       void supabase.removeChannel(ch)
     }
-  }, [])
+  }, [channelId])
 
   const data = useMemo<ShowWithMeta[]>(() => {
     const out: ShowWithMeta[] = []
@@ -124,13 +128,13 @@ export function usePublicShows(): Query<ShowWithMeta[]> {
       if (!place) continue
       // 아티스트 정보는 목록 표시에 필요한 만큼만 뷰에서 옵니다. 상세 화면은
       // useArtist 훅으로 전체를 따로 읽습니다.
-      const performer: Performer | null = row.artist_id
-        ? ({
+      const performer: ShowArtistBrief | null = row.artist_id
+        ? {
             id: row.artist_id,
             teamName: row.artist_name ?? '',
             genre: rowToShow(row).genre,
             photoSeed: row.artist_id,
-          } as Performer)
+          }
         : null
       out.push({
         show: rowToShow(row),

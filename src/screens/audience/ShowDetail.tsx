@@ -14,6 +14,7 @@ import {
   useMyFollows,
   useMyLikes,
 } from '@/hooks/useEngagement'
+import { useArtist } from '@/hooks/useArtist'
 import { useShowReviews, type ShowReview } from '@/hooks/useReviews'
 import { usePublicShow } from '@/hooks/usePublicShows'
 import { showPriceLabel } from '@/lib/datetime'
@@ -45,6 +46,8 @@ export function ShowDetail() {
   const follows = useMyFollows()
   const attendances = useMyAttendances()
   const reviews = useShowReviews(showId)
+  // 목록에는 이름·장르만 실려 옵니다. 소개글·셋리스트는 여기서 따로 읽습니다.
+  const artist = useArtist(meta?.performer?.id)
   const [busy, setBusy] = useState(false)
   const [headcount, setHeadcount] = useState(1)
 
@@ -175,7 +178,8 @@ export function ShowDetail() {
 
         {performer ? (
           <PerformerBlock
-            performer={performer}
+            artist={artist.data}
+            loading={artist.loading}
             following={following}
             onToggleFollow={() => requireAuth(() => void follows.toggle(performer.id))}
           />

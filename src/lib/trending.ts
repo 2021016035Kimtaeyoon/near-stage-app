@@ -23,7 +23,9 @@ export function computeTrendingKeywords(items: ShowWithMeta[], limit = 10): Tren
     if (show.genre) bump(show.genre, show.likes * 2 + show.reservedCount)
     bump(place.district, show.likes + show.reservedCount * 0.5)
     if (performer) {
-      bump(performer.teamName, show.likes * 3 + performer.followerCount * 0.04)
+      // ★ 팔로워 수는 목록에 실려 오지 않습니다. 예전에는 여기서 undefined 를
+      //   곱해서 점수가 통째로 NaN 이 됐고, 그 키워드의 순위가 무작위였습니다.
+      bump(performer.teamName, show.likes * 3)
     }
   }
 
