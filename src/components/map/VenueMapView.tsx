@@ -35,7 +35,8 @@ export function VenueMapView({
       center={[DEFAULT_USER_LOCATION.lat, DEFAULT_USER_LOCATION.lng]}
       zoom={14}
       zoomControl={false}
-      className="h-full w-full"
+      // isolate: Leaflet 내부 pane(z 200~800)이 바깥 형제와 경쟁하지 않게 가둡니다
+      className="isolate h-full w-full"
       style={{ background: 'transparent' }}
     >
       <TileLayer url="https://tile.openstreetmap.org/{z}/{x}/{y}.png" maxZoom={19} />

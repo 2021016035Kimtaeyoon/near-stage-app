@@ -16,7 +16,7 @@ export function MiniMap({
   className?: string
 }) {
   return (
-    <div className={cn('map-offline-grid relative overflow-hidden rounded-xl', className)}>
+    <div className={cn('map-offline-grid relative isolate overflow-hidden rounded-xl', className)}>
       <MapContainer
         center={[lat, lng]}
         zoom={15}

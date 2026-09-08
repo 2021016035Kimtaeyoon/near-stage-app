@@ -8,10 +8,11 @@ import { EmptyState } from '@/components/ui/EmptyState'
 import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
 import { sameSavedFilter, toSavedFilter } from '@/lib/savedSearch'
+import { distanceKm } from '@/lib/geo'
 import { computeTrendingKeywords } from '@/lib/trending'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyLikes } from '@/hooks/useEngagement'
-import { usePublicShows } from '@/hooks/usePublicShows'
+import { usePublicShows, useViewerLocation } from '@/hooks/usePublicShows'
 import { DEFAULT_FILTER, filterShows } from '@/store/selectors'
 import { useAppStore, useNow } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
@@ -46,6 +47,10 @@ export function DesktopAudienceHome() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detailShowId, setDetailShowId] = useState<string | null>(null)
   const [searchOpen, setSearchOpen] = useState(false)
+  // 모바일 홈과 같은 방식 — 지도를 옮긴 뒤 누르면 그 지점 기준으로 다시 찾습니다
+  const viewerOrigin = useViewerLocation()
+  const [searchCenter, setSearchCenter] = useState<{ lat: number; lng: number } | null>(null)
+  const origin = searchCenter ?? viewerOrigin
   const searchRef = useRef<HTMLDivElement>(null)
 
   // 검색 영역 바깥을 클릭하면 트렌드 패널을 닫습니다.
@@ -62,7 +67,17 @@ export function DesktopAudienceHome() {
     return () => document.removeEventListener('pointerdown', handlePointerDown)
   }, [searchOpen])
 
-  const results = useMemo(() => filterShows(all, filter, nowIso), [all, filter, nowIso])
+  const scoped = useMemo(
+    () =>
+      searchCenter
+        ? all.map((x) => ({
+            ...x,
+            distanceKm: distanceKm(searchCenter, { lat: x.place.lat, lng: x.place.lng }),
+          }))
+        : all,
+    [all, searchCenter],
+  )
+  const results = useMemo(() => filterShows(scoped, filter, nowIso), [scoped, filter, nowIso])
   const trending = useMemo(() => computeTrendingKeywords(all), [all])
 
   const ownCount = results.filter((r) => r.show.source === 'own').length
@@ -230,6 +245,13 @@ export function DesktopAudienceHome() {
       <div className="card m-4 min-w-0 flex-1 overflow-hidden">
         <MapView
           items={results}
+          origin={origin}
+          controlsTop={16}
+          onSearchHere={(center) => {
+            setSearchCenter(center)
+            setSelectedId(null)
+            setFilter({ distance: 0 })
+          }}
           selectedId={selectedId}
           onSelect={setSelectedId}
           highlightShowId={highlightShowId}

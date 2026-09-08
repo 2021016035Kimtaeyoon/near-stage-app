@@ -1,6 +1,8 @@
 import { CalendarClock, MapPinned, Users2 } from 'lucide-react'
+import { useAppNavigate } from '@/lib/appLink'
 import { LogoMark } from '@/components/shell/LogoMark'
-import { SERVICE_NAME } from '@/config/brand'
+import { FEE_DISCLAIMER, SERVICE_NAME, SERVICE_TAGLINE } from '@/config/brand'
+import { OPERATOR } from '@/config/legal'
 import { CurtainHero } from './hero/CurtainHero'
 import { LandingCtaRow } from './LandingCtaRow'
 import { LandingFaq } from './LandingFaq'
@@ -15,7 +17,8 @@ import { ScrollReveal } from './ScrollReveal'
  * - 전체 높이는 스크롤 3~4회 안에 끝나며,
  * - 섹션마다 같은 CTA 3개를 다시 깔아둡니다.
  *
- * 발표용 605dvh 커튼 연출은 /#/pitch 로 옮겼습니다.
+ * 커튼 개막(1막)은 유지합니다 — 첫인상이 이 서비스의 성격을 한 번에 말해줍니다.
+ * 2막 가로 트랙은 스크롤이 너무 길어 쓰지 않습니다.
  */
 const ROLES = [
   {
@@ -36,9 +39,12 @@ const ROLES = [
 ]
 
 export function LandingPage() {
+  const go = useAppNavigate()
   return (
     <div className="min-h-screen w-full bg-bg text-ink">
-      <CurtainHero mode="compact" />
+      {/* ★ 스크롤로 커튼이 열리는 1막을 씁니다. 2막 가로 트랙까지 605dvh 를 스크롤하게
+          만들면 대부분 그전에 떠나서, 개막 연출만 남겼습니다. */}
+      <CurtainHero mode="act1" />
 
       {/* 차별점 — 한 문장 */}
       <section className="mx-auto max-w-3xl px-6 py-14 text-center md:py-20">
@@ -95,6 +101,42 @@ export function LandingPage() {
           <LandingCtaRow className="mt-7" />
         </div>
       </section>
+
+      {/* ★ 약관 링크가 어디에도 없었습니다. 랜딩이 이 서비스의 첫 화면이라
+          법적 문서는 여기서 닿을 수 있어야 합니다 (§16). */}
+      <footer className="border-t border-border px-6 py-10">
+        <div className="mx-auto max-w-3xl">
+          <p className="text-xs font-semibold text-ink-2">
+            {SERVICE_NAME} · {SERVICE_TAGLINE}
+          </p>
+          <p className="mt-2 text-xs leading-relaxed text-ink-3">{FEE_DISCLAIMER}</p>
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <button
+              onClick={() => go('/legal/terms')}
+              className="text-xs font-semibold text-ink-2 underline underline-offset-2"
+            >
+              이용약관
+            </button>
+            <button
+              onClick={() => go('/legal/privacy')}
+              className="text-xs font-semibold text-ink-2 underline underline-offset-2"
+            >
+              개인정보처리방침
+            </button>
+            {OPERATOR.email && (
+              <a
+                href={`mailto:${OPERATOR.email}`}
+                className="text-xs font-semibold text-ink-2 underline underline-offset-2"
+              >
+                문의
+              </a>
+            )}
+          </div>
+          {OPERATOR.name && (
+            <p className="mt-3 text-xs text-ink-3">운영: {OPERATOR.name}</p>
+          )}
+        </div>
+      </footer>
     </div>
   )
 }

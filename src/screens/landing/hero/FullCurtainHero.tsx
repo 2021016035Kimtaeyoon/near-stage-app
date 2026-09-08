@@ -7,6 +7,7 @@ import { CURTAIN_IMAGE, CurtainPanelSurface, SpotLight, StageBackdrop } from './
 import {
   ACT1_TITLE_FADEOUT_END,
   ACT1_TITLE_FADEOUT_START,
+  ACT1_HOLD_END,
   ACT2_END,
   ACT2_LOGO_SHRINK_END,
   ACT2_LOGO_SHRINK_START,
@@ -91,7 +92,18 @@ function lightFlicker(range: [number, number]): [number[], number[]] {
  * 무대 위에서 설명 패널 3개가 가로로 지나가는 하나의 스크롤 연동 pin 섹션.
  * 타이밍 상수는 ./heroTimeline.ts, 자세한 설명은 ./ANIMATION.md 참고.
  */
-export function FullCurtainHero() {
+/**
+ * @param act1Only 1막(커튼 개막 → 로고 낙하 → 숨 고르기)까지만 재생합니다.
+ *
+ * ★ 랜딩은 방문자를 빨리 다음 행동으로 보내야 하는데, 2막 가로 트랙까지 605dvh 를
+ *   스크롤하게 만들면 대부분 그전에 떠납니다. 그래서 커튼이 열리고 로고가 떨어지는
+ *   부분만 쓰고 나머지는 재생하지 않습니다.
+ *
+ * ★ 타임라인 상수를 건드리지 않고 "진행률을 1막 범위로 다시 매핑"합니다.
+ *   섹션 높이만 줄이면 커튼이 순식간에 열려버리고, 상수를 나누면 ANIMATION.md 의
+ *   설명과 코드가 어긋납니다. 이 방식은 1막 계산이 한 줄도 바뀌지 않습니다.
+ */
+export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {}) {
   const go = useAppNavigate()
   const ref = useRef<HTMLElement>(null)
   const prefersReducedMotion = useReducedMotion()
@@ -105,7 +117,13 @@ export function FullCurtainHero() {
   // 정확히 progress=1이 되도록 맞춘다. 'end start'를 쓰면 뷰포트 높이만큼 더
   // 스크롤해야 1에 도달해, 실제 CSS sticky가 풀리는 시점보다 진행률이 항상 뒤처져
   // 2막 뒷부분(패널2~3)이 pin 밖에서 재생되며 흰 배경으로 떨어지는 버그가 생겼다.
-  const { scrollYProgress: p } = useScroll({ target: ref, offset: ['start start', 'end end'] })
+  const { scrollYProgress: rawP } = useScroll({
+    target: ref,
+    offset: ['start start', 'end end'],
+  })
+  // 1막만 쓸 때는 스크롤 0~1 을 0~ACT1_HOLD_END 로 압축합니다. 아래 모든 1막
+  // 계산이 원래 값 그대로 동작하고, 2막 구간은 도달하지 않습니다.
+  const p = useTransform(rawP, [0, 1], [0, act1Only ? ACT1_HOLD_END : 1])
 
   useMotionValueEvent(p, 'change', (v) => {
     if (import.meta.env.DEV) setDevProgress(v)
@@ -235,7 +253,13 @@ export function FullCurtainHero() {
 
   // 숨 고르기(ACT1_HOLD) 구간을 늘린 만큼(×1.08) 전체 높이도 함께 늘려야
   // 다른 구간의 스크롤 체감 속도가 그대로 유지됩니다 — heroTimeline.ts 상단 설명 참고.
-  const heroHeightClass = isMobile ? 'h-[432dvh]' : 'h-[605dvh]'
+  const heroHeightClass = act1Only
+    ? isMobile
+      ? 'h-[272dvh]'
+      : 'h-[381dvh]'
+    : isMobile
+      ? 'h-[432dvh]'
+      : 'h-[605dvh]'
 
   if (prefersReducedMotion) {
     return <StaticHeroFallback onNavigate={go} />
@@ -336,8 +360,13 @@ export function FullCurtainHero() {
           </motion.div>
         </div>
 
-        {/* 2막: 가로 트랙 (반드시 sticky 컨테이너 안, pointer-events 살아있음) */}
-        <motion.div className="absolute inset-0 z-20 flex" style={{ x: trackX, willChange: 'transform' }}>
+        {/* 2막: 가로 트랙 (반드시 sticky 컨테이너 안, pointer-events 살아있음).
+            ★ act1Only 에서는 아예 렌더하지 않습니다 — 투명해도 포인터를 먹어서
+            1막 CTA 가 안 눌립니다. */}
+        <motion.div
+          className="absolute inset-0 z-20 flex"
+          style={{ x: trackX, willChange: 'transform', display: act1Only ? 'none' : undefined }}
+        >
           {PANELS.map((panel, i) => (
             <div key={panel.num} className="relative flex h-full w-screen shrink-0 items-center justify-center px-8">
               <span

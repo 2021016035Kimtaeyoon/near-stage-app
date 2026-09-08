@@ -10,10 +10,11 @@ import { Chip } from '@/components/ui/Chip'
 import { SnapSheet, type SnapIndex } from '@/components/ui/SnapSheet'
 import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
+import { distanceKm } from '@/lib/geo'
 import { computeTrendingKeywords } from '@/lib/trending'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyLikes } from '@/hooks/useEngagement'
-import { usePublicShows } from '@/hooks/usePublicShows'
+import { usePublicShows, useViewerLocation } from '@/hooks/usePublicShows'
 import { DEFAULT_FILTER, filterShows } from '@/store/selectors'
 import { useAppStore, useNow } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
@@ -21,6 +22,9 @@ import { FilterChips } from './FilterChips'
 import { FilterSheet } from './FilterSheet'
 import { OwnShowsBanner, RecentlyViewedRow, TrendingRow } from './HomeFeedSections'
 import { TrendingSearchPanel } from './TrendingSearchPanel'
+
+/** 바텀시트 스냅 높이 */
+const SHEET_HEIGHTS = [136, 400, 704] as const
 
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: 'soon', label: '임박순' },
@@ -51,8 +55,25 @@ export function HomeMap() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  // ★ 지도를 옮긴 뒤 "이 지역에서 찾기"를 누르면 그 지점 기준으로 거리를 다시
+  //   계산합니다. 옮긴 만큼 자동으로 바뀌면 손을 뗄 때마다 목록이 흔들려서
+  //   읽을 수가 없습니다.
+  const viewerOrigin = useViewerLocation()
+  const [searchCenter, setSearchCenter] = useState<{ lat: number; lng: number } | null>(null)
+  const origin = searchCenter ?? viewerOrigin
 
-  const results = useMemo(() => filterShows(all, filter, nowIso), [all, filter, nowIso])
+  // 검색 중심이 바뀌면 거리를 다시 재고 필터를 다시 적용합니다
+  const scoped = useMemo(
+    () =>
+      searchCenter
+        ? all.map((x) => ({
+            ...x,
+            distanceKm: distanceKm(searchCenter, { lat: x.place.lat, lng: x.place.lng }),
+          }))
+        : all,
+    [all, searchCenter],
+  )
+  const results = useMemo(() => filterShows(scoped, filter, nowIso), [scoped, filter, nowIso])
   const trending = useMemo(() => computeTrendingKeywords(all), [all])
 
   const upcoming = useMemo(() => all.filter((a) => a.show.startAt >= nowIso), [all, nowIso])
@@ -89,6 +110,16 @@ export function HomeMap() {
         <div className="absolute inset-0">
           <MapView
             items={results}
+            origin={origin}
+            // 지도/리스트 토글이 top-[136px] 에 높이 40 으로 있습니다. 그 아래로.
+            controlsTop={188}
+            onSearchHere={(center) => {
+              setSearchCenter(center)
+              setSelectedId(null)
+              // 이 지역을 보고 싶다는 뜻이므로 거리 제한은 풉니다
+              setFilter({ distance: 0 })
+              setSnap(1)
+            }}
             selectedId={selectedId}
             onSelect={setSelectedId}
             highlightShowId={highlightShowId}
@@ -229,12 +260,20 @@ export function HomeMap() {
         <SnapSheet
           snap={snap}
           onSnapChange={setSnap}
-          heights={[136, 400, 704]}
+          heights={[...SHEET_HEIGHTS]}
           header={
             <div>
               <div className="flex items-baseline justify-between gap-2">
-                <h2 className="text-[15px] font-bold">
+                <h2 className="flex items-center gap-1.5 text-[15px] font-bold">
                   이 지역 공연 <span className="tnum">{results.length}</span>건
+                  {searchCenter && (
+                    <button
+                      onClick={() => setSearchCenter(null)}
+                      className="rounded-full border border-border px-1.5 py-0.5 text-2xs font-semibold text-ink-3"
+                    >
+                      내 주변으로
+                    </button>
+                  )}
                 </h2>
                 <span className="tnum text-2xs text-ink-3">
                   우리 무대 {ownCount} · 등록 공연 {kopisCount}

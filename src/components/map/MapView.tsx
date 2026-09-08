@@ -1,13 +1,20 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { MapContainer, Marker, TileLayer, useMap } from 'react-leaflet'
 import type { Map as LeafletMap } from 'leaflet'
-import { DEFAULT_USER_LOCATION } from '@/config/brand'
+import { DEFAULT_MAP_CENTER } from '@/config/brand'
 import { cn } from '@/lib/cn'
 import type { ShowWithMeta } from '@/store/selectors'
+import { MapControls } from './MapControls'
 import { showMarkerIcon, userMarkerIcon } from './markers'
 
 interface Props {
   items: ShowWithMeta[]
+  /** 내 위치. 브라우저에서만 계산하고 서버로 보내지 않습니다 */
+  origin?: { lat: number; lng: number }
+  /** 보이는 지역으로 다시 찾기 */
+  onSearchHere?: (center: { lat: number; lng: number }, radiusKm: number) => void
+  /** 조작 버튼을 위에서 내릴 높이(px). 검색 바를 피하도록 부르는 쪽이 정합니다 */
+  controlsTop?: number
   selectedId: string | null
   onSelect: (showId: string | null) => void
   highlightShowId?: string | null
@@ -49,6 +56,9 @@ function MapEffects({
 
 export function MapView({
   items,
+  origin = DEFAULT_MAP_CENTER,
+  onSearchHere,
+  controlsTop,
   selectedId,
   onSelect,
   highlightShowId = null,
@@ -64,9 +74,19 @@ export function MapView({
   )
 
   return (
-    <div className={cn('relative h-full w-full', tilesFailed && 'map-offline-grid', className)}>
+    // ★ isolate 가 핵심입니다. Leaflet 은 내부 pane 에 z-index 200~800 을 직접 넣는데,
+    //   이 컨테이너가 스태킹 컨텍스트를 만들지 않으면 그 pane 들이 바깥 형제 요소와
+    //   같은 층에서 경쟁합니다. 그래서 지도 위에 올린 바텀시트(z-30)가 타일·마커에
+    //   가려져 "지도만 뜨는" 것처럼 보였습니다.
+    <div
+      className={cn(
+        'relative isolate h-full w-full',
+        tilesFailed && 'map-offline-grid',
+        className,
+      )}
+    >
       <MapContainer
-        center={[DEFAULT_USER_LOCATION.lat, DEFAULT_USER_LOCATION.lng]}
+        center={[origin.lat, origin.lng]}
         zoom={15}
         zoomControl={false}
         attributionControl
@@ -89,7 +109,7 @@ export function MapView({
         />
 
         <Marker
-          position={[DEFAULT_USER_LOCATION.lat, DEFAULT_USER_LOCATION.lng]}
+          position={[origin.lat, origin.lng]}
           icon={userMarkerIcon()}
           interactive={false}
         />
@@ -114,6 +134,7 @@ export function MapView({
         ))}
 
         <MapEffects selected={selected} onReady={onReady} />
+        <MapControls origin={origin} onSearchHere={onSearchHere} topOffset={controlsTop} />
       </MapContainer>
 
       {tilesFailed && (

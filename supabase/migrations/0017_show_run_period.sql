@@ -140,17 +140,22 @@ grant select on public.v_clip_feed to anon, authenticated;
 -- ★ 이건 한 번만 쓰는 응급 처치입니다. 함수를 재배포하면 다음 동기화부터 원본
 --   기간이 제대로 들어옵니다.
 
+-- ★ regexp_matches(..., 'g') 는 집합 반환 함수라 UPDATE 의 SET 절에 쓸 수 없습니다
+--   (0A000). 하나만 뽑는 substring 을 씁니다.
+-- ★ 시간대: to_timestamp 는 세션 시간대로 해석해서 23:59 가 UTC 가 됩니다.
+--   날짜로 만든 뒤 interval 을 더하고, 그 naive timestamp 를 서울 시각으로
+--   해석해야 정확합니다.
+
 update public.shows
 set run_ends_at = (
-  -- 'YYYY.MM.DD' 마지막 등장을 날짜로 읽어 그날 23:59 KST 로
-  to_timestamp(
-    (regexp_matches(description, '(\d{4}\.\d{2}\.\d{2})\s*$', 'g'))[1] || ' 23:59',
-    'YYYY.MM.DD HH24:MI'
+  (
+    replace(substring(description from '(\d{4}\.\d{2}\.\d{2})\s*$'), '.', '-')::date
+    + interval '23 hours 59 minutes'
   ) at time zone 'Asia/Seoul'
 )
 where source = 'kopis'
   and run_ends_at is null
-  and description ~ '\d{4}\.\d{2}\.\d{2}\s*$';
+  and description ~ '(\d{4}\.\d{2}\.\d{2})\s*$';
 
 -- 기간을 못 읽은 것은 오늘부터 2주로 둡니다. 지도가 비는 것보다는 낫고, 다음
 -- 동기화에서 정확한 값으로 덮입니다.
