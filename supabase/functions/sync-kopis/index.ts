@@ -1,26 +1,27 @@
-/**
- * KOPIS(공연예술통합전산망) 공연 정보 수집 — Supabase Edge Function.
- *
- * 왜 Edge Function 인가
- *  - KOPIS API 키가 프론트에 노출되면 안 됩니다. 브라우저에서 직접 부르면 키가 그대로
- *    번들에 박힙니다. 그래서 서버에서만 부르고, 키는 Supabase 시크릿에 둡니다.
- *  - shows 테이블에는 INSERT 정책이 없습니다(0003_rls.sql). service_role 로 실행되는
- *    이 함수만 source='kopis' 행을 넣을 수 있습니다.
- *
- * 무엇을 넣는가
- *  - 서울(signgucode=11) 공연만. 지역을 넓히려면 REGION 을 바꾸세요.
- *  - kopis_id(mt20id) 로 중복을 막습니다. 매일 돌려도 같은 공연이 늘어나지 않습니다.
- *  - 좌표가 없으면 카카오 로컬 API로 주소를 좌표로 바꿔 저장합니다. 좌표가 없으면
- *    지도에 찍을 수 없어 목록에서도 빠지므로, 지오코딩에 실패한 공연은 건너뜁니다.
- *
- * 필요한 시크릿 (supabase secrets set)
- *  - KOPIS_API_KEY      : 예술경영지원센터에서 발급
- *  - KAKAO_REST_API_KEY : 주소→좌표 변환용
- *  - SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 는 런타임이 자동 주입합니다
- *
- * ★ 출처 표기 의무: 화면에 "공연 정보 출처: 공연예술통합전산망(KOPIS)" 를 노출합니다.
- *   상업적 이용 조건은 예술경영지원센터 약관을 확인하세요.
- */
+//
+// KOPIS(공연예술통합전산망) 공연 정보 수집 — Supabase Edge Function.
+//
+// 왜 Edge Function 인가
+//  - KOPIS API 키가 프론트에 노출되면 안 됩니다. 브라우저에서 직접 부르면 키가 그대로
+//    번들에 박힙니다. 그래서 서버에서만 부르고, 키는 Supabase 시크릿에 둡니다.
+//  - shows 테이블에는 INSERT 정책이 없습니다(0003_rls.sql). service_role 로 실행되는
+//    이 함수만 source='kopis' 행을 넣을 수 있습니다.
+//
+// 무엇을 넣는가
+//  - 서울(signgucode=11) 공연만. 지역을 넓히려면 REGION 을 바꾸세요.
+//  - kopis_id(mt20id) 로 중복을 막습니다. 매일 돌려도 같은 공연이 늘어나지 않습니다.
+//  - 좌표가 없으면 카카오 로컬 API로 주소를 좌표로 바꿔 저장합니다. 좌표가 없으면
+//    지도에 찍을 수 없어 목록에서도 빠지므로, 지오코딩에 실패한 공연은 건너뜁니다.
+//
+// 필요한 시크릿 (supabase secrets set)
+//  - KOPIS_API_KEY      : 예술경영지원센터에서 발급
+//  - KAKAO_REST_API_KEY : 주소→좌표 변환용
+//  - SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY 는 런타임이 자동 주입합니다
+//
+// ★ 출처 표기 의무: 화면에 "공연 정보 출처: 공연예술통합전산망(KOPIS)" 를 노출합니다.
+//   상업적 이용 조건은 예술경영지원센터 약관을 확인하세요.
+//
+
 import { createClient } from 'jsr:@supabase/supabase-js@2'
 
 const KOPIS_BASE = 'http://www.kopis.or.kr/openApi/restful'

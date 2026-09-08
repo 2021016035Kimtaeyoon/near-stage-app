@@ -1,26 +1,26 @@
-/**
- * 카카오 OIDC 토큰 교환 — Supabase Edge Function.
- *
- * 왜 필요한가
- *  Supabase 의 카카오 OAuth provider 는 scope 에 account_email 을 하드코딩해 넣습니다.
- *  카카오는 동의항목에 설정되지 않은 항목을 요청하면 KOE205 로 거부하고,
- *  '카카오계정(이메일)'은 비즈 앱이 아니면 설정 자체가 불가능합니다.
- *  → OAuth 리다이렉트 방식으로는 카카오 로그인을 켤 수 없습니다.
- *
- *  대신 카카오의 OpenID Connect 를 씁니다. 우리가 authorize URL 을 직접 만들면
- *  scope 를 'openid profile_nickname profile_image' 로 정할 수 있습니다.
- *  받은 code 를 id_token 으로 바꾸는 일만 서버가 해야 하는데(카카오 토큰
- *  엔드포인트는 CORS 를 허용하지 않고 client secret 이 필요합니다), 그게 이 함수입니다.
- *
- * 신뢰 경계
- *  이 함수는 신분을 만들어내지 않습니다. 카카오가 서명한 id_token 을 그대로
- *  돌려주기만 하고, 검증은 Supabase 가 카카오 공개키(JWKS)로 직접 합니다.
- *  따라서 이 함수가 뚫려도 남의 계정으로 로그인할 수는 없습니다.
- *
- * 필요한 시크릿
- *  - KAKAO_REST_API_KEY   : 카카오 앱 키의 REST API 키
- *  - KAKAO_CLIENT_SECRET  : 카카오 로그인 → 보안에서 만든 값 (사용함 상태여야 합니다)
- */
+//
+// 카카오 OIDC 토큰 교환 — Supabase Edge Function.
+//
+// 왜 필요한가
+//  Supabase 의 카카오 OAuth provider 는 scope 에 account_email 을 하드코딩해 넣습니다.
+//  카카오는 동의항목에 설정되지 않은 항목을 요청하면 KOE205 로 거부하고,
+//  '카카오계정(이메일)'은 비즈 앱이 아니면 설정 자체가 불가능합니다.
+//  → OAuth 리다이렉트 방식으로는 카카오 로그인을 켤 수 없습니다.
+//
+//  대신 카카오의 OpenID Connect 를 씁니다. 우리가 authorize URL 을 직접 만들면
+//  scope 를 'openid profile_nickname profile_image' 로 정할 수 있습니다.
+//  받은 code 를 id_token 으로 바꾸는 일만 서버가 해야 하는데(카카오 토큰
+//  엔드포인트는 CORS 를 허용하지 않고 client secret 이 필요합니다), 그게 이 함수입니다.
+//
+// 신뢰 경계
+//  이 함수는 신분을 만들어내지 않습니다. 카카오가 서명한 id_token 을 그대로
+//  돌려주기만 하고, 검증은 Supabase 가 카카오 공개키(JWKS)로 직접 합니다.
+//  따라서 이 함수가 뚫려도 남의 계정으로 로그인할 수는 없습니다.
+//
+// 필요한 시크릿
+//  - KAKAO_REST_API_KEY   : 카카오 앱 키의 REST API 키
+//  - KAKAO_CLIENT_SECRET  : 카카오 로그인 → 보안에서 만든 값 (사용함 상태여야 합니다)
+//
 
 const KAKAO_TOKEN_URL = 'https://kauth.kakao.com/oauth/token'
 
