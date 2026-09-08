@@ -405,6 +405,13 @@ export type SortKey = 'soon' | 'near' | 'rating' | 'likes' | 'recommend'
 
 export interface AudienceFilter {
   when: WhenFilter
+  /**
+   * 특정 날짜만 보기 (YYYY-MM-DD). 값이 있으면 when 보다 우선합니다.
+   *
+   * ★ 등록 공연은 기간 공연이 많아서 "오늘 밤 / 주말 / 전체" 세 개로는 원하는
+   *   날짜를 고를 수 없었습니다. 다음 주 토요일에 뭐 하는지 보려면 날짜가 필요합니다.
+   */
+  date?: string | null
   distance: DistanceFilter
   genres: Genre[]
   ownOnly: boolean

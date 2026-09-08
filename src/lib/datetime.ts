@@ -191,3 +191,17 @@ export function showWhenLabel(
   }
   return humanDateTime(show.startAt, nowIso)
 }
+
+/** 'YYYY-MM-DD' 하루 전체 범위 (그 지역 시각 기준) */
+export function dayRange(dateStr: string): { from: number; to: number } {
+  const [y, m, d] = dateStr.split('-').map(Number)
+  const from = new Date(y, m - 1, d, 0, 0, 0, 0)
+  const to = new Date(y, m - 1, d, 23, 59, 59, 999)
+  return { from: from.getTime(), to: to.getTime() }
+}
+
+/** Date -> 'YYYY-MM-DD' (그 지역 시각 기준. toISOString 은 UTC 라 날짜가 밀립니다) */
+export function dateKey(d: Date): string {
+  const p = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
+}

@@ -1,4 +1,4 @@
-import { Heart, MapPin, Users } from 'lucide-react'
+import { ExternalLink, Heart, MapPin, Users } from 'lucide-react'
 import { GenreTag, SourceBadge, StatusDot } from '@/components/ui/Badge'
 import { Rating } from '@/components/ui/PosterArt'
 import { ShowPoster } from '@/components/ui/ShowPoster'
@@ -94,6 +94,21 @@ export function ShowCard({
           </div>
         </div>
       </button>
+
+      {/* ★ 등록 공연은 우리가 예매를 받지 않습니다. 목록에서 바로 예매처로 갈 수
+          있게 둡니다 — 상세를 한 번 더 열게 만들면 그 사이에 대부분 떠납니다. */}
+      {show.source === 'kopis' && show.externalUrl && (
+        <a
+          href={show.externalUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="flex items-center justify-center gap-1 border-t border-border py-2 text-2xs font-bold text-gold-text"
+        >
+          예매처에서 예매하기
+          <ExternalLink size={11} />
+        </a>
+      )}
 
       {onToggleLike && (
         <button

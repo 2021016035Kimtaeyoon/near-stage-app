@@ -1,5 +1,5 @@
 import { DEFAULT_USER_LOCATION } from '@/config/brand'
-import { showEndMs, tonightRange, weekendRange } from '@/lib/datetime'
+import { dayRange, showEndMs, tonightRange, weekendRange } from '@/lib/datetime'
 import { distanceKm } from '@/lib/geo'
 import type {
   AppNotification,
@@ -170,7 +170,10 @@ export function filterShows(
 ): ShowWithMeta[] {
   const now = new Date(nowIso).getTime()
   let range: { from: number; to: number } | null = null
-  if (filter.when === 'tonight') range = tonightRange(nowIso)
+  // ★ 날짜를 고른 경우 그 하루가 조건입니다. when 은 무시합니다 —
+  //   "9월 20일"과 "오늘 밤"이 동시에 켜져 있으면 무엇을 보는지 알 수 없습니다.
+  if (filter.date) range = dayRange(filter.date)
+  else if (filter.when === 'tonight') range = tonightRange(nowIso)
   else if (filter.when === 'weekend') range = weekendRange(nowIso)
 
   const q = filter.query.trim().toLowerCase()

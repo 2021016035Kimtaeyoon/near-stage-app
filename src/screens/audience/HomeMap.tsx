@@ -18,6 +18,7 @@ import { usePublicShows, useViewerLocation } from '@/hooks/usePublicShows'
 import { DEFAULT_FILTER, filterShows, relaxSuggestion } from '@/store/selectors'
 import { useAppStore, useNow } from '@/store/useAppStore'
 import type { AudienceFilter, SortKey } from '@/types'
+import { DateStrip } from './DateStrip'
 import { FilterChips } from './FilterChips'
 import { FilterSheet } from './FilterSheet'
 import { OwnShowsBanner, RecentlyViewedRow, TrendingRow } from './HomeFeedSections'
@@ -239,6 +240,17 @@ export function HomeMap() {
             onChange={setFilter}
             onOpenSheet={() => setFilterOpen(true)}
           />
+          {/* ★ 날짜별 보기. "다음 주 토요일에 뭐 하지"가 이 서비스에서 가장
+              자연스러운 질문인데 물을 방법이 없었습니다. 개수는 조건 적용 전
+              전체(all)로 세서, 조건을 좁힐 때마다 달력 숫자가 흔들리지 않게 합니다. */}
+          <div className="mt-2.5">
+            <DateStrip
+              items={scoped}
+              value={filter.date ?? null}
+              onChange={(date) => setFilter({ date })}
+              nowIso={nowIso}
+            />
+          </div>
         </div>
       </div>
 
