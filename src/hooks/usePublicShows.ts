@@ -96,6 +96,27 @@ export function usePublicShows(): Query<ShowWithMeta[]> {
       })
   }, [tick])
 
+  // ★ 새 공연이 확정되면 다시 읽습니다 (§11).
+  //   호스트가 수락한 순간 지도를 보고 있던 사람 화면에도 떠야 합니다 — 새로고침을
+  //   해야 보이면 "방금 만든 공연이 어디 갔지"가 됩니다.
+  //   뷰는 Realtime 을 못 태우므로 원본 테이블 shows 의 INSERT 를 듣고, 신호만
+  //   받아서 뷰를 다시 읽습니다 (이벤트 payload 는 쓰지 않습니다 — 뷰가 걸러낸
+  //   승인 여부·집계가 payload 에는 없습니다).
+  useEffect(() => {
+    if (!isSupabaseConfigured) return
+    const ch = supabase
+      .channel('public-shows')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'shows' },
+        () => setTick((n) => n + 1),
+      )
+      .subscribe()
+    return () => {
+      void supabase.removeChannel(ch)
+    }
+  }, [])
+
   const data = useMemo<ShowWithMeta[]>(() => {
     const out: ShowWithMeta[] = []
     for (const row of rows) {

@@ -5,10 +5,11 @@ import { TabBarSpacer } from '@/components/shell/TabBar'
 import { Tag } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { useApplicants } from '@/hooks/useApplications'
+import { useApplicants, type Applicant } from '@/hooks/useApplications'
 import { priceLabel } from '@/lib/datetime'
 import type { VenueEquipment } from '@/lib/needMatch'
 import { describeDbError, supabase } from '@/lib/supabase'
+import { AcceptSheet } from './AcceptSheet'
 import { ApplicantCard } from './ApplicantCard'
 
 interface PostHead {
@@ -36,6 +37,7 @@ export function OwnerApplicantsScreen() {
   const applicants = useApplicants(postId)
 
   const [post, setPost] = useState<PostHead | null>(null)
+  const [accepting, setAccepting] = useState<Applicant | null>(null)
   const [headError, setHeadError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -161,6 +163,7 @@ export function OwnerApplicantsScreen() {
                 applicant={a}
                 equipment={post?.equipment ?? {}}
                 onDone={applicants.refresh}
+                accept={post?.status === 'open' ? () => setAccepting(a) : undefined}
               />
             ))}
             {decided.length > 0 && (
@@ -181,6 +184,14 @@ export function OwnerApplicantsScreen() {
 
         <TabBarSpacer />
       </ScreenBody>
+
+      <AcceptSheet
+        open={!!accepting}
+        onClose={() => setAccepting(null)}
+        applicant={accepting}
+        venueId={post?.venueId ?? null}
+        onDone={applicants.refresh}
+      />
     </Screen>
   )
 }

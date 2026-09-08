@@ -1,131 +1,124 @@
-import { CheckCircle2, HandCoins, MapPin } from 'lucide-react'
+import { CalendarPlus, Info } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { Button } from '@/components/ui/Button'
-import { Label } from '@/components/ui/Field'
-import { FEE_DISCLAIMER } from '@/config/brand'
-import { kstIso } from '@/lib/datetime'
-import { useAppStore, useNow } from '@/store/useAppStore'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { acceptApplication } from '@/hooks/useAccept'
+import type { Applicant } from '@/hooks/useApplications'
+import { useSlots } from '@/hooks/useSlots'
+import { WEEKDAY_LABELS } from '@/lib/datetime'
 import { toast } from '@/store/useToast'
-import type { Application, Performer, Post } from '@/types'
 
-type Step = 'pick' | 'done'
-
-function todayInput(nowIso: string): string {
-  return nowIso.slice(0, 10)
+function slotLabel(startsAt: string, endsAt: string): string {
+  const s = new Date(startsAt)
+  const e = new Date(endsAt)
+  const hm = (d: Date) =>
+    `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  return `${s.getMonth() + 1}월 ${s.getDate()}일 (${WEEKDAY_LABELS[s.getDay()]}) ${hm(s)}–${hm(e)}`
 }
 
 /**
- * ★ 지원 수락 — 일시를 고르고 바로 확정합니다. 결제 단계는 없습니다.
+ * 수락 — 언제 할지 고르면 공연이 만들어집니다 (§11).
  *
- * 확정되는 즉시 acceptApplication이 공연을 만들고 highlightShowId를 세팅해
- * 관객 지도에 새 핀이 뜰 준비를 합니다.
+ * 슬롯을 고르게 하는 이유: 구인글은 "이 기간 중에"라고만 적혀 있어서, 실제 날짜는
+ * 여기서 정해집니다. 이미 공연이 잡혔거나 닫아둔 시간은 아예 보여주지 않습니다.
  */
 export function AcceptSheet({
   open,
   onClose,
-  post,
-  application,
-  performer,
+  applicant,
+  venueId,
+  onDone,
 }: {
   open: boolean
   onClose: () => void
-  post: Post
-  application: Application
-  performer: Performer
+  applicant: Applicant | null
+  venueId: string | null
+  onDone: () => void
 }) {
   const navigate = useNavigate()
-  const nowIso = useNow()
-  const acceptApplication = useAppStore((s) => s.acceptApplication)
+  const slots = useSlots(open ? venueId : null)
+  const [picked, setPicked] = useState<string | null>(null)
+  const [busy, setBusy] = useState(false)
 
-  const [step, setStep] = useState<Step>('pick')
-  const [date, setDate] = useState(todayInput(nowIso))
-  const [time, setTime] = useState('20:00')
+  const usable = slots.data.filter((s) => s.isOpen && !s.lockedByShowId)
 
-  const close = () => {
-    setStep('pick')
-    onClose()
-  }
-
-  const confirm = () => {
-    const [y, m, d] = date.split('-').map(Number)
-    const [hh, mm] = time.split(':').map(Number)
-    const startAt = kstIso(y, m, d, hh, mm)
-    const result = acceptApplication(post.id, application.id, startAt)
-    if (!result) {
-      toast('공연 확정에 실패했습니다', 'error')
-      close()
+  const submit = async () => {
+    if (!applicant || !picked) return
+    setBusy(true)
+    const { showId, error } = await acceptApplication(applicant.id, picked)
+    setBusy(false)
+    if (error) {
+      toast('수락하지 못했어요', 'error', error)
       return
     }
-    setStep('done')
+    toast('공연이 만들어졌어요', 'success', '지도와 목록에 바로 올라갑니다')
+    onDone()
+    onClose()
+    if (showId) navigate(`/audience/show/${showId}`)
   }
 
   return (
     <BottomSheet
       open={open}
-      onClose={close}
-      title={step === 'done' ? '공연이 확정되었어요' : '지원 수락'}
-      subtitle={step === 'done' ? undefined : `${performer.teamName}의 지원을 수락합니다`}
+      onClose={onClose}
+      title="언제 할까요"
+      subtitle={applicant ? `${applicant.artist.teamName} · ${applicant.artist.durationMin}분` : ''}
       footer={
-        step === 'pick' ? (
-          <Button full variant="brand" onClick={confirm}>
-            수락하기
+        usable.length > 0 ? (
+          <Button full variant="brand" loading={busy} disabled={!picked} onClick={() => void submit()}>
+            {picked ? '이 시간으로 공연 확정' : '시간을 골라주세요'}
           </Button>
-        ) : (
-          <Button
-            full
-            variant="brand"
-            onClick={() => {
-              close()
-              navigate('/owner/dashboard')
-            }}
-          >
-            대시보드로 이동
-          </Button>
-        )
+        ) : undefined
       }
     >
-      {step === 'pick' && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <Label>공연 날짜</Label>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm outline-none"
-              />
-            </div>
-            <div>
-              <Label>시작 시간</Label>
-              <input
-                type="time"
-                value={time}
-                onChange={(e) => setTime(e.target.value)}
-                className="h-11 w-full rounded-xl border border-border bg-surface px-3.5 text-sm outline-none"
-              />
-            </div>
-          </div>
-          <p className="rounded-xl bg-surface-2 p-3 text-xs leading-relaxed text-ink-2">
-            확정 즉시 관객 지도에 공연이 노출됩니다. 구인글은 자동으로 마감 처리됩니다.
-          </p>
-          <div className="flex items-start gap-2 rounded-xl border border-border p-3.5 text-xs leading-relaxed text-ink-2">
-            <HandCoins size={15} className="mt-0.5 shrink-0 text-gold-text" />
-            <p>{FEE_DISCLAIMER}</p>
-          </div>
+      {slots.loading ? (
+        <div className="space-y-2">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-12 animate-pulse rounded-xl bg-surface-2" />
+          ))}
         </div>
-      )}
+      ) : usable.length === 0 ? (
+        <EmptyState
+          art="stage"
+          title="열려 있는 시간이 없어요"
+          description="공연할 시간을 먼저 열어야 확정할 수 있습니다. 이미 공연이 잡혔거나 닫아둔 시간은 여기에 나오지 않습니다."
+          action={
+            venueId && (
+              <Button
+                variant="brand"
+                leading={<CalendarPlus size={16} />}
+                onClick={() => {
+                  onClose()
+                  navigate(`/host/venue/${venueId}/slots`)
+                }}
+              >
+                가능 시간 열기
+              </Button>
+            )
+          }
+        />
+      ) : (
+        <div className="space-y-2">
+          {usable.map((s) => (
+            <button
+              key={s.id}
+              onClick={() => setPicked(s.id)}
+              className={`flex w-full items-center gap-2 rounded-xl border px-3.5 py-3 text-left text-sm font-semibold transition-colors ${
+                picked === s.id
+                  ? 'bg-gold-500 border-transparent text-gold-ink'
+                  : 'border-border bg-surface active:bg-surface-2'
+              }`}
+            >
+              <span className="tnum flex-1">{slotLabel(s.startsAt, s.endsAt)}</span>
+            </button>
+          ))}
 
-      {step === 'done' && (
-        <div className="flex flex-col items-center py-6 text-center">
-          <div className="bg-gold-500 flex h-14 w-14 items-center justify-center rounded-full text-gold-ink">
-            <CheckCircle2 size={28} />
-          </div>
-          <p className="mt-3 text-sm font-bold">{performer.teamName} 공연이 확정되었어요</p>
-          <p className="mt-1.5 flex items-center gap-1 text-xs text-ink-2">
-            <MapPin size={12} /> 관객 지도에 방금 새 핀이 추가되었습니다
+          <p className="flex items-start gap-1.5 pt-2 text-2xs leading-relaxed text-ink-3">
+            <Info size={11} className="mt-0.5 shrink-0" />
+            확정하면 이 구인글은 마감되고, 같은 글에 지원한 다른 팀은 자동으로 거절됩니다. 공연은
+            바로 지도와 목록에 올라갑니다. 개런티는 팀과 직접 정하고 현장에서 정산하세요.
           </p>
         </div>
       )}
