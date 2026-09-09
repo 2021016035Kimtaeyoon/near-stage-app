@@ -7,7 +7,7 @@ import type {
   Reservation,
   Review,
   ReverseBid,
-  SavedSearch,
+
   Show,
   Venue,
   WeeklyVisitStat,
@@ -32,7 +32,6 @@ export interface AppData {
   chatThreads: ChatThread[]
   chatMessages: ChatMessage[]
   weeklyStats: WeeklyVisitStat[]
-  savedSearches: SavedSearch[]
   likedShowIds: string[]
   followedPerformerIds: string[]
   recentlyViewedShowIds: string[]
@@ -52,7 +51,6 @@ export function createEmptyData(): AppData {
     chatThreads: [],
     chatMessages: [],
     weeklyStats: [],
-    savedSearches: [],
     likedShowIds: [],
     followedPerformerIds: [],
     recentlyViewedShowIds: [],

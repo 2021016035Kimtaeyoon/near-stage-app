@@ -427,24 +427,16 @@ export interface AudienceFilter {
 }
 
 /**
- * 관심 조건 — 관객이 저장해 둔 필터 스냅샷.
+ * 관심 조건은 이제 DB(saved_searches)에 있습니다 — hooks/useSavedSearches.ts.
  *
- * `query`(검색어)와 `sort`(정렬)는 담지 않습니다. 둘 다 "무엇을 보고 싶은지"가 아니라
- * "지금 화면을 어떻게 훑고 있는지"라서, 새 공연을 대조하는 조건으로는 의미가 없습니다.
+ * ★ 예전에는 여기에 SavedFilter(기간·거리·장르·우리무대만) 스냅샷을 담았습니다.
+ *   거리는 서버가 대조할 수 없습니다. 브라우저 좌표를 서버로 보내지 않기 때문에
+ *   옛 코드는 연남동 고정 좌표로 거리를 재고 있었고, 그건 사용자의 위치가
+ *   아니었습니다. 기간(when)도 "오늘 밤"으로 저장하면 내일 확정된 공연이 통째로
+ *   걸러져 알림이 영영 오지 않습니다.
+ *
+ *   그래서 조건은 장르만 남겼습니다. 대조할 수 없는 것을 조건인 척 두지 않습니다.
  */
-export type SavedFilter = Pick<AudienceFilter, 'when' | 'distance' | 'genres' | 'ownOnly'>
-
-export interface SavedSearch {
-  id: string
-  /** 사용자가 붙인 이름. 비워두면 조건에서 자동으로 만들어 넣습니다 */
-  name: string
-  filter: SavedFilter
-  /** 조건에 맞는 새 공연이 열릴 때 알림을 받을지 */
-  alertOn: boolean
-  createdAt: string
-  /** 이미 알린 공연 id — 같은 공연으로 두 번 알리지 않기 위해 기록합니다 */
-  notifiedShowIds: string[]
-}
 
 /** 공연자 ↔ 공간 조건 대조 결과 */
 export interface NeedCheck {

@@ -6,14 +6,15 @@ import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
-import { sameSavedFilter, toSavedFilter } from '@/lib/savedSearch'
 import { distanceKm } from '@/lib/geo'
 import { computeTrendingKeywords } from '@/lib/trending'
 import { useAuthStore } from '@/hooks/useAuth'
+import { sameGenres, useSavedSearches } from '@/hooks/useSavedSearches'
 import { useMyLikes } from '@/hooks/useEngagement'
 import { usePublicShows, useViewerLocation } from '@/hooks/usePublicShows'
 import { DEFAULT_FILTER, filterShows } from '@/store/selectors'
 import { useAppStore, useNow } from '@/store/useAppStore'
+import { toast } from '@/store/useToast'
 import type { SortKey } from '@/types'
 import { DateStrip } from '../audience/DateStrip'
 import { ShowSections } from '../audience/ShowSections'
@@ -41,9 +42,7 @@ export function DesktopAudienceHome() {
   const filter = useAppStore((s) => s.audienceFilter)
   const setFilter = useAppStore((s) => s.setAudienceFilter)
   const highlightShowId = useAppStore((s) => s.highlightShowId)
-  const savedSearches = useAppStore((s) => s.savedSearches)
-  const saveCurrentSearch = useAppStore((s) => s.saveCurrentSearch)
-  const applySavedSearch = useAppStore((s) => s.applySavedSearch)
+  const saved = useSavedSearches()
 
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [detailShowId, setDetailShowId] = useState<string | null>(null)
@@ -82,8 +81,9 @@ export function DesktopAudienceHome() {
   const trending = useMemo(() => computeTrendingKeywords(all), [all])
 
   const ownCount = results.filter((r) => r.show.source === 'own').length
-  // 지금 필터가 저장해 둔 조건과 같으면 저장 버튼을 "저장됨"으로 잠급니다
-  const savedMatch = savedSearches.find((s) => sameSavedFilter(s.filter, toSavedFilter(filter)))
+  // 지금 고른 장르가 저장해 둔 것과 같으면 저장 버튼을 "저장됨"으로 잠급니다
+  // ★ 장르만 대조합니다. 거리는 서버가 알 수 없습니다 — 좌표를 보내지 않으니까요.
+  const savedMatch = saved.data.find((s) => sameGenres(s.genres, filter.genres))
   const kopisCount = results.length - ownCount
 
   return (
@@ -152,7 +152,20 @@ export function DesktopAudienceHome() {
 
           <div className="flex flex-wrap items-center gap-1.5 border-t border-border pt-3">
             <button
-              onClick={() => saveCurrentSearch()}
+              onClick={() =>
+                requireAuth(() =>
+                  void (async () => {
+                    const err = await saved.save(filter.genres)
+                    if (err) toast('저장하지 못했어요', 'warn', err)
+                    else
+                      toast(
+                        '관심 장르를 저장했어요',
+                        'success',
+                        '이 장르의 무대가 새로 열리면 알려드려요',
+                      )
+                  })(),
+                )
+              }
               disabled={!!savedMatch}
               className={cn(
                 'inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border px-3 text-xs font-bold transition-colors',
@@ -162,13 +175,13 @@ export function DesktopAudienceHome() {
               )}
             >
               {savedMatch ? <Check size={13} /> : <BellPlus size={13} />}
-              {savedMatch ? '관심 조건 저장됨' : '이 조건 저장'}
+              {savedMatch ? '관심 장르 저장됨' : '이 장르 저장'}
             </button>
-            {savedSearches.map((s) => (
+            {saved.data.map((s) => (
               <Chip
                 key={s.id}
                 active={savedMatch?.id === s.id}
-                onClick={() => applySavedSearch(s.id)}
+                onClick={() => setFilter({ genres: s.genres })}
               >
                 {s.name}
               </Chip>

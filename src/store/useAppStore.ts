@@ -7,7 +7,6 @@ import { createChatActions } from './actions/chat'
 import { createCommonActions } from './actions/common'
 import { createOwnerActions } from './actions/owner'
 import { createPerformerActions } from './actions/performer'
-import { createSavedSearchActions } from './actions/savedSearch'
 import type { AppStore, GetState, SetState } from './types'
 
 /**
@@ -36,7 +35,6 @@ export const useAppStore = create<AppStore>()((set, get) => {
     ...createOwnerActions(s, g),
     ...createPerformerActions(s, g),
     ...createChatActions(s, g),
-    ...createSavedSearchActions(s, g),
   }
 })
 

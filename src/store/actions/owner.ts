@@ -158,9 +158,6 @@ export function createOwnerActions(set: SetState, get: GetState) {
         highlightShowId: showId,
       }))
 
-      // 관심 조건에 걸리는 관객이 있으면 알림 — 새 공연이 생기는 유일한 지점입니다
-      get().notifySavedSearchMatches(showId)
-
       // 알림 ①: 수락된 공연자
       get().pushNotification({
         role: 'performer',
