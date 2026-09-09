@@ -5,6 +5,7 @@ import {
   CalendarX,
   CheckCheck,
   CircleCheck,
+  Mail,
   Megaphone,
   Star,
   Ticket,
@@ -38,6 +39,7 @@ const ICONS: Record<string, typeof Bell> = {
   show_reminder: CalendarClock,
   show_canceled: CalendarX,
   saved_search: BellPlus,
+  invited: Mail,
 }
 
 export function NotificationList({ showHeader = true }: { showHeader?: boolean }) {

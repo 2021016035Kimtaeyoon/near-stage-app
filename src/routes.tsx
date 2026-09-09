@@ -20,6 +20,7 @@ import { MyArtistsScreen } from '@/screens/artist/MyArtistsScreen'
 import { MyVenuesScreen } from '@/screens/host/MyVenuesScreen'
 import { VenueRegisterScreen } from '@/screens/host/VenueRegisterScreen'
 import { VenueSlotsScreen } from '@/screens/host/VenueSlotsScreen'
+import { ArtistExploreScreen } from '@/screens/owner/ArtistExploreScreen'
 import { OwnerApplicantsScreen } from '@/screens/owner/OwnerApplicantsScreen'
 import { OwnerDashboard } from '@/screens/owner/OwnerDashboard'
 import { OwnerRecruitScreen } from '@/screens/owner/OwnerRecruitScreen'
@@ -188,6 +189,14 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
         />
 
         {/* 공간주 */}
+        <Route
+          path="/owner/artists"
+          element={
+            <PageTransition>
+              <ArtistExploreScreen />
+            </PageTransition>
+          }
+        />
         <Route
           path="/owner/dashboard"
           element={

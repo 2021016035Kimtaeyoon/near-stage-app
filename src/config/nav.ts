@@ -44,6 +44,12 @@ export const TABS: Record<Role, TabItem[]> = {
       matches: ['/host/venue', '/owner/venue'],
     },
     {
+      to: '/owner/artists',
+      label: '아티스트 탐색',
+      icon: Compass,
+      matches: ['/owner/artists'],
+    },
+    {
       to: '/owner/dashboard',
       label: '대시보드',
       icon: LayoutDashboard,
@@ -73,7 +79,7 @@ export const TABS: Record<Role, TabItem[]> = {
     },
     {
       to: '/performer/posts',
-      label: '구인·역경매',
+      label: '구인·지원',
       icon: Megaphone,
       matches: ['/performer/posts'],
     },

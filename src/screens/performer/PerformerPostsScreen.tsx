@@ -8,14 +8,16 @@ import { Button } from '@/components/ui/Button'
 import { Segmented } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useMyApplications } from '@/hooks/useApplications'
+import { dismissInvite, useMyInvites } from '@/hooks/usePostInvites'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyArtists } from '@/hooks/useMyResources'
 import { useOpenPosts, type OpenPost } from '@/hooks/usePosts'
 import { priceLabel } from '@/lib/datetime'
+import { toast } from '@/store/useToast'
 import { matchNeeds } from '@/lib/needMatch'
 import { ApplyToPostSheet } from './ApplyToPostSheet'
 
-type Tab = 'open' | 'mine'
+type Tab = 'open' | 'invited' | 'mine'
 
 /**
  * 구인글 찾기 + 내 지원 현황 (§10).
@@ -31,6 +33,7 @@ export function PerformerPostsScreen() {
   const approved = artists.data.filter((a) => a.status === 'approved')
   const posts = useOpenPosts()
   const mine = useMyApplications(approved.map((a) => a.id))
+  const invites = useMyInvites(approved.map((a) => a.id))
 
   const [tab, setTab] = useState<Tab>('open')
   const [target, setTarget] = useState<OpenPost | null>(null)
@@ -62,6 +65,7 @@ export function PerformerPostsScreen() {
           onChange={setTab}
           options={[
             { value: 'open', label: `구인글 ${posts.data.length}` },
+            { value: 'invited', label: `초대받음 ${invites.data.length}` },
             { value: 'mine', label: `내 지원 ${mine.data.length}` },
           ]}
         />
@@ -106,6 +110,76 @@ export function PerformerPostsScreen() {
                     applied={appliedPostIds.has(p.id)}
                     onApply={() => openApply(p)}
                   />
+                ))}
+              </div>
+            )
+          ) : tab === 'invited' ? (
+            !userId ? (
+              <EmptyState
+                art="search"
+                title="로그인하면 초대를 볼 수 있어요"
+                description="호스트가 우리 팀에 관심을 보이면 여기로 옵니다."
+              />
+            ) : invites.data.length === 0 ? (
+              <EmptyState
+                art="search"
+                title="아직 받은 초대가 없어요"
+                description="팀 소개와 영상을 채워두면 호스트가 먼저 연락하기도 합니다."
+                action={
+                  <Button variant="outline" onClick={() => navigate('/artist/me')}>
+                    내 팀 다듬기
+                  </Button>
+                }
+              />
+            ) : (
+              <div className="space-y-2.5">
+                {invites.data.map((inv) => (
+                  <div key={inv.id} className="card p-3.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="truncate text-sm font-bold">
+                        {inv.post?.venueName ?? '삭제된 구인글'}
+                      </span>
+                      <Tag tone="ok">초대</Tag>
+                    </div>
+                    {inv.post && (
+                      <p className="tnum mt-0.5 text-2xs text-ink-3">
+                        {inv.post.wantedGenres.join('·') || '장르 상관없음'} ·{' '}
+                        {priceLabel(inv.post.offerFee)}
+                      </p>
+                    )}
+                    {inv.message && (
+                      <p className="mt-1.5 rounded-lg bg-surface-2 p-2 text-2xs leading-relaxed text-ink-2">
+                        “{inv.message}”
+                      </p>
+                    )}
+                    <div className="mt-2.5 flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() =>
+                          void (async () => {
+                            const err = await dismissInvite(inv.id)
+                            if (err) toast('닫지 못했어요', 'error', err)
+                            else invites.refresh()
+                          })()
+                        }
+                      >
+                        닫기
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="brand"
+                        full
+                        disabled={!posts.data.some((p) => p.id === inv.postId)}
+                        onClick={() => {
+                          const p = posts.data.find((x) => x.id === inv.postId)
+                          if (p) openApply(p)
+                        }}
+                      >
+                        이 구인글에 지원하기
+                      </Button>
+                    </div>
+                  </div>
                 ))}
               </div>
             )
@@ -166,6 +240,10 @@ export function PerformerPostsScreen() {
         onDone={() => {
           mine.refresh()
           posts.refresh()
+          // ★ 초대를 보고 지원했으면 그 초대는 '초대받음' 목록에서 지웁니다.
+          //   남아 있으면 이미 지원했는데도 다시 지원하라는 것처럼 보입니다.
+          const inv = invites.data.find((i) => target && i.postId === target.id)
+          if (inv) void dismissInvite(inv.id).then(() => invites.refresh())
         }}
       />
     </Screen>
