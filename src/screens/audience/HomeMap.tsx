@@ -11,7 +11,7 @@ import { SnapSheet, type SnapIndex } from '@/components/ui/SnapSheet'
 import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
 import { distanceKm } from '@/lib/geo'
-import { WEEKDAY_LABELS } from '@/lib/datetime'
+import { isRunPeriod, WEEKDAY_LABELS } from '@/lib/datetime'
 import { computeTrendingKeywords } from '@/lib/trending'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyLikes } from '@/hooks/useEngagement'
@@ -126,6 +126,11 @@ export function HomeMap() {
     [upcoming],
   )
   const showDiscoveryFeed = view === 'list' && !filter.query.trim()
+  // 날짜를 골랐을 때 "그 날 확실히 하는 공연"과 "기간 중이라 걸린 공연"을 가릅니다
+  const runPeriodCount = useMemo(
+    () => (filter.date ? results.filter((r) => isRunPeriod(r.show)).length : 0),
+    [filter.date, results],
+  )
 
   const ownCount = results.filter((r) => r.show.source === 'own').length
   const kopisCount = results.length - ownCount
@@ -181,16 +186,28 @@ export function HomeMap() {
               거의 그대로입니다. 그래서 눌러도 아무 일 없는 것처럼 보였습니다.
               무엇이 걸려 있는지 글로 밝히고, 한 번에 풀 수 있게 합니다. */}
           {filter.date && (
-            <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-gold-600/50 bg-gold-500/10 px-3 py-2.5">
-              <p className="min-w-0 text-2xs font-bold text-ink">
-                {dateHeading(filter.date)} 하는 공연 {results.length}건만 보는 중
-              </p>
-              <button
-                onClick={() => setFilter({ date: null })}
-                className="shrink-0 rounded-lg border border-border-strong bg-surface px-2.5 py-1.5 text-2xs font-bold"
-              >
-                날짜 해제
-              </button>
+            <div className="mb-3 rounded-xl border border-gold-600/50 bg-gold-500/10 px-3 py-2.5">
+              <div className="flex items-center justify-between gap-2">
+                <p className="min-w-0 text-2xs font-bold text-ink">
+                  {dateHeading(filter.date)} 하는 공연 {results.length}건만 보는 중
+                </p>
+                <button
+                  onClick={() => setFilter({ date: null })}
+                  className="shrink-0 rounded-lg border border-border-strong bg-surface px-2.5 py-1.5 text-2xs font-bold"
+                >
+                  날짜 해제
+                </button>
+              </div>
+              {/* ★ 우리가 아는 것을 넘어서지 않습니다. KOPIS 는 공연 '기간'만 주고
+                  어느 요일에 공연하는지는 주지 않습니다. 기간 공연을 그 기간의
+                  모든 날짜에 보여주면서 아무 말도 안 하면, 그 날 반드시 한다고
+                  말한 것이 됩니다. */}
+              {runPeriodCount > 0 && (
+                <p className="mt-1.5 text-2xs leading-relaxed text-ink-2">
+                  이 중 {runPeriodCount}건은 여러 날에 걸친 기간 공연입니다. 이 날 실제로
+                  공연이 있는지는 예매처에서 확인해 주세요.
+                </p>
+              )}
             </div>
           )}
           <ResultList

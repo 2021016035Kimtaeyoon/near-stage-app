@@ -182,14 +182,32 @@ export function showWhenLabel(
   nowIso: string,
 ): string {
   const now = new Date(nowIso).getTime()
-  const start = new Date(show.startAt).getTime()
+  const startDate = new Date(show.startAt)
+  const start = startDate.getTime()
 
-  // 기간 공연이고 이미 시작했다면 "언제까지"
-  if (show.runEndsAt && start <= now) {
-    const end = new Date(show.runEndsAt)
-    return `${end.getMonth() + 1}월 ${end.getDate()}일까지`
+  if (isRunPeriod(show)) {
+    const end = new Date(show.runEndsAt as string)
+    // 이미 시작했으면 남은 기간이 궁금합니다
+    if (start <= now) return `${end.getMonth() + 1}월 ${end.getDate()}일까지`
+    // ★ 아직 시작 전인 기간 공연을 시작일 하나로만 보여주면, 그 날 하루만 하는
+    //   공연으로 읽힙니다. 기간을 통째로 보여줍니다.
+    return `${startDate.getMonth() + 1}월 ${startDate.getDate()}일~${end.getMonth() + 1}월 ${end.getDate()}일`
   }
   return humanDateTime(show.startAt, nowIso)
+}
+
+/**
+ * 여러 날에 걸친 공연인지.
+ *
+ * ★ run_ends_at 이 있다고 기간 공연은 아닙니다. 하루짜리 공연도 "그날 23:59까지"로
+ *   저장돼 있어서, 값의 유무로 판단하면 전부 기간 공연이 됩니다.
+ *   시작한 날과 끝나는 날이 다를 때만 기간 공연입니다.
+ */
+export function isRunPeriod(show: { startAt: string; runEndsAt?: string | null }): boolean {
+  if (!show.runEndsAt) return false
+  const a = new Date(show.startAt)
+  const b = new Date(show.runEndsAt)
+  return dateKey(a) !== dateKey(b)
 }
 
 /** 'YYYY-MM-DD' 하루 전체 범위 (그 지역 시각 기준) */
