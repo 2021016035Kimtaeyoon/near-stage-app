@@ -207,6 +207,13 @@ export interface Show {
   genre: Genre | null
   /** 원본 장르 표기 (등록 공연의 '서양음악(클래식)' 등). 우리 목록에 맞추지 않습니다 */
   genreLabel?: string
+  /**
+   * 공연 시간 안내 원문 (등록 공연만). '화요일 ~ 금요일(20:00), 토요일(15:00)'
+   *
+   * ★ KOPIS 는 공연 기간만 주고 어느 요일에 하는지는 이 문장에만 있습니다.
+   *   lib/showSchedule.ts 가 읽어내고, 못 읽으면 원문을 그대로 보여줍니다.
+   */
+  scheduleNote?: string
   /** KOPIS 오픈API 공연 ID (source==='kopis'일 때) */
   kopisId?: string
   /** 등록 공연의 원본 예매처 링크 (source==='kopis'일 때) */

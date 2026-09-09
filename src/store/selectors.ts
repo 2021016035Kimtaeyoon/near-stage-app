@@ -1,5 +1,6 @@
 import { DEFAULT_USER_LOCATION } from '@/config/brand'
 import { dayRange, showEndMs, tonightRange, weekendRange } from '@/lib/datetime'
+import { runsInRange } from '@/lib/showSchedule'
 import { distanceKm } from '@/lib/geo'
 import type {
   AppNotification,
@@ -190,6 +191,12 @@ export function filterShows(
       //   기간이 겹치는지를 봐야 오늘 저녁에 실제로 하는 공연이 나옵니다.
       const start = new Date(show.startAt).getTime()
       if (showEndMs(show) < range.from || start > range.to) return false
+      // ★ 기간이 겹치는 것만으로는 "그 날 공연한다"가 아닙니다. 74일짜리 연극이
+      //   74일 내내 뜨던 이유입니다. 시간 안내에서 공연 요일을 읽어낼 수 있으면
+      //   그 기간에 공연이 있는 날이 하나라도 있어야 남깁니다.
+      //   ★ null(못 읽음)은 거르지 않습니다 — 모르는 것을 없다고 하면 실제
+      //     공연이 목록에서 사라집니다.
+      if (runsInRange(show.scheduleNote, range.from, range.to) === false) return false
     }
     if (filter.distance !== 0 && d > filter.distance) return false
     // 장르를 모르는 공연(등록 공연의 목록 밖 분류)은 장르 필터에 걸리지 않습니다

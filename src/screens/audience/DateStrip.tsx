@@ -1,5 +1,6 @@
 import { useMemo } from 'react'
 import { dateKey, dayRange, showEndMs, WEEKDAY_LABELS } from '@/lib/datetime'
+import { runsInRange } from '@/lib/showSchedule'
 import { cn } from '@/lib/cn'
 import type { ShowWithMeta } from '@/store/selectors'
 
@@ -43,10 +44,13 @@ export function DateStrip({
       const key = dateKey(d)
       const { from, to } = dayRange(key)
       // 기간이 그날과 겹치고, 아직 끝나지 않은 공연
+      // ★ 목록과 똑같은 기준으로 세야 합니다. 여기서는 겹침만 보고 목록은 요일까지
+      //   보면, 3건이라고 적힌 날을 눌렀을 때 0건이 나옵니다.
       const count = items.filter((x) => {
         const start = new Date(x.show.startAt).getTime()
         const end = showEndMs(x.show)
-        return end >= Math.max(from, nowMs) && start <= to
+        if (end < Math.max(from, nowMs) || start > to) return false
+        return runsInRange(x.show.scheduleNote, from, to) !== false
       }).length
       return { key, date: d, count, isToday: i === 0 }
     })

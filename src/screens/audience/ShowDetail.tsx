@@ -1,4 +1,4 @@
-import { CalendarX, ChevronLeft, Flag, PenLine } from 'lucide-react'
+import { CalendarClock, CalendarX, ChevronLeft, Flag, PenLine } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Screen, ScreenBody } from '@/components/shell/ScreenHeader'
@@ -229,6 +229,27 @@ export function ShowDetail() {
             cast={show.kopisCast ?? '출연진 정보 없음'}
             genreLabel={show.genreLabel ?? show.kopisGenreLabel ?? show.genre ?? '분류 정보 없음'}
           />
+        )}
+
+        {/* ★ 기간 공연은 '10월 4일까지'만 보면 매일 하는 것처럼 읽힙니다. KOPIS 가
+            준 시간 안내 원문을 그대로 보여줍니다 — 우리가 요일을 못 읽었을 때
+            관객이 볼 수 있는 유일한 정보이고, 읽어냈을 때도 시각까지 알려줍니다. */}
+        {show.scheduleNote && (
+          <section className="px-4 pt-1">
+            <div className="card p-3.5">
+              <p className="flex items-center gap-1.5 text-2xs font-bold text-ink-2">
+                <CalendarClock size={13} />
+                공연 시간
+              </p>
+              <p className="mt-1.5 whitespace-pre-line text-[13px] leading-relaxed">
+                {show.scheduleNote}
+              </p>
+              <p className="mt-1.5 text-2xs leading-relaxed text-ink-3">
+                공연예술통합전산망(KOPIS) 안내 그대로입니다. 예매 전 예매처에서 다시
+                확인해 주세요.
+              </p>
+            </div>
+          </section>
         )}
 
         <VenueBlock place={place} genre={show.genre} distanceKm={meta?.distanceKm ?? 0} />

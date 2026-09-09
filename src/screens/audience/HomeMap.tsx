@@ -12,6 +12,7 @@ import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
 import { distanceKm } from '@/lib/geo'
 import { isRunPeriod, WEEKDAY_LABELS } from '@/lib/datetime'
+import { scheduleOf } from '@/lib/showSchedule'
 import { computeTrendingKeywords } from '@/lib/trending'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyLikes } from '@/hooks/useEngagement'
@@ -126,9 +127,14 @@ export function HomeMap() {
     [upcoming],
   )
   const showDiscoveryFeed = view === 'list' && !filter.query.trim()
-  // 날짜를 골랐을 때 "그 날 확실히 하는 공연"과 "기간 중이라 걸린 공연"을 가릅니다
-  const runPeriodCount = useMemo(
-    () => (filter.date ? results.filter((r) => isRunPeriod(r.show)).length : 0),
+  // ★ 요일을 읽어낸 기간 공연은 이제 그 날 실제로 공연이 있는 것만 남습니다.
+  //   단서를 붙일 대상은 '기간 공연인데 요일을 못 읽은' 것뿐입니다.
+  //   전부에 단서를 달면 정확한 것까지 의심하게 만듭니다.
+  const unsureCount = useMemo(
+    () =>
+      filter.date
+        ? results.filter((r) => isRunPeriod(r.show) && !scheduleOf(r.show.scheduleNote)).length
+        : 0,
     [filter.date, results],
   )
 
@@ -202,10 +208,10 @@ export function HomeMap() {
                   어느 요일에 공연하는지는 주지 않습니다. 기간 공연을 그 기간의
                   모든 날짜에 보여주면서 아무 말도 안 하면, 그 날 반드시 한다고
                   말한 것이 됩니다. */}
-              {runPeriodCount > 0 && (
+              {unsureCount > 0 && (
                 <p className="mt-1.5 text-2xs leading-relaxed text-ink-2">
-                  이 중 {runPeriodCount}건은 여러 날에 걸친 기간 공연입니다. 이 날 실제로
-                  공연이 있는지는 예매처에서 확인해 주세요.
+                  이 중 {unsureCount}건은 기간 공연인데 <b>공연 요일을 알 수 없습니다.</b> 이
+                  날 공연이 있는지 예매처에서 확인해 주세요.
                 </p>
               )}
             </div>

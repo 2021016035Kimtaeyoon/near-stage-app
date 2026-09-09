@@ -3,7 +3,8 @@ import { GenreTag, SourceBadge, StatusDot } from '@/components/ui/Badge'
 import { Rating } from '@/components/ui/PosterArt'
 import { ShowPoster } from '@/components/ui/ShowPoster'
 import { cn } from '@/lib/cn'
-import { countdownLabel, showPriceLabel, showWhenLabel } from '@/lib/datetime'
+import { countdownLabel, isRunPeriod, showPriceLabel, showWhenLabel } from '@/lib/datetime'
+import { scheduleOf, scheduleSummary } from '@/lib/showSchedule'
 import { distanceLabel } from '@/lib/geo'
 import type { ShowWithMeta } from '@/store/selectors'
 
@@ -36,6 +37,8 @@ export function ShowCard({
   // ticketPrice 는 모든 공연이 0 이라 색 판정에 쓸 수 없습니다. 우리 무대는 참가비가
   // 없고, 등록 공연은 원본 안내 문장에 '무료'가 있을 때만 무료입니다.
   const isFree = show.source === 'own' || /무료/.test(show.priceNote ?? '')
+  // 여러 날에 걸친 공연일 때만 요일이 의미가 있습니다
+  const runDays = isRunPeriod(show) ? scheduleSummary(scheduleOf(show.scheduleNote)) : null
 
   return (
     <article
@@ -80,6 +83,10 @@ export function ShowCard({
             <GenreTag genre={show.genre} label={show.genreLabel} size="sm" />
             {rating !== null && <Rating value={rating} size={11} />}
             <span className="tnum text-2xs text-ink-3">{showWhenLabel(show, nowIso)}</span>
+            {/* ★ 기간 공연은 '10월 4일까지'만 보면 매일 하는 것처럼 읽힙니다.
+                시간 안내에서 요일을 읽어냈으면 함께 보여줍니다. 못 읽었으면
+                아무 말도 하지 않습니다 — 없는 정보를 지어내지 않습니다. */}
+            {runDays && <span className="text-2xs font-semibold text-gold-text">{runDays}</span>}
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
             {/* ★ 등록 공연의 가격은 원본이 준 자유 문장이라 길이를 알 수 없습니다.

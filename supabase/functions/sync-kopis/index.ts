@@ -223,6 +223,10 @@ Deno.serve(async () => {
             poster_url: item.poster || null,
             price_note: priceNote || null,
             genre_raw: item.genrenm || null,
+            // ★ 시간 안내 원문. 전에는 firstTime() 으로 첫 시각만 뽑고 버렸습니다.
+            //   그 문장에 '무슨 요일에 공연하는지'가 들어 있는데, 그걸 버려서
+            //   74일짜리 연극이 74일 내내 날짜 탭에 떴습니다.
+            schedule_note: guidance || null,
             venue_name_raw: item.fcltynm,
             venue_addr_raw: address,
             lat: coords.lat,

@@ -27,6 +27,7 @@ export interface PublicShowRow {
   poster_url: string | null
   price_note: string | null
   genre_raw: string | null
+  schedule_note: string | null
   created_at: string
   venue_name: string | null
   venue_address: string | null
@@ -134,6 +135,7 @@ export function rowToShow(row: PublicShowRow): Show {
     genre: toGenre(row.artist_genre) ?? kopisGenre(row.genre_raw),
     // 등록 공연은 KOPIS 원본 표기('서양음악(클래식)' 등)를 그대로 보여줍니다
     ...(row.genre_raw ? { genreLabel: row.genre_raw } : {}),
+    ...(row.schedule_note ? { scheduleNote: row.schedule_note } : {}),
     ...(row.kopis_id ? { kopisId: row.kopis_id } : {}),
     ...(row.external_url ? { externalUrl: row.external_url } : {}),
     ...(normalizePosterUrl(row.poster_url) ? { posterUrl: normalizePosterUrl(row.poster_url) } : {}),
@@ -158,7 +160,8 @@ export function rowToPlace(row: PublicShowRow): ShowPlace | null {
 /** v_public_shows 에서 항상 이 컬럼 목록으로 조회합니다 */
 export const PUBLIC_SHOW_COLUMNS =
   'id,venue_id,artist_id,slot_id,title,description,starts_at,run_ends_at,duration_min,capacity,' +
-  'status,cancel_reason,source,kopis_id,external_url,poster_url,price_note,genre_raw,created_at,' +
+  'status,cancel_reason,source,kopis_id,external_url,poster_url,price_note,genre_raw,' +
+  'schedule_note,created_at,' +
   'venue_name,venue_address,lat,lng,' +
   'venue_category,venue_rating,artist_name,artist_genre,artist_photos,' +
   'going_count,like_count,avg_rating,review_count'
