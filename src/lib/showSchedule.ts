@@ -18,7 +18,21 @@ const DAY_INDEX: Record<string, number> = { 일: 0, 월: 1, 화: 2, 수: 3, 목:
 /** 이 말이 들어 있는 조각은 공연하는 날이 아니라 쉬는 날입니다 */
 const NEGATIVE = /휴관|휴무|휴연|휴일\s*휴|쉼|없음|제외|미공연/
 
-export type ShowSchedule =
+/**
+ * 공휴일에도 공연하는지.
+ *
+ * ★ KOPIS 문장 862건 중 133건에 'HOL'(공휴일)이 붙어 있습니다. 대부분
+ *   '화요일 ~ 일요일(...), HOL(...)' 꼴 — 월요일은 쉬지만 공휴일이면 한다는
+ *   뜻입니다. 빠진 요일이 월요일인 것이 86건입니다.
+ *
+ * ★ 그렇다고 월요일을 '모름'으로 열면 86건이 매주 월요일마다 뜹니다. 실제로
+ *   공연하는 건 한 달에 공휴일 월요일 한 번인데요. 그래서 요일 판정은 그대로
+ *   두고, 대신 '공휴일'을 표기에 넣어 사실을 알립니다. 공휴일 달력을 들이면
+ *   정확히 판정할 수 있지만, 음력 공휴일을 틀리게 넣으면 조용히 잘못됩니다.
+ */
+export type ScheduleFlags = { holidayAlso?: boolean }
+
+export type ShowSchedule = ScheduleFlags & (
   /** 공연하는 날짜가 문장에 그대로 적힌 경우 ('YYYY-MM-DD') */
   | { kind: 'dates'; dates: string[] }
   /** 요일로 적힌 경우 (0=일 … 6=토) */
@@ -32,6 +46,15 @@ export type ShowSchedule =
    *   ('월요일 ~ 금요일(20:00), 토요일(...), 일요일(...)', '수요일 ~ 화요일(20:00)').
    */
   | { kind: 'daily' }
+  /**
+   * 공휴일에만 공연 ('HOL(20:00)').
+   *
+   * ★ 요일이 아니라서 어느 날인지 우리는 모릅니다. 그래도 null('못 읽음')과
+   *   구분합니다 — 문장은 읽었고, '공휴일 공연'이라고 정확히 말할 수 있습니다.
+   *   특정 날짜 판정은 모름(null)으로 남깁니다. 공휴일 달력이 없으니까요.
+   */
+  | { kind: 'holiday' }
+)
 
 /**
  * 시간 안내 문장에서 공연일을 읽어냅니다. 못 읽으면 null.
@@ -41,12 +64,14 @@ export function parseSchedule(note: string | null | undefined): ShowSchedule | n
   const text = note.trim()
   if (!text) return null
 
+  const holidayAlso = /HOL|공휴일/i.test(text) || undefined
+
   // ── ① 날짜가 직접 적힌 형태가 우선입니다. 요일보다 정확합니다 ──
   const dates = [...text.matchAll(/(\d{4})[.\-/](\d{1,2})[.\-/](\d{1,2})/g)].map(
     (m) => `${m[1]}-${m[2].padStart(2, '0')}-${m[3].padStart(2, '0')}`,
   )
   if (dates.length > 0) {
-    return { kind: 'dates', dates: [...new Set(dates)] }
+    return { kind: 'dates', dates: [...new Set(dates)], holidayAlso }
   }
 
   // ── ② 요일 ──
@@ -92,10 +117,11 @@ export function parseSchedule(note: string | null | undefined): ShowSchedule | n
     for (const m of t.matchAll(/([월화수목금토일])\s*요일/g)) days.add(DAY_INDEX[m[1]])
   }
 
-  if (days.size === 0) return null
+  // 요일이 하나도 없는데 공휴일 표기만 있으면 '공휴일 공연'입니다
+  if (days.size === 0) return holidayAlso ? { kind: 'holiday', holidayAlso } : null
   // 7일 전부면 날짜로는 좁히지 못하지만, 그건 '매일 공연'이라는 사실입니다
-  if (days.size === 7) return { kind: 'daily' }
-  return { kind: 'weekdays', days: [...days].sort() }
+  if (days.size === 7) return { kind: 'daily', holidayAlso }
+  return { kind: 'weekdays', days: [...days].sort(), holidayAlso }
 }
 
 /**
@@ -109,6 +135,8 @@ export function runsOnDate(
   dateKey: string,
 ): boolean | null {
   if (!schedule) return null
+  // 공휴일 달력이 없어서 특정 날짜가 공휴일인지 판단하지 못합니다
+  if (schedule.kind === 'holiday') return null
   if (schedule.kind === 'daily') return true
   if (schedule.kind === 'dates') return schedule.dates.includes(dateKey)
   const [y, m, d] = dateKey.split('-').map(Number)
@@ -129,6 +157,8 @@ const DAY_LABEL = ['일', '월', '화', '수', '목', '금', '토'] as const
  */
 export function scheduleSummary(schedule: ShowSchedule | null): string | null {
   if (!schedule) return null
+  const hol = schedule.holidayAlso ? '·공휴일' : ''
+  if (schedule.kind === 'holiday') return '공휴일 공연'
   if (schedule.kind === 'daily') return '매일 공연'
   if (schedule.kind === 'dates') {
     if (schedule.dates.length > 4) return `${schedule.dates.length}일 공연`
@@ -154,7 +184,7 @@ export function scheduleSummary(schedule: ShowSchedule | null): string | null {
       ordered.slice(i, j + 1).map(label).join('·'))
     i = j + 1
   }
-  return `${parts.join('·')} 공연`
+  return `${parts.join('·')}${hol} 공연`
 }
 
 /**
