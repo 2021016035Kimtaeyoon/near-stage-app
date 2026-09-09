@@ -23,10 +23,8 @@ import { VenueSlotsScreen } from '@/screens/host/VenueSlotsScreen'
 import { OwnerApplicantsScreen } from '@/screens/owner/OwnerApplicantsScreen'
 import { OwnerDashboard } from '@/screens/owner/OwnerDashboard'
 import { OwnerRecruitScreen } from '@/screens/owner/OwnerRecruitScreen'
-import { OwnerVenueScreen } from '@/screens/owner/OwnerVenueScreen'
 import { PerformerActivity } from '@/screens/performer/PerformerActivity'
 import { PerformerPostsScreen } from '@/screens/performer/PerformerPostsScreen'
-import { PerformerProfile } from '@/screens/performer/PerformerProfile'
 import { PerformerVenueDetail } from '@/screens/performer/PerformerVenueDetail'
 import { VenueExploreScreen } from '@/screens/performer/VenueExploreScreen'
 
@@ -200,11 +198,12 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
         />
         <Route
           path="/owner/venue"
-          element={
-            <PageTransition>
-              <OwnerVenueScreen />
-            </PageTransition>
-          }
+          // ★ 프로토타입 시절 화면(useAppStore.venues)입니다. 실제 데이터를 읽지
+          //   않아서 열면 늘 "공간을 찾을 수 없어요"가 나왔고, UI 어디에서도
+          //   이 경로로 가지 않습니다(탭 하이라이트용 matches 에만 남아 있었음).
+          //   지금 쓰는 화면으로 보냅니다 — 옛 링크나 북마크로 들어와도 막히지
+          //   않고, 컴포넌트가 더 이상 import 되지 않아 번들에서도 빠집니다.
+          element={<Navigate to="/host/venue" replace />}
         />
         <Route
           path="/owner/recruit"
@@ -258,11 +257,9 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
         />
         <Route
           path="/performer/profile"
-          element={
-            <PageTransition>
-              <PerformerProfile />
-            </PageTransition>
-          }
+          // ★ 같은 이유로 프로토타입 화면입니다. 실제 팀 프로필은 /artist/me 와
+          //   /artist/:id/edit 입니다.
+          element={<Navigate to="/artist/me" replace />}
         />
 
         {/* 공통 */}
