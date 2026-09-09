@@ -64,6 +64,26 @@ function toGenre(raw: string | null): Genre | null {
 }
 
 /**
+ * 등록 공연(KOPIS)의 장르.
+ *
+ * ★ 등록 공연은 아티스트가 없어서 artist_genre 가 항상 null 입니다. 그래서 장르가
+ *   전부 비어 있었고, 장르 필터를 고르면 무조건 0건이 나왔습니다. 원본 장르는
+ *   genre_raw('서양음악(클래식)' 등)에 따로 들어 있는데 아무도 쓰지 않았습니다.
+ *
+ * ★ 뜻이 분명히 같은 것만 옮깁니다. '서양음악(클래식)'을 '솔로파티'로, '뮤지컬'을
+ *   '연극'으로 밀어 넣으면 필터가 거짓말을 하게 됩니다. 옮기지 못한 것은 null 로
+ *   두고 원본 표기를 그대로 화면에 보여줍니다 — 그게 사실이니까요.
+ */
+function kopisGenre(rawLabel: string | null): Genre | null {
+  if (!rawLabel) return null
+  if (rawLabel.includes('연극')) return '연극'
+  if (rawLabel.includes('국악') || rawLabel.includes('한국음악')) return '국악'
+  if (rawLabel.includes('마술')) return '마술'
+  if (rawLabel.includes('대중음악')) return '밴드'
+  return null
+}
+
+/**
  * 주소에서 행정동만 뽑아냅니다 (필터·표기용).
  * "서울 마포구 연남로1길 42" → "연남로1길" 이 아니라 구 단위가 더 유용해서 구를 씁니다.
  */
@@ -111,7 +131,7 @@ export function rowToShow(row: PublicShowRow): Show {
     source: row.source,
     tags: [],
     description: row.description,
-    genre: toGenre(row.artist_genre),
+    genre: toGenre(row.artist_genre) ?? kopisGenre(row.genre_raw),
     // 등록 공연은 KOPIS 원본 표기('서양음악(클래식)' 등)를 그대로 보여줍니다
     ...(row.genre_raw ? { genreLabel: row.genre_raw } : {}),
     ...(row.kopis_id ? { kopisId: row.kopis_id } : {}),

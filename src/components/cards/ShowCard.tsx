@@ -40,7 +40,9 @@ export function ShowCard({
   return (
     <article
       className={cn(
-        'card card-hover relative flex gap-3 p-3 text-left',
+        // ★ 세로입니다. 가로(flex)로 두면 아래 '예매처에서 예매하기' 줄이 옆으로
+        //   끼어들어 공간·거리 줄을 덮습니다. 그 줄은 카드 바닥 배너입니다.
+        'card card-hover relative flex flex-col overflow-hidden text-left',
         highlighted && 'border-gold-600/70',
       )}
       style={
@@ -49,7 +51,7 @@ export function ShowCard({
           : undefined
       }
     >
-      <button onClick={onClick} className="flex min-w-0 flex-1 gap-3 text-left">
+      <button onClick={onClick} className="flex w-full min-w-0 gap-3 p-3 text-left">
         <ShowPoster
           posterUrl={show.posterUrl}
           seed={show.id + (performer?.photoSeed ?? show.title)}
@@ -74,23 +76,33 @@ export function ShowCard({
             <span className="tnum shrink-0 text-ink-3">{distanceLabel(d)}</span>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
-            <GenreTag genre={show.genre} size="sm" />
+            {/* ★ label 을 안 넘겨서 등록 공연 99건의 장르 칸이 통째로 비어 있었습니다 */}
+            <GenreTag genre={show.genre} label={show.genreLabel} size="sm" />
             {rating !== null && <Rating value={rating} size={11} />}
             <span className="tnum text-2xs text-ink-3">{showWhenLabel(show, nowIso)}</span>
           </div>
           <div className="mt-2 flex items-center justify-between gap-2">
+            {/* ★ 등록 공연의 가격은 원본이 준 자유 문장이라 길이를 알 수 없습니다.
+                ('R석 100,000원, S석 70,000원' 같은 것) 잘림 처리가 없어서 세 줄로
+                번지고, 옆의 라벨이 한 글자씩 세로로 쌓였습니다. 전체 문장은 상세에서
+                봅니다. */}
             <span
               className={cn(
-                'tnum text-sm font-bold',
+                'tnum min-w-0 flex-1 truncate text-sm font-bold',
                 isFree ? 'text-ok' : 'text-ink',
               )}
             >
               {showPriceLabel(show.source, show.priceNote)}
             </span>
-            <span className="tnum flex items-center gap-1 text-2xs text-ink-3">
-              <Users size={11} />
-              {hasSeatInfo ? (seatsLeft > 0 ? `${seatsLeft}석 남음` : '정원 마감') : '예매처 예매'}
-            </span>
+            {/* ★ 남은 자리는 우리 무대에서만 압니다. 등록 공연에 '예매처 예매'를
+                붙였었는데, 바로 아래 '예매처에서 예매하기' 줄과 같은 말이라
+                자리만 뺏었습니다. */}
+            {hasSeatInfo && (
+              <span className="tnum flex shrink-0 items-center gap-1 text-2xs text-ink-3">
+                <Users size={11} />
+                {seatsLeft > 0 ? `${seatsLeft}석 남음` : '정원 마감'}
+              </span>
+            )}
           </div>
         </div>
       </button>
@@ -103,7 +115,7 @@ export function ShowCard({
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center justify-center gap-1 border-t border-border py-2 text-2xs font-bold text-gold-text"
+          className="flex w-full shrink-0 items-center justify-center gap-1 border-t border-border py-2.5 text-2xs font-bold text-gold-text active:bg-surface-2"
         >
           예매처에서 예매하기
           <ExternalLink size={11} />
@@ -157,7 +169,7 @@ export function ShowMiniCard({
         <div className="tnum mt-0.5 truncate text-2xs text-ink-2">
           {showWhenLabel(show, nowIso)} · {place.name}
         </div>
-        <div className="tnum mt-0.5 text-2xs text-ink-3">
+        <div className="tnum mt-0.5 truncate text-2xs text-ink-3">
           {distanceLabel(d)} · {showPriceLabel(show.source, show.priceNote)}
         </div>
       </div>

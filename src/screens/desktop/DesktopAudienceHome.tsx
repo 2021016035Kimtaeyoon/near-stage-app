@@ -1,7 +1,6 @@
 import { BellPlus, Check, Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShowCard } from '@/components/cards/ShowCard'
 import { MapView } from '@/components/map/MapView'
 import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -16,6 +15,8 @@ import { usePublicShows, useViewerLocation } from '@/hooks/usePublicShows'
 import { DEFAULT_FILTER, filterShows } from '@/store/selectors'
 import { useAppStore, useNow } from '@/store/useAppStore'
 import type { SortKey } from '@/types'
+import { DateStrip } from '../audience/DateStrip'
+import { ShowSections } from '../audience/ShowSections'
 import { TrendingSearchPanel } from '../audience/TrendingSearchPanel'
 import { DesktopShowDetailModal } from './DesktopShowDetailModal'
 
@@ -140,6 +141,15 @@ export function DesktopAudienceHome() {
             ))}
           </div>
 
+          {/* ★ 날짜별 보기가 모바일에만 있었습니다. 같은 조건 저장소를 쓰는데 한쪽에만
+              있으면, 데스크톱에서 날짜가 걸린 채로 왜 목록이 좁은지 알 수 없습니다. */}
+          <DateStrip
+            items={scoped}
+            value={filter.date ?? null}
+            onChange={(date: string | null) => setFilter({ date })}
+            nowIso={nowIso}
+          />
+
           <div className="flex flex-wrap items-center gap-1.5 border-t border-border pt-3">
             <button
               onClick={() => saveCurrentSearch()}
@@ -225,19 +235,15 @@ export function DesktopAudienceHome() {
               }
             />
           ) : (
-            <div className="space-y-2.5">
-              {results.map((item) => (
-                <ShowCard
-                  key={item.show.id}
-                  item={item}
-                  nowIso={nowIso}
-                  liked={likedShowIds.includes(item.show.id)}
-                  onToggleLike={() => toggleLike(item.show.id)}
-                  onClick={() => setDetailShowId(item.show.id)}
-                  highlighted={item.show.id === highlightShowId}
-                />
-              ))}
-            </div>
+            <ShowSections
+              results={results}
+              nowIso={nowIso}
+              likedShowIds={likedShowIds}
+              onToggleLike={toggleLike}
+              onOpen={setDetailShowId}
+              highlightShowId={highlightShowId}
+              registerPath="/desktop/host/venue/new"
+            />
           )}
         </div>
       </div>

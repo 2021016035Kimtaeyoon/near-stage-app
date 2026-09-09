@@ -203,6 +203,9 @@ export function filterShows(
         place.name,
         place.district,
         show.genre,
+        // ★ '클래식', '뮤지컬', '무용'은 우리 장르 목록에 없습니다. 원본 표기까지
+        //   훑어야 검색으로라도 찾을 수 있습니다.
+        show.genreLabel ?? '',
         performer?.teamName ?? '',
         ...show.tags,
       ]

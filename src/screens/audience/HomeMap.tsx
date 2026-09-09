@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from 'framer-motion'
 import { LayoutList, Map as MapIcon, Search, SlidersHorizontal, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ShowCard, ShowMiniCard } from '@/components/cards/ShowCard'
+import { ShowMiniCard } from '@/components/cards/ShowCard'
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { MapView } from '@/components/map/MapView'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -11,6 +11,7 @@ import { SnapSheet, type SnapIndex } from '@/components/ui/SnapSheet'
 import { SERVICE_NAME } from '@/config/brand'
 import { cn } from '@/lib/cn'
 import { distanceKm } from '@/lib/geo'
+import { WEEKDAY_LABELS } from '@/lib/datetime'
 import { computeTrendingKeywords } from '@/lib/trending'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyLikes } from '@/hooks/useEngagement'
@@ -22,10 +23,18 @@ import { DateStrip } from './DateStrip'
 import { FilterChips } from './FilterChips'
 import { FilterSheet } from './FilterSheet'
 import { OwnShowsBanner, RecentlyViewedRow, TrendingRow } from './HomeFeedSections'
+import { ShowSections } from './ShowSections'
 import { TrendingSearchPanel } from './TrendingSearchPanel'
 
 /** 바텀시트 스냅 높이 */
 const SHEET_HEIGHTS = [136, 400, 704] as const
+
+/** 'YYYY-MM-DD' -> '9월 12일(토)' */
+function dateHeading(key: string): string {
+  const [y, m, d] = key.split('-').map(Number)
+  const dt = new Date(y, m - 1, d)
+  return `${m}월 ${d}일(${WEEKDAY_LABELS[dt.getDay()]})`
+}
 
 const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: 'soon', label: '임박순' },
@@ -52,6 +61,12 @@ export function HomeMap() {
 
   // 홈은 지도 단독이 아니라 상단 검색창 + 하단 공연 리스트가 기본입니다
   const [view, setView] = useState<'map' | 'list'>('list')
+  // ★ 상단 검색창의 높이를 실제로 재서 목록을 그만큼 내립니다.
+  //   전에는 132px 로 박아뒀는데, 그 뒤로 필터 칩과 날짜 스트립이 들어와
+  //   실제 높이가 214px 가 됐고 "내 주변 공연" 제목이 날짜 탭에 가렸습니다.
+  //   검색창을 열면 인기 검색어 패널이 또 늘어나므로, 고정값으로는 다시 어긋납니다.
+  const headerRef = useRef<HTMLDivElement>(null)
+  const [headerH, setHeaderH] = useState(214)
   const [snap, setSnap] = useState<SnapIndex>(1)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [filterOpen, setFilterOpen] = useState(false)
@@ -116,6 +131,16 @@ export function HomeMap() {
   const kopisCount = results.length - ownCount
   const selected = results.find((r) => r.show.id === selectedId) ?? null
 
+  useLayoutEffect(() => {
+    const el = headerRef.current
+    if (!el) return
+    const measure = () => setHeaderH(Math.round(el.getBoundingClientRect().height))
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+
   const openShow = (id: string) => navigate(`/audience/show/${id}`)
 
   return (
@@ -126,8 +151,8 @@ export function HomeMap() {
             items={results}
             origin={origin}
             center={mapCenter}
-            // 지도/리스트 토글이 top-[136px] 에 높이 40 으로 있습니다. 그 아래로.
-            controlsTop={188}
+            // 상단 검색창 실제 높이 아래로. 여기도 고정값이면 같은 이유로 어긋납니다.
+            controlsTop={headerH + 8}
             onSearchHere={(center) => {
               setSearchCenter(center)
               setSelectedId(null)
@@ -141,14 +166,32 @@ export function HomeMap() {
           />
         </div>
       ) : (
-        <div className="absolute inset-0 overflow-y-auto px-4 pt-[132px]">
+        <div
+          className="absolute inset-0 overflow-y-auto px-4"
+          style={{ paddingTop: headerH + 8 }}
+        >
           {showDiscoveryFeed && (
             <>
               <OwnShowsBanner count={ownUpcomingCount} onClick={() => setFilter({ ownOnly: true })} />
               <RecentlyViewedRow items={recentlyViewed} nowIso={nowIso} onOpen={openShow} />
               <TrendingRow items={trendingShows} nowIso={nowIso} onOpen={openShow} />
-              <h2 className="mb-2.5 text-[15px] font-bold">내 주변 공연</h2>
             </>
+          )}
+          {/* ★ 날짜를 골라도 등록 공연 대부분이 몇 주짜리 기간 공연이라 목록이
+              거의 그대로입니다. 그래서 눌러도 아무 일 없는 것처럼 보였습니다.
+              무엇이 걸려 있는지 글로 밝히고, 한 번에 풀 수 있게 합니다. */}
+          {filter.date && (
+            <div className="mb-3 flex items-center justify-between gap-2 rounded-xl border border-gold-600/50 bg-gold-500/10 px-3 py-2.5">
+              <p className="min-w-0 text-2xs font-bold text-ink">
+                {dateHeading(filter.date)} 하는 공연 {results.length}건만 보는 중
+              </p>
+              <button
+                onClick={() => setFilter({ date: null })}
+                className="shrink-0 rounded-lg border border-border-strong bg-surface px-2.5 py-1.5 text-2xs font-bold"
+              >
+                날짜 해제
+              </button>
+            </div>
           )}
           <ResultList
             results={results}
@@ -170,7 +213,7 @@ export function HomeMap() {
       )}
 
       {/* 상단 검색 + 필터 */}
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-40 pb-3 pt-11">
+      <div ref={headerRef} className="pointer-events-none absolute inset-x-0 top-0 z-40 pb-3 pt-11">
         <div
           className="pointer-events-none absolute inset-0"
           style={{
@@ -211,6 +254,16 @@ export function HomeMap() {
                   <span className="truncate text-sm text-ink-3">
                     {filter.query || `${SERVICE_NAME} · 오늘 뭐 볼까요?`}
                   </span>
+                </button>
+                {/* ★ 지도/리스트 전환. 전에는 top-[136px] 에 따로 떠 있었는데
+                    바로 그 자리가 날짜 스트립이라 서로 겹쳤습니다. 검색·필터와
+                    같은 줄에 두면 겹칠 자리가 아예 없어집니다. */}
+                <button
+                  onClick={() => setView(view === 'map' ? 'list' : 'map')}
+                  className="flex h-10 shrink-0 items-center gap-1.5 rounded-full border border-border bg-surface px-3 text-xs font-bold text-ink-2"
+                >
+                  {view === 'map' ? <LayoutList size={15} /> : <MapIcon size={15} />}
+                  {view === 'map' ? '목록' : '지도'}
                 </button>
                 <button
                   onClick={() => setFilterOpen(true)}
@@ -253,15 +306,6 @@ export function HomeMap() {
           </div>
         </div>
       </div>
-
-      {/* 지도/리스트 전환 */}
-      <button
-        onClick={() => setView(view === 'map' ? 'list' : 'map')}
-        className="absolute right-4 top-[136px] z-40 flex h-10 items-center gap-1.5 rounded-full border border-border bg-surface/95 px-3.5 text-xs font-bold text-ink backdrop-blur"
-      >
-        {view === 'map' ? <LayoutList size={15} /> : <MapIcon size={15} />}
-        {view === 'map' ? '리스트' : '지도'}
-      </button>
 
       {/* 마커 미니 카드 */}
       <AnimatePresence>
@@ -451,19 +495,14 @@ function ResultList({
     )
   }
   return (
-    <div className="space-y-2.5">
-      {results.map((item) => (
-        <ShowCard
-          key={item.show.id}
-          item={item}
-          nowIso={nowIso}
-          liked={likedShowIds.includes(item.show.id)}
-          onToggleLike={() => onToggleLike(item.show.id)}
-          onClick={() => onOpen(item.show.id)}
-          highlighted={item.show.id === highlightShowId}
-        />
-      ))}
-    </div>
+    <ShowSections
+      results={results}
+      nowIso={nowIso}
+      likedShowIds={likedShowIds}
+      onToggleLike={onToggleLike}
+      onOpen={onOpen}
+      highlightShowId={highlightShowId}
+    />
   )
 }
 
@@ -483,7 +522,9 @@ function NoStagesYet() {
       description="당신의 가게가 이 동네 첫 무대가 될 수 있습니다."
       action={
         <button
-          onClick={() => navigate('/desktop/host/venue/new')}
+          // ★ 모바일 화면인데 데스크톱 경로로 보내고 있었습니다. 눌러도 아무 데도
+          //   가지 않습니다.
+          onClick={() => navigate('/host/venue/new')}
           className="bg-gold-500 rounded-xl px-4 py-2.5 text-xs font-bold text-gold-ink"
         >
           공간 등록하기

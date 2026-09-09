@@ -73,7 +73,7 @@ export function ShowDetailHero({
 
       <div className="px-4 pt-4">
         <div className="flex flex-wrap items-center gap-1.5">
-          <GenreTag genre={show.genre} />
+          <GenreTag genre={show.genre} label={show.genreLabel} />
           {show.tags.map((t) => (
             <span
               key={t}
