@@ -10,6 +10,14 @@
 // 무엇을 넣는가
 //  - 서울(signgucode=11) 공연만. 지역을 넓히려면 REGION 을 바꾸세요.
 //  - kopis_id(mt20id) 로 중복을 막습니다. 매일 돌려도 같은 공연이 늘어나지 않습니다.
+//  - 목록을 마지막 페이지까지(최대 MAX_PAGES) 넘깁니다. 전에는 cpage=1 고정이라
+//    서울 수백 건 중 앞 100건만 들어왔고, 매번 같은 100건만 갱신됐습니다.
+//  - 기간이 그대로고 시간 안내(schedule_note)도 이미 있는 공연은 상세·공연장
+//    API를 다시 부르지 않고 지나갑니다. 그게 이 함수에서 가장 비싼 일이라,
+//    두 번째 실행부터는 훨씬 빠르고 그만큼 더 멀리 볼 수 있습니다.
+//  - TIME_BUDGET_MS 를 넘기면 스스로 멈추고 stoppedEarly: true 를 돌려줍니다.
+//    런타임에 끊기면 통계도 못 남기고, 어디까지 됐는지 알 수 없습니다.
+//    다음 실행이 건너뛰기 덕분에 이어받습니다.
 //  - 좌표가 없으면 카카오 로컬 API로 주소를 좌표로 바꿔 저장합니다. 좌표가 없으면
 //    지도에 찍을 수 없어 목록에서도 빠지므로, 지오코딩에 실패한 공연은 건너뜁니다.
 //
@@ -31,6 +39,26 @@ const REGION = '11'
 const DAYS_AHEAD = 30
 /** 한 번에 가져올 목록 개수 (KOPIS 최대 100) */
 const PAGE_SIZE = 100
+/**
+ * 목록을 몇 페이지까지 넘길지.
+ *
+ * ★ 전에는 cpage=1 로 고정돼 있어서 서울 30일치 수백 건 중 앞 100건만 들어왔고,
+ *   매번 같은 100건만 갱신됐습니다. 그러면 "서울 공연을 보여준다"고 하기에
+ *   표본이 너무 작습니다.
+ *
+ * ★ 상한을 두는 이유는 공연 1건마다 상세·공연장 API를 부르기 때문입니다.
+ *   100건에 23초였습니다. 아래 SKIP(이미 받은 공연 건너뛰기)이 있어서 두 번째
+ *   실행부터는 대부분 API 호출 없이 지나가고, 그만큼 더 멀리 볼 수 있습니다.
+ */
+const MAX_PAGES = 12
+/**
+ * 이 시간을 넘기면 중단하고 지금까지 넣은 것으로 끝냅니다.
+ *
+ * ★ Edge Function 은 무한히 돌지 않습니다. 시간이 다 돼서 런타임에 끊기면
+ *   응답도 통계도 없이 사라져서, 어디까지 됐는지 알 수 없습니다. 스스로
+ *   멈추고 stoppedEarly 를 돌려주면 다음 실행이 이어받습니다.
+ */
+const TIME_BUDGET_MS = 110_000
 /** 시간 정보가 없을 때 쓰는 기본 시작 시각 (KST) */
 const DEFAULT_HOUR = 19
 const DEFAULT_MINUTE = 30
@@ -61,6 +89,16 @@ function splitItems(xml: string, tag = 'db'): string[] {
 
 function yyyymmdd(d: Date): string {
   return `${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, '0')}${String(d.getDate()).padStart(2, '0')}`
+}
+
+/**
+ * timestamptz → KST 기준 'YYYY-MM-DD'.
+ *
+ * ★ toISOString() 은 UTC 라 한국 시각 오전 9시 전 공연이 하루 앞 날짜로 나옵니다.
+ *   9시간을 더한 뒤 잘라야 KST 날짜가 됩니다.
+ */
+function kstDate(iso: string): string {
+  return new Date(new Date(iso).getTime() + 9 * 3_600_000).toISOString().slice(0, 10)
 }
 
 /** 'YYYY.MM.DD' → KST 기준 ISO. 시각 정보가 없으면 기본 시각을 씁니다 */
@@ -131,30 +169,85 @@ Deno.serve(async () => {
   const from = new Date()
   const to = new Date(Date.now() + DAYS_AHEAD * 86_400_000)
 
-  const stats = { fetched: 0, upserted: 0, skippedNoCoords: 0, failed: 0 }
+  const startedAt = Date.now()
+  const stats = {
+    pages: 0,
+    fetched: 0,
+    upserted: 0,
+    /** 이미 같은 기간·시간 안내로 들어와 있어서 API 호출 없이 지나간 수 */
+    skippedFresh: 0,
+    skippedNoCoords: 0,
+    failed: 0,
+    /** 시간이 다 돼서 중간에 멈췄는지 */
+    stoppedEarly: false,
+  }
   /** 같은 공연장을 여러 번 지오코딩하지 않도록 */
   const coordCache = new Map<string, { lat: number; lng: number } | null>()
 
   try {
-    const listXml = await fetchText(
-      `${KOPIS_BASE}/pblprfr?service=${kopisKey}` +
-        `&stdate=${yyyymmdd(from)}&eddate=${yyyymmdd(to)}` +
-        `&cpage=1&rows=${PAGE_SIZE}&signgucode=${REGION}`,
-    )
-
-    const items: KopisShow[] = splitItems(listXml).map((x) => ({
-      mt20id: tagText(x, 'mt20id'),
-      prfnm: tagText(x, 'prfnm'),
-      prfpdfrom: tagText(x, 'prfpdfrom'),
-      prfpdto: tagText(x, 'prfpdto'),
-      fcltynm: tagText(x, 'fcltynm'),
-      genrenm: tagText(x, 'genrenm'),
-      poster: tagText(x, 'poster'),
-    }))
+    // ── 목록: 마지막 페이지까지 ──
+    const items: KopisShow[] = []
+    for (let page = 1; page <= MAX_PAGES; page++) {
+      const listXml = await fetchText(
+        `${KOPIS_BASE}/pblprfr?service=${kopisKey}` +
+          `&stdate=${yyyymmdd(from)}&eddate=${yyyymmdd(to)}` +
+          `&cpage=${page}&rows=${PAGE_SIZE}&signgucode=${REGION}`,
+      )
+      const chunk = splitItems(listXml).map((x) => ({
+        mt20id: tagText(x, 'mt20id'),
+        prfnm: tagText(x, 'prfnm'),
+        prfpdfrom: tagText(x, 'prfpdfrom'),
+        prfpdto: tagText(x, 'prfpdto'),
+        fcltynm: tagText(x, 'fcltynm'),
+        genrenm: tagText(x, 'genrenm'),
+        poster: tagText(x, 'poster'),
+      }))
+      items.push(...chunk)
+      stats.pages = page
+      // 한 페이지가 덜 찼으면 마지막 페이지입니다
+      if (chunk.length < PAGE_SIZE) break
+    }
     stats.fetched = items.length
 
+    // ── 이미 들어와 있는 공연 ──
+    //
+    // ★ 공연 1건마다 상세·공연장 API를 두 번 부르는 것이 이 함수에서 가장 비싼
+    //   일입니다. 기간도 그대로고 시간 안내도 이미 있으면 다시 물어볼 이유가
+    //   없습니다. 이걸 건너뛰는 덕분에 페이지를 12장까지 볼 수 있습니다.
+    const known = new Map<string, { from: string; to: string }>()
+    {
+      const { data } = await supabase
+        .from('shows')
+        .select('kopis_id,starts_at,run_ends_at,schedule_note')
+        .eq('source', 'kopis')
+        .not('schedule_note', 'is', null)
+        .limit(5000)
+      for (const r of data ?? []) {
+        if (!r.kopis_id || !r.run_ends_at) continue
+        known.set(r.kopis_id, { from: kstDate(r.starts_at), to: kstDate(r.run_ends_at) })
+      }
+    }
+
     for (const item of items) {
+      // ★ 시간이 다 됐으면 여기서 멈춥니다. 런타임에 끊기면 통계도 못 남깁니다.
+      if (Date.now() - startedAt > TIME_BUDGET_MS) {
+        stats.stoppedEarly = true
+        break
+      }
+
       if (!item.mt20id) continue
+
+      // 기간이 그대로고 시간 안내도 이미 있으면 다시 물어보지 않습니다
+      const seen = known.get(item.mt20id)
+      if (
+        seen &&
+        seen.from === item.prfpdfrom.replaceAll('.', '-') &&
+        seen.to === item.prfpdto.replaceAll('.', '-')
+      ) {
+        stats.skippedFresh++
+        continue
+      }
+
       try {
         // 상세 — 공연시설 id 와 시간 안내를 얻습니다
         const detailXml = await fetchText(`${KOPIS_BASE}/pblprfr/${item.mt20id}?service=${kopisKey}`)
