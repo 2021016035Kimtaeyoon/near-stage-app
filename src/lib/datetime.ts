@@ -205,3 +205,35 @@ export function dateKey(d: Date): string {
   const p = (n: number) => String(n).padStart(2, '0')
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`
 }
+
+/**
+ * 그 날짜가 속한 주의 월요일 -> 'YYYY-MM-DD'.
+ *
+ * ★ 주의 시작을 월요일로 고정합니다. 일요일 시작으로 하면 금·토 공연과 그 주말
+ *   손님이 다른 주로 갈라져서, 공연 효과를 보려는 비교가 아예 성립하지 않습니다.
+ */
+export function weekStartKey(iso: string): string {
+  const d = new Date(iso)
+  const day = d.getDay() // 0 = 일
+  const back = day === 0 ? 6 : day - 1
+  const mon = new Date(d.getFullYear(), d.getMonth(), d.getDate() - back)
+  return dateKey(mon)
+}
+
+/** 'YYYY-MM-DD'(월요일) -> '9월 2일~8일' */
+export function weekLabel(weekStart: string): string {
+  const [y, m, d] = weekStart.split('-').map(Number)
+  const from = new Date(y, m - 1, d)
+  const to = new Date(y, m - 1, d + 6)
+  const tail =
+    from.getMonth() === to.getMonth()
+      ? `${to.getDate()}일`
+      : `${to.getMonth() + 1}월 ${to.getDate()}일`
+  return `${from.getMonth() + 1}월 ${from.getDate()}일~${tail}`
+}
+
+/** weekStart 에서 n주 전/후 (n<0 이면 과거) */
+export function shiftWeek(weekStart: string, n: number): string {
+  const [y, m, d] = weekStart.split('-').map(Number)
+  return dateKey(new Date(y, m - 1, d + n * 7))
+}

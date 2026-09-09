@@ -187,3 +187,148 @@ export async function cancelShow(showId: string, reason: string): Promise<string
   })
   return error ? describeDbError(error) : null
 }
+
+// ============================================================
+// 주간 손님 수 — "공연을 하면 손님이 느는가"에 답하는 유일한 방법.
+//
+// ★ 공연별 방문객(show_reports)만으로는 답이 안 나옵니다. "공연한 날 24명"은
+//   평소가 몇 명인지 모르면 아무 의미가 없습니다. 비교 대상이 필요하고,
+//   그 대상은 **공연이 없던 주**입니다. 그건 사장님만 압니다.
+//
+// ★ 끝난 주만 받습니다. 진행 중인 주는 아직 절반이라, 그 값을 지난 주들의
+//   평균과 나란히 두면 "공연 주에 손님이 줄었다" 같은 없는 사실이 만들어집니다.
+// ============================================================
+
+export interface WeeklyStat {
+  id: string
+  venueId: string
+  /** 그 주 월요일 'YYYY-MM-DD' */
+  weekStart: string
+  visitorCount: number
+  note: string
+  /** 그 주에 열린 우리 무대 수 (shows 에서 셈) */
+  showCount: number
+}
+
+/** 최근 26주치. 그 이상은 계절이 달라서 비교 근거가 되지 않습니다 */
+export function useWeeklyStats(venueIds: string[], sinceWeek: string): Query<WeeklyStat[]> {
+  const [data, setData] = useState<WeeklyStat[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [tick, setTick] = useState(0)
+  const key = venueIds.join(',')
+
+  useEffect(() => {
+    const ids = key ? key.split(',') : []
+    if (!isSupabaseConfigured || ids.length === 0) {
+      setData([])
+      setLoading(false)
+      return
+    }
+    let alive = true
+    setLoading(true)
+    void (async () => {
+      const { data: rows, error: err } = await supabase
+        .from('v_venue_weekly')
+        .select('id,venue_id,week_start,visitor_count,note,show_count')
+        .in('venue_id', ids)
+        .gte('week_start', sinceWeek)
+        .order('week_start', { ascending: false })
+      if (!alive) return
+      setLoading(false)
+      if (err) {
+        setError(describeDbError(err))
+        return
+      }
+      setError(null)
+      setData(
+        (rows ?? []).map((r) => ({
+          id: r.id,
+          venueId: r.venue_id,
+          weekStart: r.week_start,
+          visitorCount: r.visitor_count,
+          note: r.note ?? '',
+          showCount: r.show_count ?? 0,
+        })),
+      )
+    })()
+    return () => {
+      alive = false
+    }
+  }, [key, sinceWeek, tick])
+
+  const refresh = useCallback(() => setTick((n) => n + 1), [])
+  return { data, loading, error, refresh }
+}
+
+/** 한 주 손님 수 기록. 같은 주를 다시 적으면 덮어씁니다 */
+export async function saveWeeklyStat(
+  venueId: string,
+  weekStart: string,
+  visitorCount: number,
+  note: string,
+): Promise<string | null> {
+  const { error } = await supabase
+    .from('venue_weekly_stats')
+    .upsert(
+      { venue_id: venueId, week_start: weekStart, visitor_count: visitorCount, note },
+      { onConflict: 'venue_id,week_start' },
+    )
+  return error ? describeDbError(error) : null
+}
+
+/** 비교를 보여주기 위한 최소 조건 */
+const MIN_EACH = 2
+const MIN_TOTAL = 4
+
+export interface WeeklyCompare {
+  /** 조건을 채웠는지. false 면 avg 값들은 읽지 마세요 */
+  ready: boolean
+  showWeeks: number
+  quietWeeks: number
+  showAvg: number
+  quietAvg: number
+  /** 공연 주 평균 - 없던 주 평균. 음수일 수 있습니다 */
+  diff: number
+  /** 아직이면 왜 아직인지 한 줄 */
+  needLabel: string
+}
+
+/**
+ * 공연 있던 주 vs 없던 주.
+ *
+ * ★ 한쪽이 1주뿐이면 평균이 아니라 그냥 그 주 값입니다. 그래서 양쪽 2주 이상,
+ *   합쳐서 4주 이상일 때만 보여줍니다. 그 전에는 무엇이 모자란지 그대로 말합니다.
+ */
+export function compareWeeks(rows: WeeklyStat[]): WeeklyCompare {
+  const withShow = rows.filter((r) => r.showCount > 0)
+  const without = rows.filter((r) => r.showCount === 0)
+  const mean = (xs: WeeklyStat[]) =>
+    xs.length === 0 ? 0 : xs.reduce((n, r) => n + r.visitorCount, 0) / xs.length
+
+  const showAvg = mean(withShow)
+  const quietAvg = mean(without)
+  const ready =
+    withShow.length >= MIN_EACH && without.length >= MIN_EACH && rows.length >= MIN_TOTAL
+
+  let needLabel = ''
+  if (!ready) {
+    if (withShow.length < MIN_EACH) {
+      needLabel = `공연이 있던 주 ${MIN_EACH - withShow.length}주가 더 모이면 비교를 보여드려요`
+    } else if (without.length < MIN_EACH) {
+      needLabel = `공연이 없던 주 ${MIN_EACH - without.length}주가 더 모이면 비교를 보여드려요`
+    } else {
+      needLabel = `${MIN_TOTAL - rows.length}주만 더 적으면 비교를 보여드려요`
+    }
+  }
+
+  return {
+    ready,
+    showWeeks: withShow.length,
+    quietWeeks: without.length,
+    showAvg,
+    quietAvg,
+    diff: showAvg - quietAvg,
+    needLabel,
+  }
+}

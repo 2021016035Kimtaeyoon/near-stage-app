@@ -11,11 +11,17 @@ import { KpiCard, KpiGrid } from '@/components/ui/Kpi'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyVenues } from '@/hooks/useMyResources'
 import { useMyPosts } from '@/hooks/usePosts'
-import { summarize, useVenueShows, type VenueShow } from '@/hooks/useVenueStats'
-import { humanDateTime } from '@/lib/datetime'
+import {
+  summarize,
+  useVenueShows,
+  useWeeklyStats,
+  type VenueShow,
+} from '@/hooks/useVenueStats'
+import { humanDateTime, shiftWeek, weekStartKey } from '@/lib/datetime'
 import { useNow } from '@/store/useAppStore'
 import { PerformanceChart } from './PerformanceChart'
 import { ShowReportSheet } from './ShowReportSheet'
+import { WeeklyVisitors } from './WeeklyVisitors'
 
 /**
  * 호스트 대시보드 (§14).
@@ -35,6 +41,10 @@ export function OwnerDashboard() {
   const venueIds = venues.data.map((v) => v.id)
   const shows = useVenueShows(venueIds)
   const posts = useMyPosts(venues.data.filter((v) => v.status === 'approved').map((v) => v.id))
+  // ★ 26주 전 월요일. nowIso 는 자주 바뀌지만 이 값은 주에 한 번만 바뀌어서
+  //   시계가 갈 때마다 다시 조회하지 않습니다.
+  const sinceWeek = shiftWeek(weekStartKey(nowIso), -26)
+  const weekly = useWeeklyStats(venueIds, sinceWeek)
 
   const [reporting, setReporting] = useState<VenueShow | null>(null)
 
@@ -170,6 +180,22 @@ export function OwnerDashboard() {
             </div>
           </div>
         )}
+
+        <div className="mt-5">
+          <SectionTitle>주간 손님 수</SectionTitle>
+          <div className="space-y-2">
+            {venues.data.map((v) => (
+              <WeeklyVisitors
+                key={v.id}
+                venueId={v.id}
+                venueName={venues.data.length > 1 ? v.name : undefined}
+                rows={weekly.data}
+                nowIso={nowIso}
+                onSaved={weekly.refresh}
+              />
+            ))}
+          </div>
+        </div>
 
         <div className="mt-5">
           <SectionTitle>공연별 집객</SectionTitle>

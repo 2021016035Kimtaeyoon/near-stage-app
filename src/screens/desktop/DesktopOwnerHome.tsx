@@ -8,10 +8,16 @@ import { KpiCard, KpiGrid } from '@/components/ui/Kpi'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyVenues } from '@/hooks/useMyResources'
 import { useMyPosts } from '@/hooks/usePosts'
-import { summarize, useVenueShows, type VenueShow } from '@/hooks/useVenueStats'
-import { humanDateTime } from '@/lib/datetime'
+import {
+  summarize,
+  useVenueShows,
+  useWeeklyStats,
+  type VenueShow,
+} from '@/hooks/useVenueStats'
+import { humanDateTime, shiftWeek, weekStartKey } from '@/lib/datetime'
 import { PerformanceChart } from '@/screens/owner/PerformanceChart'
 import { ShowReportSheet } from '@/screens/owner/ShowReportSheet'
+import { WeeklyVisitors } from '@/screens/owner/WeeklyVisitors'
 import { useNow } from '@/store/useAppStore'
 
 /**
@@ -28,6 +34,12 @@ export function DesktopOwnerHome() {
   const venues = useMyVenues()
   const shows = useVenueShows(venues.data.map((v) => v.id))
   const posts = useMyPosts(venues.data.filter((v) => v.status === 'approved').map((v) => v.id))
+  // ★ 주에 한 번만 바뀌는 값이라 시계가 갈 때마다 다시 조회하지 않습니다
+  const sinceWeek = shiftWeek(weekStartKey(nowIso), -26)
+  const weekly = useWeeklyStats(
+    venues.data.map((v) => v.id),
+    sinceWeek,
+  )
   const [reporting, setReporting] = useState<VenueShow | null>(null)
 
   if (!userId || (!venues.loading && venues.data.length === 0)) {
@@ -134,6 +146,19 @@ export function DesktopOwnerHome() {
             </div>
           </div>
         )}
+
+        <div className="mt-6 grid gap-4 lg:grid-cols-2">
+          {venues.data.map((v) => (
+            <WeeklyVisitors
+              key={v.id}
+              venueId={v.id}
+              venueName={venues.data.length > 1 ? v.name : undefined}
+              rows={weekly.data}
+              nowIso={nowIso}
+              onSaved={weekly.refresh}
+            />
+          ))}
+        </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.6fr_1fr]">
           <PerformanceChart shows={shows.data} />
