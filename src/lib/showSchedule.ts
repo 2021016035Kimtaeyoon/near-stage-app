@@ -23,6 +23,15 @@ export type ShowSchedule =
   | { kind: 'dates'; dates: string[] }
   /** 요일로 적힌 경우 (0=일 … 6=토) */
   | { kind: 'weekdays'; days: number[] }
+  /**
+   * 이레 내내 공연.
+   *
+   * ★ '모름'과 반드시 구분해야 합니다. 둘 다 날짜를 좁히지 못하지만, 매일 하는
+   *   공연에 "공연 요일을 알 수 없습니다"라고 쓰면 아는 것을 모른다고 말하는
+   *   것이 됩니다. 실제 KOPIS 문장 100건 중 4건이 이 경우였습니다
+   *   ('월요일 ~ 금요일(20:00), 토요일(...), 일요일(...)', '수요일 ~ 화요일(20:00)').
+   */
+  | { kind: 'daily' }
 
 /**
  * 시간 안내 문장에서 공연일을 읽어냅니다. 못 읽으면 null.
@@ -84,8 +93,8 @@ export function parseSchedule(note: string | null | undefined): ShowSchedule | n
   }
 
   if (days.size === 0) return null
-  // ★ 7일 전부면 아무것도 좁히지 못합니다. 판정했다고 말할 이유가 없습니다.
-  if (days.size === 7) return null
+  // 7일 전부면 날짜로는 좁히지 못하지만, 그건 '매일 공연'이라는 사실입니다
+  if (days.size === 7) return { kind: 'daily' }
   return { kind: 'weekdays', days: [...days].sort() }
 }
 
@@ -100,6 +109,7 @@ export function runsOnDate(
   dateKey: string,
 ): boolean | null {
   if (!schedule) return null
+  if (schedule.kind === 'daily') return true
   if (schedule.kind === 'dates') return schedule.dates.includes(dateKey)
   const [y, m, d] = dateKey.split('-').map(Number)
   return schedule.days.includes(new Date(y, m - 1, d).getDay())
@@ -107,9 +117,19 @@ export function runsOnDate(
 
 const DAY_LABEL = ['일', '월', '화', '수', '목', '금', '토'] as const
 
-/** '화·수·목·금 공연' 처럼 짧게. 못 읽었으면 null */
+/**
+ * '수~일 공연' 처럼 짧게. 못 읽었으면 null.
+ *
+ * ★ 요일을 월요일부터 늘어놓습니다. getDay() 순서(일=0)로 그냥 정렬하면
+ *   수~일 공연이 '일·수·목·금·토'로 나와서, 실제로는 이어진 닷새인데
+ *   흩어진 것처럼 읽힙니다.
+ *
+ * ★ 이어진 구간은 '수~일'로 묶습니다. 점으로 다섯 개를 잇는 것보다 짧고,
+ *   원문('수요일 ~ 일요일')에 더 가깝습니다.
+ */
 export function scheduleSummary(schedule: ShowSchedule | null): string | null {
   if (!schedule) return null
+  if (schedule.kind === 'daily') return '매일 공연'
   if (schedule.kind === 'dates') {
     if (schedule.dates.length > 4) return `${schedule.dates.length}일 공연`
     return schedule.dates
@@ -119,7 +139,22 @@ export function scheduleSummary(schedule: ShowSchedule | null): string | null {
       })
       .join(' · ')
   }
-  return `${schedule.days.map((d) => DAY_LABEL[d]).join('·')} 공연`
+
+  // 월요일 시작으로 다시 늘어놓습니다 (월=0 … 일=6)
+  const ordered = schedule.days.map((d) => (d + 6) % 7).sort((a, b) => a - b)
+  const label = (i: number) => DAY_LABEL[(i + 1) % 7]
+
+  const parts: string[] = []
+  let i = 0
+  while (i < ordered.length) {
+    let j = i
+    while (j + 1 < ordered.length && ordered[j + 1] === ordered[j] + 1) j++
+    // 사흘 이상 이어지면 범위로. 이틀은 '금·토' 가 '금~토' 보다 자연스럽습니다
+    parts.push(j - i >= 2 ? `${label(ordered[i])}~${label(ordered[j])}` : 
+      ordered.slice(i, j + 1).map(label).join('·'))
+    i = j + 1
+  }
+  return `${parts.join('·')} 공연`
 }
 
 /**
