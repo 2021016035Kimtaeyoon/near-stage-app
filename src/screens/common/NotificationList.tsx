@@ -1,4 +1,14 @@
-import { Bell, CheckCheck, CircleCheck, Megaphone, Star, Ticket } from 'lucide-react'
+import {
+  Bell,
+  BellPlus,
+  CalendarClock,
+  CalendarX,
+  CheckCheck,
+  CircleCheck,
+  Megaphone,
+  Star,
+  Ticket,
+} from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -17,11 +27,17 @@ import { useNow } from '@/store/useAppStore'
  * 0011 에서 죽은 링크 두 개를 실제 경로로 고쳤습니다.
  */
 
+// ★ 서버가 넣는 type 과 여기 키가 어긋나면 조용히 기본 종 아이콘이 됩니다.
+//   알림을 새로 만들 때는 반드시 여기에도 추가하세요.
 const ICONS: Record<string, typeof Bell> = {
   accepted: CircleCheck,
   confirmed: Ticket,
   new_show: Megaphone,
   review: Star,
+  review_request: Star,
+  show_reminder: CalendarClock,
+  show_canceled: CalendarX,
+  saved_search: BellPlus,
 }
 
 export function NotificationList({ showHeader = true }: { showHeader?: boolean }) {
