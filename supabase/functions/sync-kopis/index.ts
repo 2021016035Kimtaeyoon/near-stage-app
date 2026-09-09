@@ -136,8 +136,19 @@ function parseRuntime(raw: string): number {
 
 async function fetchText(url: string): Promise<string> {
   const res = await fetch(url)
-  if (!res.ok) throw new Error(`KOPIS 응답 오류 ${res.status}`)
+  if (!res.ok) {
+    // ★ 상태 코드만 던지면 왜 400 인지 알 수 없습니다. KOPIS 는 실패 이유를
+    //   본문에 적어 보내므로 앞부분을 같이 남깁니다. 키는 로그에 남지 않게
+    //   URL 은 넣지 않습니다.
+    const body = (await res.text().catch(() => '')).replace(/\s+/g, ' ').slice(0, 200)
+    throw new Error(`KOPIS 응답 오류 ${res.status}${body ? ` — ${body}` : ''}`)
+  }
   return await res.text()
+}
+
+/** 잠깐 쉬기. KOPIS 가 연속 호출을 막는 경우가 있습니다 */
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms))
 }
 
 /** 주소 → 좌표. 실패하면 null (그 공연은 건너뜁니다) */
@@ -180,19 +191,40 @@ Deno.serve(async () => {
     failed: 0,
     /** 시간이 다 돼서 중간에 멈췄는지 */
     stoppedEarly: false,
+    /** 목록 페이지를 넘기다 멈춘 이유 (없으면 끝까지 넘긴 것) */
+    pageError: '',
   }
   /** 같은 공연장을 여러 번 지오코딩하지 않도록 */
   const coordCache = new Map<string, { lat: number; lng: number } | null>()
 
   try {
     // ── 목록: 마지막 페이지까지 ──
+    //
+    // ★ 한 페이지가 실패해도 앞 페이지에서 받은 것은 그대로 처리합니다.
+    //   전에는 여기서 던진 예외가 바깥 catch 로 빠져서, 1페이지의 100건까지
+    //   통째로 버리고 fetched: 0 으로 끝났습니다. 부분 성공이 전부 실패가
+    //   되면 안 됩니다 — KOPIS 가 잠깐 400 을 주는 것만으로 지도가 빕니다.
     const items: KopisShow[] = []
     for (let page = 1; page <= MAX_PAGES; page++) {
-      const listXml = await fetchText(
+      const url =
         `${KOPIS_BASE}/pblprfr?service=${kopisKey}` +
-          `&stdate=${yyyymmdd(from)}&eddate=${yyyymmdd(to)}` +
-          `&cpage=${page}&rows=${PAGE_SIZE}&signgucode=${REGION}`,
-      )
+        `&stdate=${yyyymmdd(from)}&eddate=${yyyymmdd(to)}` +
+        `&cpage=${page}&rows=${PAGE_SIZE}&signgucode=${REGION}`
+
+      let listXml: string
+      try {
+        listXml = await fetchText(url)
+      } catch (e) {
+        // 연속 호출을 막는 것일 수 있어 한 번만 쉬고 다시 시도합니다
+        await sleep(1200)
+        try {
+          listXml = await fetchText(url)
+        } catch (e2) {
+          stats.pageError = `${page}페이지: ${e2 instanceof Error ? e2.message : e2}`
+          break
+        }
+      }
+
       const chunk = splitItems(listXml).map((x) => ({
         mt20id: tagText(x, 'mt20id'),
         prfnm: tagText(x, 'prfnm'),
@@ -206,6 +238,7 @@ Deno.serve(async () => {
       stats.pages = page
       // 한 페이지가 덜 찼으면 마지막 페이지입니다
       if (chunk.length < PAGE_SIZE) break
+      await sleep(400)
     }
     stats.fetched = items.length
 
