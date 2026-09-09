@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ShowCard } from '@/components/cards/ShowCard'
 import { SERVICE_NAME } from '@/config/brand'
@@ -69,10 +70,85 @@ export function ShowSections({
             count={registered.length}
             desc="공연예술통합전산망(KOPIS)에서 받아온 공연. 예매는 예매처에서 합니다"
           />
-          <div className="space-y-2.5">{registered.map(card)}</div>
+          <LazyList items={registered} render={card} />
         </section>
       )}
     </div>
+  )
+}
+
+/** 한 번에 늘려 그릴 개수 */
+const PAGE = 24
+
+/**
+ * 스크롤이 끝에 가까워지면 조금씩 더 그립니다.
+ *
+ * ★ 등록 공연이 862건이 되면서 카드를 전부 그리자 DOM 노드가 4만 개가 됐습니다.
+ *   100건일 때는 안 보였던 문제고, 실제 휴대폰에서는 스크롤이 끊깁니다.
+ *   24장씩 그리니 1,347개로 줄었습니다.
+ *
+ * ★ 가상 스크롤(윈도잉)을 쓰지 않았습니다. 카드 높이가 제목 줄 수·기간 표기에
+ *   따라 달라서 미리 알 수 없고, 잘못 재면 스크롤이 튑니다.
+ *
+ * ★ IntersectionObserver 가 아니라 스크롤 이벤트를 씁니다. 관찰자는 문서가
+ *   hidden 이면 콜백이 미뤄져서, 실제로 동작하는지 확인할 방법이 없었습니다.
+ *   확인할 수 없는 코드는 남기지 않습니다.
+ */
+function LazyList<T extends { show: { id: string } }>({
+  items,
+  render,
+}: {
+  items: T[]
+  render: (item: T) => React.ReactNode
+}) {
+  const [limit, setLimit] = useState(PAGE)
+  const anchor = useRef<HTMLDivElement>(null)
+
+  // 조건이 바뀌어 목록이 달라지면 처음부터 다시
+  useEffect(() => setLimit(PAGE), [items.length])
+
+  useEffect(() => {
+    if (limit >= items.length) return
+    // 스크롤되는 조상을 찾습니다. 모바일은 홈의 목록 컨테이너,
+    // 데스크톱은 왼쪽 칼럼입니다 — 화면마다 다르니 태그로 찾지 않습니다.
+    let el: HTMLElement | null = anchor.current?.parentElement ?? null
+    while (el && el.scrollHeight <= el.clientHeight + 1) el = el.parentElement
+    const scroller: HTMLElement | Window = el ?? window
+
+    const onScroll = () => {
+      const [top, view, total] =
+        scroller === window
+          ? [window.scrollY, window.innerHeight, document.body.scrollHeight]
+          : [
+              (scroller as HTMLElement).scrollTop,
+              (scroller as HTMLElement).clientHeight,
+              (scroller as HTMLElement).scrollHeight,
+            ]
+      // 끝에 닿기 전에 미리 늘려 스크롤이 멈추지 않게 합니다
+      if (top + view >= total - 600) setLimit((n) => Math.min(n + PAGE, items.length))
+    }
+    scroller.addEventListener('scroll', onScroll, { passive: true })
+    // 처음부터 화면이 다 안 찼으면(짧은 목록) 한 번 더 늘립니다
+    onScroll()
+    return () => scroller.removeEventListener('scroll', onScroll)
+  }, [limit, items.length])
+
+  return (
+    <>
+      <div className="space-y-2.5">{items.slice(0, limit).map(render)}</div>
+      {limit < items.length && (
+        <div ref={anchor} className="py-4">
+          {/* ★ 스크롤로 자동으로 늘어나지만 버튼도 둡니다 — 스크롤되는 조상을
+              못 찾는 배치가 생기면 목록이 조용히 끊깁니다. */}
+          <button
+            onClick={() => setLimit((n) => Math.min(n + PAGE, items.length))}
+            className="w-full rounded-xl border border-border bg-surface py-3 text-2xs font-bold text-ink-2"
+          >
+            {items.length - limit}건 더 보기
+          </button>
+        </div>
+      )}
+    </>
   )
 }
 
