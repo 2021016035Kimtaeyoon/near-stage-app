@@ -1,8 +1,9 @@
-import { Flag, Send, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { Flag, Send, Trash2, UserX } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useAuthStore } from '@/hooks/useAuth'
+import { useMyBlocks } from '@/hooks/useBlocks'
 import { addComment, deleteComment, useClipComments } from '@/hooks/useClipSocial'
 import { relativeFromNow } from '@/lib/datetime'
 import { useNow } from '@/store/useAppStore'
@@ -38,7 +39,14 @@ export function ClipComments({
   const nowIso = useNow()
   const userId = useAuthStore((s) => s.userId)
   const requireAuth = useAuthStore((s) => s.requireAuth)
-  const { data, loading, refresh } = useClipComments(open ? clipId : null)
+  const { data: rawData, loading, refresh } = useClipComments(open ? clipId : null)
+  const blocks = useMyBlocks()
+  // ★ 차단은 신고와 달리 판단을 기다리지 않습니다. 내 차단 목록에 있는 사람의
+  //   댓글은 이 화면에서 즉시 빠집니다.
+  const data = useMemo(
+    () => rawData.filter((c) => !blocks.isBlocked(c.userId)),
+    [rawData, blocks],
+  )
   const [text, setText] = useState('')
   const [busy, setBusy] = useState(false)
 
@@ -150,16 +158,35 @@ export function ClipComments({
                   <Trash2 size={13} />
                 </button>
               ) : (
-                /* ★ 신고 대상에 'comment' 가 있는데 댓글을 신고할 방법이 없었습니다.
-                   운영자 화면에는 댓글 신고를 처리하는 자리가 있는데, 그 신고가
-                   접수될 입구가 없으니 영영 비어 있는 기능이었습니다. */
-                <button
-                  onClick={() => requireAuth(() => onReportComment?.(c.id))}
-                  aria-label="댓글 신고"
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-3"
-                >
-                  <Flag size={13} />
-                </button>
+                <div className="flex shrink-0 items-center">
+                  {/* ★ 신고 대상에 'comment' 가 있는데 댓글을 신고할 방법이 없었습니다.
+                     운영자 화면에는 댓글 신고를 처리하는 자리가 있는데, 그 신고가
+                     접수될 입구가 없으니 영영 비어 있는 기능이었습니다. */}
+                  <button
+                    onClick={() => requireAuth(() => onReportComment?.(c.id))}
+                    aria-label="댓글 신고"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-3"
+                  >
+                    <Flag size={13} />
+                  </button>
+                  {/* ★ 신고는 운영자가 판단할 때까지 기다립니다. 차단은 판단을
+                     기다리지 않고 내 화면에서 바로 그 사람 글을 안 보이게 합니다. */}
+                  <button
+                    onClick={() =>
+                      requireAuth(() =>
+                        void (async () => {
+                          const err = await blocks.block(c.userId, c.authorName)
+                          if (err) toast('차단하지 못했어요', 'error', err)
+                          else toast('차단했어요', 'default', `${c.authorName}의 글이 안 보여요`)
+                        })(),
+                      )
+                    }
+                    aria-label="사용자 차단"
+                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-3"
+                  >
+                    <UserX size={13} />
+                  </button>
+                </div>
               )}
             </div>
           ))}

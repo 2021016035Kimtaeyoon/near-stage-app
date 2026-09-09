@@ -13,6 +13,7 @@ import type { Query } from './usePublicShows'
 export interface ClipComment {
   id: string
   clipId: string
+  userId: string
   body: string
   createdAt: string
   authorName: string
@@ -124,6 +125,7 @@ export function useClipComments(clipId: string | null): Query<ClipComment[]> {
             return {
               id: r.id,
               clipId: r.clip_id,
+              userId: r.user_id,
               body: r.body,
               createdAt: r.created_at,
               authorName: p?.display_name ?? '이름 없는 사용자',

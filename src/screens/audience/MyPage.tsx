@@ -13,6 +13,7 @@ import { AccountDangerZone } from './AccountDangerZone'
 import { MyFollowedPerformers, MyLikedShows } from './MyLikesFollows'
 import { AccountCard } from './AccountCard'
 import { MyReservations } from './MyReservations'
+import { BlockedUsersPanel } from './BlockedUsersPanel'
 import { SavedSearchPanel } from './SavedSearchPanel'
 
 type Tab = 'reservation' | 'liked' | 'follow' | 'noti'
@@ -51,6 +52,7 @@ export function MyPage() {
         <FreeTrialNotice className="mb-4" />
 
         <SavedSearchPanel />
+        <BlockedUsersPanel />
 
         <div className="card mb-4 flex items-center justify-between px-4 py-3.5">
           <div className="flex items-center gap-2.5">
