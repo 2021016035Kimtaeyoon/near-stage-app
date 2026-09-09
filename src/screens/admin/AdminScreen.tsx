@@ -1,16 +1,19 @@
-import { RefreshCw, ShieldCheck } from 'lucide-react'
+import { RefreshCw, ShieldCheck, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeader'
 import { Tag } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
 import { Segmented } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { cn } from '@/lib/cn'
 import {
+  removeReportTarget,
   setReportStatus,
   useAdminQueue,
   useAdminReports,
   useAdminStats,
   useClientErrors,
+  useReportTargets,
   type AdminReport,
   type AdminStats,
 } from '@/hooks/useAdmin'
@@ -231,8 +234,13 @@ const TARGET_LABEL: Record<AdminReport['targetType'], string> = {
  * ★ 신고자 이름은 운영자 화면에만 있습니다. 조치 결과를 남길 때도 신고당한 쪽에는
  *   누가 신고했는지 전달하지 않습니다.
  *
- * 여기서 대상을 직접 지우지는 않습니다 — 클립·댓글은 대상 화면에서, 공간·팀은
- * 대기 탭에서 내립니다. 한 화면에 모든 삭제 버튼을 몰아두면 오조작이 납니다.
+ * ★ 예전에는 대상 id(uuid)만 보여주고 '조치 완료로 표시' 버튼이 reports.status 만
+ *   바꿨습니다. 신고당한 클립·댓글은 그대로 남았고, 운영자는 그 문자열을 들고
+ *   어디 있는지 직접 찾아야 했습니다. 처리했다고 표시만 하는 버튼은 없느니만
+ *   못합니다. 이제 대상의 내용을 함께 보여주고 그 자리에서 내립니다.
+ *
+ * ★ 공간·팀은 지우지 않고 rejected 로 내립니다 — 지우면 그 공간에 걸린 공연과
+ *   리뷰가 함께 사라지고 되돌릴 수 없습니다. 클립·댓글은 지웁니다.
  */
 function ReportList({
   reports,
@@ -242,18 +250,53 @@ function ReportList({
   onDone: () => void
 }) {
   const [busy, setBusy] = useState<string | null>(null)
+  const targets = useReportTargets(reports.data)
   const open = reports.data.filter((r) => r.status === 'open')
   const done = reports.data.filter((r) => r.status !== 'open')
 
-  const act = async (id: string, status: 'resolved' | 'rejected') => {
+  /** 기각 — 대상은 그대로 두고 신고만 닫습니다 */
+  const reject = async (id: string) => {
     setBusy(id)
-    const err = await setReportStatus(id, status, '')
+    const err = await setReportStatus(id, 'rejected', '')
     setBusy(null)
     if (err) {
       toast('처리하지 못했어요', 'error', err)
       return
     }
-    toast(status === 'resolved' ? '조치 완료로 표시했어요' : '신고를 기각했어요')
+    toast('신고를 기각했어요', 'default', '대상은 그대로 둡니다')
+    onDone()
+  }
+
+  /**
+   * 조치 — 대상을 먼저 내리고, 성공했을 때만 신고를 닫습니다.
+   *
+   * ★ 순서가 중요합니다. 신고를 먼저 닫으면 대상 삭제가 실패했을 때 "처리됨"으로
+   *   보이면서 문제 콘텐츠가 그대로 남습니다. 그게 지금까지의 동작이었습니다.
+   */
+  const takeDown = async (r: AdminReport) => {
+    setBusy(r.id)
+    const gone = targets[`${r.targetType}:${r.targetId}`]?.gone
+    if (!gone) {
+      const err = await removeReportTarget(r.targetType, r.targetId)
+      if (err) {
+        setBusy(null)
+        toast('대상을 내리지 못했어요', 'error', err)
+        return
+      }
+    }
+    const err2 = await setReportStatus(r.id, 'resolved', gone ? '이미 삭제됨' : '조치함')
+    setBusy(null)
+    if (err2) {
+      toast('신고 상태를 바꾸지 못했어요', 'error', err2)
+      return
+    }
+    toast(
+      gone ? '이미 삭제된 대상이에요' : '대상을 내렸어요',
+      'success',
+      r.targetType === 'venue' || r.targetType === 'artist'
+        ? '공개에서 내렸습니다 (삭제 아님)'
+        : '삭제했습니다',
+    )
     onDone()
   }
 
@@ -290,9 +333,37 @@ function ReportList({
           {r.detail}
         </p>
       )}
+      {/* ★ 대상의 내용을 보여줍니다. uuid 만 보고 판단할 수는 없습니다. */}
+      {(() => {
+        const t = targets[`${r.targetType}:${r.targetId}`]
+        if (!t) return <div className="mt-2 h-12 animate-pulse rounded-lg bg-surface-2" />
+        return (
+          <div className="mt-2 flex items-start gap-2.5 rounded-lg border border-border p-2">
+            {t.thumbUrl && (
+              <img
+                src={t.thumbUrl}
+                alt=""
+                loading="lazy"
+                className="h-11 w-11 shrink-0 rounded object-cover"
+              />
+            )}
+            <div className="min-w-0 flex-1">
+              <p
+                className={cn(
+                  'line-clamp-2 text-2xs font-bold leading-relaxed',
+                  t.gone && 'text-ink-3',
+                )}
+              >
+                {t.label}
+              </p>
+              {t.sub && <p className="mt-0.5 truncate text-2xs text-ink-3">{t.sub}</p>}
+            </div>
+          </div>
+        )
+      })()}
       <p className="mt-1.5 break-all text-2xs text-ink-3">
-        대상 id: {r.targetId}
-        {r.reporterName && ` · 신고 ${r.reporterName}`}
+        {r.reporterName && `신고 ${r.reporterName} · `}
+        id {r.targetId.slice(0, 8)}
       </p>
       {r.status === 'open' && (
         <div className="mt-2.5 flex gap-2">
@@ -300,18 +371,19 @@ function ReportList({
             size="sm"
             variant="outline"
             loading={busy === r.id}
-            onClick={() => void act(r.id, 'rejected')}
+            onClick={() => void reject(r.id)}
           >
             문제 없음
           </Button>
           <Button
             size="sm"
-            variant="brand"
+            variant="danger"
             full
             loading={busy === r.id}
-            onClick={() => void act(r.id, 'resolved')}
+            leading={<Trash2 size={13} />}
+            onClick={() => void takeDown(r)}
           >
-            조치 완료로 표시
+            {r.targetType === 'venue' || r.targetType === 'artist' ? '공개에서 내리기' : '삭제하기'}
           </Button>
         </div>
       )}

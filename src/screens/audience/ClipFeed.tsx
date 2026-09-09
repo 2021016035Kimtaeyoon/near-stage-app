@@ -41,7 +41,9 @@ export function ClipFeed() {
   const [index, setIndex] = useState(0)
   const [muted, setMuted] = useState(true)
   const [commentsFor, setCommentsFor] = useState<string | null>(null)
-  const [reportFor, setReportFor] = useState<string | null>(null)
+  const [reportFor, setReportFor] = useState<{ type: 'clip' | 'comment'; id: string } | null>(
+    null,
+  )
   // 공유 링크로 들어온 클립으로 한 번만 이동합니다
   const jumped = useRef(false)
 
@@ -139,7 +141,7 @@ export function ClipFeed() {
                 onToggleFollow={() => requireAuth(() => void follows.toggle(clip.artistId))}
                 onOpenComments={() => setCommentsFor(clip.id)}
                 onShare={() => void shareClip(clip)}
-                onReport={() => setReportFor(clip.id)}
+                onReport={() => setReportFor({ type: 'clip', id: clip.id })}
                 upcomingShow={upcomingByArtist.get(clip.artistId) ?? null}
                 nowIso={nowIso}
                 onOpenShow={(showId) => navigate(`/audience/show/${showId}`)}
@@ -165,11 +167,13 @@ export function ClipFeed() {
         </div>
       )}
 
+      {/* ★ 클립 신고와 댓글 신고가 같은 시트를 씁니다. 댓글 시트 안에 신고
+          시트를 또 넣으면 안쪽이 부모의 위치 상자에 갇힙니다. */}
       <ReportSheet
         open={reportFor !== null}
         onClose={() => setReportFor(null)}
-        targetType="clip"
-        targetId={reportFor ?? ''}
+        targetType={reportFor?.type ?? 'clip'}
+        targetId={reportFor?.id ?? ''}
       />
 
       <ClipComments
@@ -177,6 +181,7 @@ export function ClipFeed() {
         open={commentsFor !== null}
         onClose={() => setCommentsFor(null)}
         onCountChange={() => clips.refresh()}
+        onReportComment={(id) => setReportFor({ type: 'comment', id })}
       />
     </div>
   )

@@ -1,4 +1,4 @@
-import { Send, Trash2 } from 'lucide-react'
+import { Flag, Send, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { BottomSheet } from '@/components/ui/BottomSheet'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -22,11 +22,18 @@ export function ClipComments({
   open,
   onClose,
   onCountChange,
+  onReportComment,
 }: {
   clipId: string | null
   open: boolean
   onClose: () => void
   onCountChange?: (n: number) => void
+  /**
+   * ★ 신고 시트를 여기서 열지 않고 위(ClipFeed)로 올립니다. 바텀시트 안에
+   *   바텀시트를 두면 안쪽 시트가 부모의 위치 상자(absolute inset-0)에 갇혀
+   *   화면 전체가 아니라 댓글 시트 안에만 뜹니다.
+   */
+  onReportComment?: (commentId: string) => void
 }) {
   const nowIso = useNow()
   const userId = useAuthStore((s) => s.userId)
@@ -134,13 +141,24 @@ export function ClipComments({
                   {c.body}
                 </p>
               </div>
-              {c.isMine && (
+              {c.isMine ? (
                 <button
                   onClick={() => void remove(c.id)}
                   aria-label="댓글 지우기"
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-3"
                 >
                   <Trash2 size={13} />
+                </button>
+              ) : (
+                /* ★ 신고 대상에 'comment' 가 있는데 댓글을 신고할 방법이 없었습니다.
+                   운영자 화면에는 댓글 신고를 처리하는 자리가 있는데, 그 신고가
+                   접수될 입구가 없으니 영영 비어 있는 기능이었습니다. */
+                <button
+                  onClick={() => requireAuth(() => onReportComment?.(c.id))}
+                  aria-label="댓글 신고"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-ink-3"
+                >
+                  <Flag size={13} />
                 </button>
               )}
             </div>

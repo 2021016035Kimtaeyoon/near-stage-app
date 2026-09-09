@@ -360,3 +360,130 @@ export function useClientErrors(): Query<ClientError[]> {
   const refresh = useCallback(() => setTick((n) => n + 1), [])
   return { data, loading, error, refresh }
 }
+
+/* ───────────────── 신고 대상 내용 + 실제 조치 ───────────────── */
+
+/**
+ * ★ 신고 화면이 대상 id(uuid)만 보여주고 있었습니다. 운영자는 그 문자열을 들고
+ *   어디에 있는지 직접 찾아야 했고, '조치 완료로 표시' 버튼은 reports.status 만
+ *   바꿀 뿐 신고당한 클립·댓글은 그대로 남았습니다. 처리했다고 표시만 하는
+ *   버튼은 없느니만 못합니다.
+ */
+export interface ReportTarget {
+  /** 무엇인지 한 줄 (팀 이름, 댓글 본문, 공연 제목 …) */
+  label: string
+  /** 부가 설명 (주소, 장르, 시각 …) */
+  sub: string
+  thumbUrl: string | null
+  /** 이미 지워졌거나 접근할 수 없는 대상 */
+  gone: boolean
+}
+
+/** 신고 목록의 대상들을 종류별로 묶어 한 번에 읽어옵니다 */
+export function useReportTargets(reports: AdminReport[]): Record<string, ReportTarget> {
+  const isAdmin = useAuthStore((s) => s.profile?.isAdmin ?? false)
+  const [map, setMap] = useState<Record<string, ReportTarget>>({})
+  // 목록이 같으면 다시 읽지 않습니다
+  const key = reports.map((r) => `${r.targetType}:${r.targetId}`).join(',')
+
+  useEffect(() => {
+    if (!isSupabaseConfigured || !isAdmin || !key) return
+    let alive = true
+    const ids = (t: string) =>
+      key
+        .split(',')
+        .filter((k) => k.startsWith(`${t}:`))
+        .map((k) => k.slice(t.length + 1))
+
+    void (async () => {
+      const next: Record<string, ReportTarget> = {}
+      const put = (t: string, id: string, v: ReportTarget) => {
+        next[`${t}:${id}`] = v
+      }
+
+      const [venues, artists, clips, comments, shows] = await Promise.all([
+        ids('venue').length
+          ? supabase.from('venues').select('id,name,address,photos,status').in('id', ids('venue'))
+          : Promise.resolve({ data: [] }),
+        ids('artist').length
+          ? supabase
+              .from('artists')
+              .select('id,team_name,genre,photos,status')
+              .in('id', ids('artist'))
+          : Promise.resolve({ data: [] }),
+        ids('clip').length
+          ? supabase
+              .from('artist_clips')
+              .select('id,title,url,thumb_url,kind')
+              .in('id', ids('clip'))
+          : Promise.resolve({ data: [] }),
+        ids('comment').length
+          ? supabase.from('clip_comments').select('id,body,created_at').in('id', ids('comment'))
+          : Promise.resolve({ data: [] }),
+        ids('show').length
+          ? supabase.from('shows').select('id,title,starts_at').in('id', ids('show'))
+          : Promise.resolve({ data: [] }),
+      ])
+      if (!alive) return
+
+      for (const v of venues.data ?? [])
+        put('venue', v.id, {
+          label: v.name,
+          sub: `${v.address ?? ''} · ${v.status}`,
+          thumbUrl: v.photos?.[0] ?? null,
+          gone: false,
+        })
+      for (const a of artists.data ?? [])
+        put('artist', a.id, {
+          label: a.team_name,
+          sub: `${a.genre ?? ''} · ${a.status}`,
+          thumbUrl: a.photos?.[0] ?? null,
+          gone: false,
+        })
+      for (const c of clips.data ?? [])
+        put('clip', c.id, {
+          label: c.title || '(제목 없음)',
+          sub: c.kind === 'link' ? c.url : '업로드 영상',
+          thumbUrl: c.thumb_url ?? null,
+          gone: false,
+        })
+      for (const c of comments.data ?? [])
+        put('comment', c.id, { label: c.body, sub: '클립 댓글', thumbUrl: null, gone: false })
+      for (const s of shows.data ?? [])
+        put('show', s.id, { label: s.title, sub: s.starts_at, thumbUrl: null, gone: false })
+
+      // 읽어오지 못한 것은 이미 지워졌다는 뜻입니다 — 없는 걸 찾게 두면 안 됩니다
+      for (const k of key.split(',')) {
+        if (!next[k]) next[k] = { label: '(삭제됨)', sub: '', thumbUrl: null, gone: true }
+      }
+      setMap(next)
+    })()
+    return () => {
+      alive = false
+    }
+  }, [key, isAdmin])
+
+  return map
+}
+
+/**
+ * 신고당한 대상을 실제로 내립니다.
+ *
+ * ★ 공간·팀은 지우지 않고 rejected 로 내립니다. 지우면 그 공간에 걸린 공연과
+ *   리뷰가 함께 사라지고, 잘못 판단했을 때 되돌릴 수 없습니다.
+ * ★ 클립·댓글은 지웁니다. 되돌릴 필요가 있는 종류가 아니고, 남겨두면 계속
+ *   보입니다. 신고 기록(reports)에는 대상 id 가 남아서 같은 사람이 반복하는지
+ *   볼 수 있습니다.
+ */
+export async function removeReportTarget(
+  targetType: AdminReport['targetType'],
+  targetId: string,
+): Promise<string | null> {
+  if (targetType === 'venue' || targetType === 'artist') {
+    return setApproval(targetType === 'venue' ? 'venues' : 'artists', targetId, 'rejected', '신고 조치')
+  }
+  const table =
+    targetType === 'clip' ? 'artist_clips' : targetType === 'comment' ? 'clip_comments' : 'shows'
+  const { error } = await supabase.from(table).delete().eq('id', targetId)
+  return error ? describeDbError(error) : null
+}
