@@ -20,12 +20,18 @@ interface AuthState {
   loading: boolean
   userId: string | null
   profile: UserProfile | null
+  /**
+   * 로그인 수단 — 'kakao' | 'google' | 'email' 등, Supabase 세션의
+   * app_metadata.provider 그대로입니다. 마이페이지에 "소셜 계정으로
+   * 로그인됨"이라고 쓸지 "이메일로 로그인됨"이라고 쓸지 여기로 가릅니다.
+   */
+  provider: string | null
   /** 로그인 시트가 열려 있는지 */
   sheetOpen: boolean
   /** 로그인 후 이어서 실행할 동작 */
   pendingAction: (() => void) | null
 
-  setSession: (userId: string | null) => void
+  setSession: (userId: string | null, provider?: string | null) => void
   setProfile: (profile: UserProfile | null) => void
   /** 로그인이 필요한 동작을 감쌉니다. 로그인 상태면 즉시 실행, 아니면 시트를 띄웁니다 */
   requireAuth: (action: () => void) => void
@@ -37,10 +43,11 @@ export const useAuthStore = create<AuthState>()((set, get) => ({
   loading: true,
   userId: null,
   profile: null,
+  provider: null,
   sheetOpen: false,
   pendingAction: null,
 
-  setSession: (userId) => set({ userId, loading: false }),
+  setSession: (userId, provider = null) => set({ userId, provider, loading: false }),
   setProfile: (profile) => set({ profile }),
 
   requireAuth: (action) => {
@@ -125,7 +132,7 @@ export function useAuthSync(): void {
     supabase.auth.getSession().then(({ data }) => {
       if (!alive) return
       const uid = data.session?.user.id ?? null
-      setSession(uid)
+      setSession(uid, data.session?.user.app_metadata.provider ?? null)
       if (uid) {
         void loadProfile(uid)
         void recordConsent(uid)
@@ -135,7 +142,7 @@ export function useAuthSync(): void {
     const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (!alive) return
       const uid = session?.user.id ?? null
-      setSession(uid)
+      setSession(uid, session?.user.app_metadata.provider ?? null)
       if (uid) {
         void loadProfile(uid)
         // ★ 로그인 시트에 "로그인하면 동의하는 것으로 봅니다"라고 적어뒀을 뿐
@@ -192,6 +199,38 @@ export async function signInWith(provider: AuthProvider): Promise<{ error: strin
     options: {
       // HashRouter 라 해시까지 포함해 돌려보내야 원래 보던 화면으로 복귀합니다
       redirectTo: window.location.href,
+    },
+  })
+  return { error: error?.message ?? null }
+}
+
+/**
+ * 이메일 로그인 — 매직링크(비밀번호 없음).
+ *
+ * ★ 비밀번호 방식을 만들지 않았습니다. 비밀번호를 잊으면 재설정 메일을 받아야
+ *   하는데, Supabase 무료 플랜의 기본 발송은 시간당 2~4통이고 발신 주소가
+ *   supabase.io 라 스팸함으로 자주 빠집니다. 재설정 메일이 제때 안 가면
+ *   비밀번호를 잊은 사람은 영구히 잠깁니다 — 안 만드는 것보다 나쁩니다.
+ *   매직링크는 애초에 잊을 비밀번호가 없어서 이 사고 자체가 없습니다.
+ *
+ * ★ 그래도 이메일 발송 자체는 여전히 같은 인프라(Supabase 기본 발송)를 씁니다.
+ *   실사용 전에 Resend 같은 SMTP 를 Supabase Auth 에 붙이지 않으면, 로그인
+ *   메일이 늦게 오거나 스팸함으로 갈 수 있습니다 — 코드는 지금 완성됐지만
+ *   운영 준비(SMTP 연결)는 별도입니다.
+ *
+ * ★ 가입과 로그인이 같은 동작입니다. 처음 쓰는 이메일이면 계정을 만들고,
+ *   이미 있으면 그 계정으로 로그인합니다 — 화면을 나눌 이유가 없습니다.
+ */
+export async function signInWithEmail(email: string): Promise<{ error: string | null }> {
+  if (!isSupabaseConfigured) {
+    return { error: 'Supabase 설정이 없어 로그인할 수 없습니다.' }
+  }
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      // HashRouter 라 해시까지 포함해 돌려보내야 원래 보던 화면으로 복귀합니다
+      emailRedirectTo: window.location.href,
+      shouldCreateUser: true,
     },
   })
   return { error: error?.message ?? null }

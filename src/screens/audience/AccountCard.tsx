@@ -18,6 +18,7 @@ export function AccountCard() {
   const userId = useAuthStore((s) => s.userId)
   const loading = useAuthStore((s) => s.loading)
   const requireAuth = useAuthStore((s) => s.requireAuth)
+  const provider = useAuthStore((s) => s.provider)
   // ★ 카카오 닉네임이 그대로 박혀서 바꿀 방법이 없었습니다. 본명이 들어간 경우
   //   리뷰와 댓글에 그대로 노출됩니다.
   const [editing, setEditing] = useState(false)
@@ -117,7 +118,11 @@ export function AccountCard() {
                 <Pencil size={11} className="shrink-0 text-ink-3" />
               </button>
               <p className="mt-0.5 text-2xs text-ink-3">
-                {profile?.isAdmin ? '운영자 계정' : '소셜 계정으로 로그인됨'}
+                {profile?.isAdmin
+                  ? '운영자 계정'
+                  : provider === 'email'
+                    ? '이메일로 로그인됨'
+                    : '소셜 계정으로 로그인됨'}
               </p>
             </>
           )}

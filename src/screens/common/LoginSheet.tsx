@@ -1,8 +1,11 @@
+import { Mail } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { BottomSheet } from '@/components/ui/BottomSheet'
+import { Button } from '@/components/ui/Button'
+import { TextInput } from '@/components/ui/Field'
 import { FREE_TRIAL_NOTICE, SERVICE_NAME } from '@/config/brand'
-import { signInWith, useAuthStore, type AuthProvider } from '@/hooks/useAuth'
+import { signInWith, signInWithEmail, useAuthStore, type AuthProvider } from '@/hooks/useAuth'
 import { isKakaoConfigured, startKakaoLogin } from '@/hooks/useKakaoLogin'
 import { toast } from '@/store/useToast'
 
@@ -15,6 +18,10 @@ import { toast } from '@/store/useToast'
  * 카카오는 Supabase 의 OAuth provider 를 쓰지 않습니다 — 그쪽은 scope 에
  * account_email 을 강제로 넣어 비즈 앱이 아닌 앱에서는 KOE205 로 막힙니다.
  * 대신 OIDC id_token 방식(useKakaoLogin.ts)으로 우리가 직접 요청합니다.
+ *
+ * ★ 이메일 로그인은 비밀번호가 없습니다(매직링크). 비밀번호를 잊으면 재설정
+ *   메일을 받아야 하는데, SMTP 를 붙이기 전엔 그 메일이 제때 안 갈 수 있어
+ *   영구 잠김 사고로 이어집니다. 매직링크는 애초에 잊을 비밀번호가 없습니다.
  */
 
 export function LoginSheet() {
@@ -22,6 +29,10 @@ export function LoginSheet() {
   const navigate = useNavigate()
   const closeSheet = useAuthStore((s) => s.closeSheet)
   const [busy, setBusy] = useState<AuthProvider | null>(null)
+  const [showEmail, setShowEmail] = useState(false)
+  const [email, setEmail] = useState('')
+  const [emailBusy, setEmailBusy] = useState(false)
+  const [sentTo, setSentTo] = useState<string | null>(null)
 
   const start = async (provider: AuthProvider) => {
     setBusy(provider)
@@ -33,10 +44,32 @@ export function LoginSheet() {
     // 성공하면 provider 로 이동하므로 이 컴포넌트는 사라집니다
   }
 
+  const sendMagicLink = async () => {
+    const trimmed = email.trim()
+    if (!trimmed || !trimmed.includes('@')) {
+      toast('이메일 주소를 확인해주세요', 'warn')
+      return
+    }
+    setEmailBusy(true)
+    const { error } = await signInWithEmail(trimmed)
+    setEmailBusy(false)
+    if (error) {
+      toast('링크를 보내지 못했어요', 'error', error)
+      return
+    }
+    setSentTo(trimmed)
+  }
+
   return (
     <BottomSheet
       open={open}
-      onClose={closeSheet}
+      onClose={() => {
+        closeSheet()
+        // 다음에 다시 열었을 때 지난번 상태가 남아 있지 않게 합니다
+        setShowEmail(false)
+        setSentTo(null)
+        setEmail('')
+      }}
       title="로그인이 필요해요"
       subtitle={`${SERVICE_NAME}는 소셜 계정으로 바로 시작할 수 있습니다`}
     >
@@ -63,10 +96,54 @@ export function LoginSheet() {
           <GoogleMark />
           {busy === 'google' ? '구글로 이동 중…' : '구글로 시작하기'}
         </button>
+
+        {/* ★ 소셜 계정이 없는 사람을 위한 세 번째 길입니다. 처음부터 입력창을
+            보여주면 화면이 복잡해져서, 누르기 전엔 버튼 하나로만 둡니다. */}
+        {!showEmail ? (
+          <button
+            onClick={() => setShowEmail(true)}
+            className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border-strong text-[15px] font-bold text-ink-2"
+          >
+            <Mail size={17} />
+            이메일로 계속하기
+          </button>
+        ) : sentTo ? (
+          <div className="rounded-2xl border border-border bg-surface-2 p-4 text-center">
+            <p className="text-[13px] font-bold">{sentTo}로 링크를 보냈어요</p>
+            <p className="mt-1 text-2xs leading-relaxed text-ink-3">
+              메일함(스팸함도 확인해주세요)에서 링크를 누르면 로그인됩니다.
+            </p>
+            <button
+              onClick={() => setSentTo(null)}
+              className="mt-2.5 text-2xs font-bold text-gold-text underline underline-offset-2"
+            >
+              다른 이메일로 다시 받기
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <TextInput
+              type="email"
+              inputMode="email"
+              autoFocus
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="이메일 주소"
+              onKeyDown={(e) => e.key === 'Enter' && void sendMagicLink()}
+            />
+            <Button full variant="brand" loading={emailBusy} onClick={() => void sendMagicLink()}>
+              로그인 링크 받기
+            </Button>
+            <p className="text-2xs leading-relaxed text-ink-3">
+              비밀번호가 없습니다. 메일로 온 링크를 누르면 바로 로그인돼요 — 처음
+              쓰는 이메일이면 계정이 자동으로 만들어집니다.
+            </p>
+          </div>
+        )}
       </div>
 
       <ul className="mt-5 space-y-2 text-xs leading-relaxed text-ink-2">
-        <li>· 이름과 프로필 사진만 받습니다. 전화번호는 받지 않습니다.</li>
+        <li>· 소셜 로그인은 이름과 프로필 사진만, 이메일 로그인은 이메일 주소만 받습니다. 전화번호는 받지 않습니다.</li>
         <li>· {FREE_TRIAL_NOTICE}</li>
         <li>· 공연 둘러보기는 로그인 없이도 계속 하실 수 있어요.</li>
       </ul>
