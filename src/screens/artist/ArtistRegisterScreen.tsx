@@ -32,8 +32,9 @@ const STEPS = ['팀 기본', '소개·셋리스트', '조건·사진·영상'] a
  * 공간 등록과 같은 구조입니다. 필수는 팀명·장르·인원·공연 길이 넷뿐이고, 나머지는
  * 비워도 제출됩니다 — 완성도가 낮으면 조건에 맞는 공간이 덜 찾아올 뿐입니다.
  *
- * 공간과 달리 아티스트는 자동 승인하지 않습니다. 주소처럼 기계가 확인할 수 있는
- * 근거가 없어서, 지금은 운영자 확인을 거칩니다.
+ * 공간과 같은 기준으로 자동 승인됩니다(0029_artist_auto_approve.sql). 필수 항목이
+ * 채워졌고 같은 이름의 팀이 없으면 등록 즉시 지원할 수 있습니다. status 는 보내지
+ * 않습니다 — 클라이언트가 정할 값이 아니라 DB 트리거가 판정합니다.
  */
 export function ArtistRegisterScreen() {
   const navigate = useNavigate()
@@ -114,8 +115,8 @@ export function ArtistRegisterScreen() {
       }
 
       const { data: created, error } = isEdit
-        ? await supabase.from('artists').update(payload).eq('id', artistId).select('id').single()
-        : await supabase.from('artists').insert(payload).select('id').single()
+        ? await supabase.from('artists').update(payload).eq('id', artistId).select('id,status').single()
+        : await supabase.from('artists').insert(payload).select('id,status').single()
 
       if (error || !created) {
         setSubmitting(false)
@@ -132,11 +133,14 @@ export function ArtistRegisterScreen() {
         toast('팀은 등록했지만 클립을 저장하지 못했어요', 'warn', clipErr)
       }
       clear()
-      toast(
-        isEdit ? '저장했어요' : '등록을 접수했어요',
-        'success',
-        isEdit ? '바뀐 내용이 반영됩니다' : '운영자 확인 후 공개됩니다',
-      )
+      // 판정 결과를 읽어와 안내합니다 — 추측해서 말하면 화면과 실제가 어긋납니다
+      if (isEdit) {
+        toast('저장했어요', 'success', '바뀐 내용이 반영됩니다')
+      } else if (created.status === 'approved') {
+        toast('등록됐어요', 'success', '지금부터 구인글에 지원할 수 있어요')
+      } else {
+        toast('등록을 접수했어요', 'success', '확인이 필요해 잠시 심사 대기로 들어갔어요')
+      }
       navigate('/artist/me', { replace: true })
     })
   }
