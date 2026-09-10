@@ -78,6 +78,72 @@ export function LandingPage() {
         <LandingCtaRow className="mt-9" />
       </section>
 
+      {/* 왜 지금 필요한가 — 수도권 편중 문제 제기.
+          ★ 실제 통계(예술경영지원센터 KOPIS 2024년 총결산, 문체부 국민문화예술활동조사)를
+          씁니다. 지어낸 숫자를 넣으면 나중에 누가 원자료를 찾아봤을 때 신뢰가 깨집니다. */}
+      <section className="border-y border-border bg-surface-2/60 px-6 py-14 md:py-20">
+        <div className="mx-auto max-w-3xl">
+          <ScrollReveal>
+            <p className="text-gold-text text-xs font-bold uppercase tracking-widest">
+              왜 지금 필요한가
+            </p>
+            <h2 className="mt-3 text-2xl font-extrabold leading-snug tracking-tight md:text-3xl">
+              공연은 여전히
+              <br />
+              수도권에 쏠려 있습니다
+            </h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-ink-2">
+              합주실에서 몇 달을 갈고닦은 곡이 있어도, 정작 들려줄 무대가 없다는 이야기를
+              여러 팀에게 들었습니다. 소극장·클럽·페스티벌 대부분이 서울과 수도권에 있고,
+              지방으로 갈수록 공연을 접할 기회 자체가 줄어듭니다. 기회가 없으니 "공연을
+              보러 간다"는 문화도 함께 옅어집니다.
+            </p>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.08} className="card mt-8 p-6 md:p-8">
+            <p className="text-2xs font-bold text-ink-3">2024년 전체 공연건수 21,634건 중</p>
+            <p className="mt-1 text-lg font-extrabold">
+              수도권이 <span className="text-gold-text">62.7%</span>를 차지
+            </p>
+            <div className="mt-4 flex h-9 w-full overflow-hidden rounded-full bg-surface-3">
+              <div
+                className="bg-gold-500 flex items-center justify-end pr-3 text-xs font-extrabold text-gold-ink"
+                style={{ width: '62.7%' }}
+              >
+                62.7%
+              </div>
+              <div className="flex flex-1 items-center justify-start pl-3 text-xs font-bold text-ink-3">
+                37.3%
+              </div>
+            </div>
+            <div className="mt-2 flex items-center justify-between text-2xs font-semibold text-ink-3">
+              <span className="flex items-center gap-1.5">
+                <span className="bg-gold-500 h-2 w-2 rounded-full" />
+                수도권(서울·경기·인천)
+              </span>
+              <span className="flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-surface-3 ring-1 ring-inset ring-border-strong" />
+                비수도권
+              </span>
+            </div>
+            <p className="mt-5 text-2xs leading-relaxed text-ink-3">
+              출처: 예술경영지원센터·KOPIS(공연예술통합전산망) 「2024년 총결산 공연시장
+              티켓판매 현황 분석 보고서」
+            </p>
+          </ScrollReveal>
+
+          <ScrollReveal delay={0.14} className="mt-8 text-center">
+            <p className="text-[17px] font-extrabold leading-snug tracking-tight md:text-xl">
+              동네 가게와 아티스트가 만나,
+              <br />
+              전국 방방곡곡에 무대를 하나씩 세웁니다.
+            </p>
+          </ScrollReveal>
+
+          <LandingCtaRow className="mt-8" />
+        </div>
+      </section>
+
       {/* 임박한 공연 — DB에 공연이 없으면 섹션 자체가 사라집니다 */}
       <UpcomingShowsPreview />
 
