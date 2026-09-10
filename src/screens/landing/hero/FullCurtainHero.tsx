@@ -1,4 +1,12 @@
-import { cubicBezier, motion, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from 'framer-motion'
+import {
+  cubicBezier,
+  motion,
+  useMotionTemplate,
+  useMotionValueEvent,
+  useReducedMotion,
+  useScroll,
+  useTransform,
+} from 'framer-motion'
 import { useEffect, useRef, useState, type RefObject } from 'react'
 import { useAppNavigate } from '@/lib/appLink'
 import { LogoMark } from '@/components/shell/LogoMark'
@@ -41,7 +49,6 @@ import {
 } from '../heroTimeline'
 
 const FALL_EASE = cubicBezier(0.55, 0.06, 0.68, 0.19)
-const CURTAIN_EASE = cubicBezier(0.4, 0, 0.2, 1)
 const DEBUG_STORAGE_KEY = 'ns-hero-debug'
 
 interface Panel {
@@ -153,15 +160,55 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
   const scrollCueOpacity = useTransform(p, [0, 0.02, CURTAIN_CUE_FADE_END], [1, 1, 0])
 
   // ── 커튼 (좌우 분할 개막) ────────────────────────────────────────
+  //
+  // ★ 원래는 scaleX 와 x 를 같은 구간에서 같은 이징으로만 움직여서, 딱딱한 판이
+  //   미끄러지는 것처럼 보였습니다(흔들림·무게감 없음). 실제 커튼은
+  //   1) 안쪽 자락이 트랙 쪽으로 먼저 오그라들며 느슨해지고(오그라듦이 이동보다 먼저)
+  //   2) 위쪽(고리로 트랙에 걸린 부분)이 아래쪽(바닥에 끌리는 부분)보다 먼저 움직여
+  //      순간적으로 비스듬히 기울고
+  //   3) 다 열리기 직전에 관성으로 한 번 더 살짝 흔들리다 멈춥니다.
+  //   아래 세 가지로 그 느낌만 흉내 냅니다 — 물리 시뮬레이션이 아니라 스크롤 진행률
+  //   p 의 함수라 스크롤을 거꾸로 해도 정확히 거꾸로 재생됩니다.
+  const CURTAIN_WEIGHT_EASE = cubicBezier(0.65, 0, 0.35, 1) // 초반에 더 버티는, 무게감 있는 이징
+  const GATHER_LAG = (CURTAIN_OPEN_END - CURTAIN_OPEN_START) * 0.14
+  const DRAG_LAG_DEG = 4.5 // 위·아래가 벌어지는 정도(도) — 열리는 중간에만 나타났다 사라짐
+  const SWAY_PCT = 1.4 // 다 열릴 무렵 한 번 더 흔들리는 폭(%)
+
   const panelScaleX = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], [1, PANEL_SCALE_END], {
-    ease: CURTAIN_EASE,
+    ease: CURTAIN_WEIGHT_EASE,
   })
-  const leftPanelX = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], ['0%', `-${PANEL_X_END}%`], {
-    ease: CURTAIN_EASE,
+
+  // 진행률(0~1)만 따로 뽑아둡니다 — 흔들림·기울기가 "열리는 구간 안에서 몇 %"인지로
+  // 계산되어야, 다른 구간(숨 고르기 등)에는 전혀 새어나가지 않습니다.
+  const openT = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], [0, 1])
+
+  // 위아래 기울어짐 — 0에서 시작해 중간에 가장 크게, 다시 0으로. sin(π·t) 모양이라
+  // 양 끝(닫힘·다 열림)에서는 정확히 0이라 이질감 없이 시작·종료합니다.
+  const dragLag = useTransform(openT, (t) => Math.sin(Math.min(Math.max(t, 0), 1) * Math.PI) * DRAG_LAG_DEG)
+  const skewLeft = dragLag
+  const skewRight = useTransform(dragLag, (v) => -v)
+
+  const leftPanelBaseX = useTransform(
+    p,
+    [CURTAIN_OPEN_START + GATHER_LAG, CURTAIN_OPEN_END],
+    ['0%', `-${PANEL_X_END}%`],
+    { ease: CURTAIN_WEIGHT_EASE },
+  )
+  const rightPanelBaseX = useTransform(
+    p,
+    [CURTAIN_OPEN_START + GATHER_LAG, CURTAIN_OPEN_END],
+    ['0%', `${PANEL_X_END}%`],
+    { ease: CURTAIN_WEIGHT_EASE },
+  )
+  // 다 열리기 직전(0.75~1 구간)에 한 번 더 출렁이다 정확히 0으로 잦아듭니다.
+  const settleSway = useTransform(openT, (t) => {
+    const c = Math.min(Math.max(t, 0), 1)
+    if (c < 0.6) return 0
+    const local = (c - 0.6) / 0.4 // 0~1
+    return Math.sin(local * Math.PI * 2.2) * SWAY_PCT * (1 - local)
   })
-  const rightPanelX = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], ['0%', `${PANEL_X_END}%`], {
-    ease: CURTAIN_EASE,
-  })
+  const leftPanelX = useMotionTemplate`calc(${leftPanelBaseX} + ${settleSway}%)`
+  const rightPanelX = useMotionTemplate`calc(${rightPanelBaseX} - ${settleSway}%)`
   const seamOpacity = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], [1, 0])
   const emblemOpacity = useTransform(p, [0, CURTAIN_EMBLEM_FADE_END], [1, 0])
 
@@ -404,15 +451,27 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
         <div className="pointer-events-none absolute inset-0 z-40">
           <motion.div
             aria-hidden
-            className="absolute left-0 top-0 h-full w-[52%] origin-left"
-            style={{ scaleX: panelScaleX, x: leftPanelX, willChange: 'transform' }}
+            className="absolute left-0 top-0 h-full w-[52%]"
+            style={{
+              scaleX: panelScaleX,
+              x: leftPanelX,
+              skewX: skewLeft,
+              transformOrigin: 'left top',
+              willChange: 'transform',
+            }}
           >
             <CurtainPanelSurface side="left" showVignette={!isMobile} />
           </motion.div>
           <motion.div
             aria-hidden
-            className="absolute right-0 top-0 h-full w-[52%] origin-right"
-            style={{ scaleX: panelScaleX, x: rightPanelX, willChange: 'transform' }}
+            className="absolute right-0 top-0 h-full w-[52%]"
+            style={{
+              scaleX: panelScaleX,
+              x: rightPanelX,
+              skewX: skewRight,
+              transformOrigin: 'right top',
+              willChange: 'transform',
+            }}
           >
             <CurtainPanelSurface side="right" showVignette={!isMobile} />
           </motion.div>
