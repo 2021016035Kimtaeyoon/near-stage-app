@@ -11,7 +11,9 @@ import { KpiCard, KpiGrid } from '@/components/ui/Kpi'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyVenues } from '@/hooks/useMyResources'
 import { useMyPosts } from '@/hooks/usePosts'
+import { useChatThreads } from '@/hooks/useChat'
 import {
+  soonShows,
   summarize,
   useVenueShows,
   useWeeklyStats,
@@ -20,6 +22,7 @@ import {
 import { humanDateTime, shiftWeek, weekStartKey } from '@/lib/datetime'
 import { useNow } from '@/store/useAppStore'
 import { PerformanceChart } from './PerformanceChart'
+import { PreShowChecklist } from './PreShowChecklist'
 import { ShowReportSheet } from './ShowReportSheet'
 import { WeeklyVisitors } from './WeeklyVisitors'
 
@@ -41,6 +44,9 @@ export function OwnerDashboard() {
   const venueIds = venues.data.map((v) => v.id)
   const shows = useVenueShows(venueIds)
   const posts = useMyPosts(venues.data.filter((v) => v.status === 'approved').map((v) => v.id))
+  const chatThreads = useChatThreads()
+  const threadIdFor = (venueId: string, artistId: string) =>
+    chatThreads.data.find((t) => t.venueId === venueId && t.artistId === artistId)?.id
   // ★ 26주 전 월요일. nowIso 는 자주 바뀌지만 이 값은 주에 한 번만 바뀌어서
   //   시계가 갈 때마다 다시 조회하지 않습니다.
   const sinceWeek = shiftWeek(weekStartKey(nowIso), -26)
@@ -196,6 +202,18 @@ export function OwnerDashboard() {
             ))}
           </div>
         </div>
+
+        {soonShows(shows.data, nowIso).length > 0 && (
+          <div className="mt-5">
+            <SectionTitle>공연 전 확인</SectionTitle>
+            <PreShowChecklist
+              shows={shows.data}
+              venues={venues.data}
+              threadIdFor={threadIdFor}
+              nowIso={nowIso}
+            />
+          </div>
+        )}
 
         <div className="mt-5">
           <SectionTitle>공연별 집객</SectionTitle>

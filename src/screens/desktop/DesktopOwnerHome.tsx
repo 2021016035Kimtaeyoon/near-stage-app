@@ -8,7 +8,9 @@ import { KpiCard, KpiGrid } from '@/components/ui/Kpi'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyVenues } from '@/hooks/useMyResources'
 import { useMyPosts } from '@/hooks/usePosts'
+import { useChatThreads } from '@/hooks/useChat'
 import {
+  soonShows,
   summarize,
   useVenueShows,
   useWeeklyStats,
@@ -16,6 +18,7 @@ import {
 } from '@/hooks/useVenueStats'
 import { humanDateTime, shiftWeek, weekStartKey } from '@/lib/datetime'
 import { PerformanceChart } from '@/screens/owner/PerformanceChart'
+import { PreShowChecklist } from '@/screens/owner/PreShowChecklist'
 import { ShowReportSheet } from '@/screens/owner/ShowReportSheet'
 import { WeeklyVisitors } from '@/screens/owner/WeeklyVisitors'
 import { useNow } from '@/store/useAppStore'
@@ -33,6 +36,9 @@ export function DesktopOwnerHome() {
   const userId = useAuthStore((s) => s.userId)
   const venues = useMyVenues()
   const shows = useVenueShows(venues.data.map((v) => v.id))
+  const chatThreads = useChatThreads()
+  const threadIdFor = (venueId: string, artistId: string) =>
+    chatThreads.data.find((t) => t.venueId === venueId && t.artistId === artistId)?.id
   const posts = useMyPosts(venues.data.filter((v) => v.status === 'approved').map((v) => v.id))
   // ★ 주에 한 번만 바뀌는 값이라 시계가 갈 때마다 다시 조회하지 않습니다
   const sinceWeek = shiftWeek(weekStartKey(nowIso), -26)
@@ -117,6 +123,18 @@ export function DesktopOwnerHome() {
             hint={sum.reportedShows > 0 ? `공연 ${sum.reportedShows}건 기준` : '공연 후 직접 기록'}
           />
         </KpiGrid>
+
+        {soonShows(shows.data, nowIso).length > 0 && (
+          <div className="card mt-6 p-5">
+            <h2 className="mb-3 text-[15px] font-bold">공연 전 확인</h2>
+            <PreShowChecklist
+              shows={shows.data}
+              venues={venues.data}
+              threadIdFor={threadIdFor}
+              nowIso={nowIso}
+            />
+          </div>
+        )}
 
         {needReport.length > 0 && (
           <div className="card mt-6 p-5">

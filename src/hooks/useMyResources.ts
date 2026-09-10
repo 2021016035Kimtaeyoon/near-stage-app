@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { useAuthStore } from '@/hooks/useAuth'
+import type { VenueEquipment } from '@/lib/needMatch'
 import { describeDbError, isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { Query } from './usePublicShows'
 
@@ -19,6 +20,8 @@ export interface MyVenue {
   status: 'pending' | 'approved' | 'rejected'
   rejectReason: string | null
   photos: string[]
+  /** 우리 공간의 장비 규격 — 공연 전 확인 목록에서 팀의 필요 조건과 대조합니다 */
+  equipment: VenueEquipment
   createdAt: string
 }
 
@@ -53,7 +56,7 @@ export function useMyVenues(): Query<MyVenue[]> {
     setLoading(true)
     void supabase
       .from('venues')
-      .select('id,name,category,address,capacity,status,reject_reason,photos,created_at')
+      .select('id,name,category,address,capacity,status,reject_reason,photos,equipment,created_at')
       .eq('owner_id', userId)
       .order('created_at', { ascending: false })
       .then(({ data: rows, error: err }) => {
@@ -74,6 +77,7 @@ export function useMyVenues(): Query<MyVenue[]> {
             status: r.status,
             rejectReason: r.reject_reason,
             photos: r.photos ?? [],
+            equipment: (r.equipment ?? {}) as VenueEquipment,
             createdAt: r.created_at,
           })),
         )

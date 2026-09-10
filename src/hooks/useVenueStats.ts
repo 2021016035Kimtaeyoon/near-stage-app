@@ -17,6 +17,7 @@ import type { Query } from './usePublicShows'
 export interface VenueShow {
   id: string
   venueId: string
+  artistId: string
   title: string
   startsAt: string
   durationMin: number
@@ -24,6 +25,8 @@ export interface VenueShow {
   status: string
   artistName: string
   artistPhotos: string[]
+  /** 이 팀이 등록 시 적어둔 필요 장비 — 공연 전 확인 목록이 우리 공간 장비와 대조합니다 */
+  artistNeeds: string[]
   /** 참석 예정 인원 합계 */
   goingCount: number
   /** 호스트가 적은 실제 방문객. 안 적었으면 null */
@@ -31,7 +34,7 @@ export interface VenueShow {
   reportNote: string
 }
 
-type ArtistJoin = { team_name: string; photos: string[] | null }
+type ArtistJoin = { team_name: string; photos: string[] | null; needs: string[] | null }
 type ReportJoin = { visitor_count: number; note: string | null }
 
 function one<T>(v: T | T[] | null | undefined): T | null {
@@ -67,7 +70,7 @@ export function useVenueShows(venueIds: string[]): Query<VenueShow[]> {
         supabase
           .from('shows')
           .select(
-            'id,venue_id,title,starts_at,duration_min,capacity,status,artists!shows_artist_id_fkey(team_name,photos),show_reports(visitor_count,note)',
+            'id,venue_id,artist_id,title,starts_at,duration_min,capacity,status,artists!shows_artist_id_fkey(team_name,photos,needs),show_reports(visitor_count,note)',
           )
           .in('venue_id', ids)
           .order('starts_at', { ascending: false })
@@ -95,6 +98,7 @@ export function useVenueShows(venueIds: string[]): Query<VenueShow[]> {
           return {
             id: r.id,
             venueId: r.venue_id,
+            artistId: r.artist_id,
             title: r.title,
             startsAt: r.starts_at,
             durationMin: r.duration_min,
@@ -102,6 +106,7 @@ export function useVenueShows(venueIds: string[]): Query<VenueShow[]> {
             status: r.status,
             artistName: artist?.team_name ?? '',
             artistPhotos: artist?.photos ?? [],
+            artistNeeds: artist?.needs ?? [],
             goingCount: going.get(r.id) ?? 0,
             visitorCount: report?.visitor_count ?? null,
             reportNote: report?.note ?? '',
@@ -331,4 +336,22 @@ export function compareWeeks(rows: WeeklyStat[]): WeeklyCompare {
     diff: showAvg - quietAvg,
     needLabel,
   }
+}
+
+
+/**
+ * 이 시간 안에 시작하는 공연 — "공연 전 확인" 섹션이 다룰 대상입니다.
+ *
+ * screens/owner/PreShowChecklist.tsx 와 화면(OwnerDashboard 등) 양쪽이 같은
+ * 기준으로 "지금 섹션을 보여줄지"와 "무엇을 보여줄지"를 판단해야 해서, 이 표를
+ * 화면 컴포넌트가 아니라 여기 하나에 둡니다.
+ */
+const SOON_MS = 3 * 24 * 60 * 60 * 1000
+
+export function soonShows(shows: VenueShow[], nowIso: string): VenueShow[] {
+  const now = new Date(nowIso).getTime()
+  return shows.filter((s) => {
+    const start = new Date(s.startsAt).getTime()
+    return s.status !== 'canceled' && start >= now && start - now <= SOON_MS
+  })
 }
