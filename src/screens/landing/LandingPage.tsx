@@ -66,9 +66,9 @@ export function LandingPage() {
             {SERVICE_NAME}가 다른 점
           </p>
           <h2 className="mt-3 text-2xl font-extrabold leading-snug tracking-tight md:text-3xl">
-            정식 공연장만 보여주던 지도에,
+            무대는 정식 공연장에만 있지 않습니다.
             <br />
-            동네 카페·바의 무대를 더했습니다.
+            전국 곳곳에 무대를 만듭니다.
           </h2>
           <p className="mx-auto mt-4 max-w-xl text-[15px] leading-relaxed text-ink-2">
             공연할 곳이 없는 팀과 손님이 필요한 가게를 직접 연결해 무대를 만들고, 그렇게
