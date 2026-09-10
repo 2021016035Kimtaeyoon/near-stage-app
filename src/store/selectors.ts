@@ -1,94 +1,6 @@
-import { DEFAULT_USER_LOCATION } from '@/config/brand'
 import { dayRange, showEndMs, tonightRange, weekendRange } from '@/lib/datetime'
 import { runsInRange } from '@/lib/showSchedule'
-import { distanceKm } from '@/lib/geo'
-import type {
-  AppNotification,
-  AudienceFilter,
-  Genre,
-  Performer,
-  Role,
-  Show,
-  ShowPlace,
-  Venue,
-} from '@/types'
-
-/** 공연의 "장소"를 우리 무대/등록 공연 구분 없이 통일해 반환 */
-export function resolvePlace(show: Show, venues: Venue[]): ShowPlace | null {
-  if (show.source === 'own') {
-    const v = venues.find((x) => x.id === show.venueId)
-    if (!v) return null
-    return {
-      name: v.name,
-      category: v.category,
-      address: v.address,
-      district: v.district,
-      lat: v.lat,
-      lng: v.lng,
-      capacity: v.capacity,
-      venueId: v.id,
-    }
-  }
-  const kv = show.kopisVenue
-  if (!kv) return null
-  return {
-    name: kv.name,
-    // 홀 이름을 카테고리 자리에 넣으면 "공연장 · 공연장"처럼 중복되거나,
-    // 우리 무대의 카페/바(진짜 카테고리)와 의미가 섞입니다 — hall로 분리합니다.
-    category: '공연장',
-    hall: kv.hall && kv.hall !== '공연장' ? kv.hall : undefined,
-    address: kv.address,
-    district: kv.district,
-    lat: kv.lat,
-    lng: kv.lng,
-    capacity: kv.capacity,
-    venueId: null,
-  }
-}
-
-/**
- * 실제 "지금"(demoNowIso) 기준으로 계산하는 공연 상태.
- * `Show.status`는 확정 시점에 한 번만 기록되는 정적 필드라 시간이 지나도 저절로
- * 바뀌지 않습니다 — 진행중/종료 여부가 필요하면 이 함수로 매번 다시 계산하세요.
- */
-/**
- * 이 역할에게 실제로 보이는 알림만 추립니다.
- * `audienceScope: 'followers'` 알림은 해당 팀을 팔로우한 사람에게만 노출되므로,
- * 탭바·마이페이지 배지 숫자도 반드시 같은 기준으로 세야 합니다.
- * (안 그러면 배지에 1이 떠 있는데 알림센터를 열면 비어 있는 상태가 됩니다)
- */
-export function visibleNotifications(
-  notifications: AppNotification[],
-  role: Role,
-  followedPerformerIds: string[],
-): AppNotification[] {
-  return notifications.filter(
-    (n) =>
-      n.role === role &&
-      (n.audienceScope !== 'followers' || followedPerformerIds.includes(n.performerId ?? '')),
-  )
-}
-
-/** 위 기준으로 센 미읽음 개수 — 배지 숫자는 전부 이 함수를 씁니다 */
-export function unreadNotificationCount(
-  notifications: AppNotification[],
-  role: Role,
-  followedPerformerIds: string[],
-): number {
-  return visibleNotifications(notifications, role, followedPerformerIds).filter((n) => !n.read)
-    .length
-}
-
-export function getShowStatus(show: Show, nowIso: string): Show['status'] {
-  if (show.status === '모집중' || show.status === '매칭완료') return show.status
-  const now = new Date(nowIso).getTime()
-  const start = new Date(show.startAt).getTime()
-  // 등록 공연은 기간이 길어서 시작 시각 + 길이로 보면 첫날 뒤에 전부 종료가 됩니다
-  const end = showEndMs(show)
-  if (now < start) return '공연확정'
-  if (now < end) return '진행중'
-  return '종료'
-}
+import type { AudienceFilter, Genre, Show, ShowPlace } from '@/types'
 
 /**
  * 목록에 실려 오는 아티스트 정보 — 이름·장르·사진뿐입니다.
@@ -115,34 +27,6 @@ export interface ShowWithMeta {
    * 없으므로 null — 별점순 정렬 시 자연스럽게 맨 뒤로 밀립니다.
    */
   rating: number | null
-}
-
-export function withMeta(
-  shows: Show[],
-  venues: Venue[],
-  performers: Performer[],
-  origin = DEFAULT_USER_LOCATION,
-): ShowWithMeta[] {
-  const out: ShowWithMeta[] = []
-  for (const show of shows) {
-    const place = resolvePlace(show, venues)
-    if (!place) continue
-    const venue = show.venueId ? venues.find((v) => v.id === show.venueId) : undefined
-    const performer = performers.find((p) => p.id === show.performerId) ?? null
-    const rating = venue
-      ? performer
-        ? Math.round(((venue.rating + performer.rating) / 2) * 10) / 10
-        : venue.rating
-      : null
-    out.push({
-      show,
-      place,
-      distanceKm: distanceKm(origin, { lat: place.lat, lng: place.lng }),
-      performer,
-      rating,
-    })
-  }
-  return out
 }
 
 /**

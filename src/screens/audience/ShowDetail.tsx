@@ -1,5 +1,5 @@
 import { CalendarClock, CalendarX, ChevronLeft, Flag, PenLine } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Screen, ScreenBody } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
@@ -21,7 +21,7 @@ import { useShowReviews, type ShowReview } from '@/hooks/useReviews'
 import { usePublicShow } from '@/hooks/usePublicShows'
 import { humanDateTime, isShowOver, showPriceLabel } from '@/lib/datetime'
 import { canSendKakaoMemo, sendAttendanceMemo } from '@/lib/kakaoMemo'
-import { useNow } from '@/store/useAppStore'
+import { useAppStore, useNow } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
 import type { Review } from '@/types'
 import { KopisCastBlock, PerformerBlock } from './PerformerBlock'
@@ -63,6 +63,14 @@ export function ShowDetail() {
   const show = meta?.show ?? null
   const place = meta?.place ?? null
   const performer = meta?.performer ?? null
+
+  // ★ '최근 본 공연' 목록을 채우는 유일한 자리입니다. 이 호출이 없어서
+  //   목록을 읽는 코드(HomeMap.tsx)는 있는데 채우는 코드가 없었고, 그래서
+  //   그 줄은 한 번도 뜬 적 없이 항상 비어 있었습니다.
+  const addRecentlyViewedShow = useAppStore((s) => s.addRecentlyViewedShow)
+  useEffect(() => {
+    if (show) addRecentlyViewedShow(show.id)
+  }, [show, addRecentlyViewedShow])
 
   // DB 의 target_type('venue'|'artist')을 화면 타입('venue'|'performer')으로 맞춥니다
   const { venueReviews, performerReviews } = useMemo(() => {

@@ -4,6 +4,7 @@ import { distanceKm } from '@/lib/geo'
 import { PUBLIC_SHOW_COLUMNS, rowToPlace, rowToShow, type PublicShowRow } from '@/lib/dbMap'
 import { describeDbError, isSupabaseConfigured, supabase } from '@/lib/supabase'
 import type { ShowArtistBrief, ShowWithMeta } from '@/store/selectors'
+import { useAppStore } from '@/store/useAppStore'
 
 /**
  * 데이터 훅의 공통 반환 모양.
@@ -113,7 +114,30 @@ export function usePublicShows(): Query<ShowWithMeta[]> {
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'shows' },
-        () => setTick((n) => n + 1),
+        (payload) => {
+          setTick((n) => n + 1)
+          // ★ 지도 핀 팝 애니메이션. highlightShowId 는 원래 이 자리에서 채워질
+          //   목적으로 만들어졌는데, 실제로 채우는 코드가 없어서 항상 null 이었고
+          //   그래서 한 번도 뜬 적이 없었습니다.
+          //
+          //   등록 공연(source='kopis')은 매일 새벽 동기화가 한 번에 수십~수백 건을
+          //   upsert 합니다. 그것도 신규 행이면 INSERT 로 잡혀서, 거르지 않으면
+          //   자고 있는 사이 동기화된 것까지 "방금 생겼다"고 팝업니다. 우리 무대가
+          //   확정된 순간만 "방금 생겼다"라고 부를 만합니다.
+          const row = payload.new as { id?: string; source?: string }
+          if (row.source === 'own' && row.id) {
+            const id = row.id
+            useAppStore.getState().setHighlightShow(id)
+            // 계속 켜두면 그 카드가 영영 금색 테두리를 두르고 있습니다. 몇 초
+            // 반짝이는 게 목적이라 스스로 끕니다 — 그 사이 다른 새 공연이
+            // 오면(그래서 highlightShowId 가 이미 바뀌었으면) 덮어쓰지 않습니다.
+            window.setTimeout(() => {
+              if (useAppStore.getState().highlightShowId === id) {
+                useAppStore.getState().setHighlightShow(null)
+              }
+            }, 8000)
+          }
+        },
       )
       .subscribe()
     return () => {
