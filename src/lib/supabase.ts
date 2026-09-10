@@ -13,6 +13,9 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 const url = import.meta.env.VITE_SUPABASE_URL
 const key = import.meta.env.VITE_SUPABASE_ANON_KEY
 
+/** Edge Function 절대 URL을 직접 조립해야 하는 곳(공유 링크 등)에서 씁니다 */
+export const SUPABASE_URL = url as string | undefined
+
 /** 환경변수가 없으면 로그인·데이터 없이 화면만 도는 상태가 됩니다 */
 export const isSupabaseConfigured = Boolean(url && key)
 

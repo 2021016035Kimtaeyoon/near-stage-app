@@ -1,4 +1,5 @@
 import { SERVICE_NAME } from '@/config/brand'
+import { SUPABASE_URL } from '@/lib/supabase'
 import { toast } from '@/store/useToast'
 import type { Show } from '@/types'
 
@@ -38,10 +39,29 @@ export async function shareShow(show: Show): Promise<void> {
   }
 }
 
-/** 클립 딥링크 — 그 클립부터 열리는 주소 */
+/** 클립 딥링크 — 그 클립부터 열리는 주소 (앱 안에서 라우팅용) */
 export function clipDeepLink(clipId: string): string {
   const { origin, pathname } = window.location
   return `${origin}${pathname}#/audience/clips/${clipId}`
+}
+
+/**
+ * 클립 "공유용" 주소 — clipDeepLink 와 다릅니다.
+ *
+ * ★ 이 앱은 HashRouter 라 '#' 뒤는 서버로 전달되지 않습니다. clipDeepLink 를 그대로
+ *   카카오톡에 붙여넣으면, 미리보기를 만들려고 그 주소를 열어보는 쪽(카카오톡
+ *   서버)은 클립이 무엇인지 알 방법이 없어 index.html 의 사이트 대표 이미지만
+ *   보여줍니다. 클립 100개를 공유해도 미리보기가 전부 똑같았던 이유입니다.
+ *
+ *   clip-og Edge Function 을 거치게 하면, 그 함수가 쿼리스트링(서버로 전달되는
+ *   부분)의 클립 id로 진짜 썸네일·팀 이름을 찾아 미리보기를 만들고, 사람이
+ *   누르면 즉시 clipDeepLink 로 넘겨줍니다. Edge Function 이 아직 배포되지
+ *   않았거나 SUPABASE_URL 이 없으면 예전처럼 clipDeepLink 를 그대로 씁니다 —
+ *   미리보기는 대표 이미지로 뜨더라도 링크 자체는 항상 살아 있어야 합니다.
+ */
+export function clipShareLink(clipId: string): string {
+  if (!SUPABASE_URL) return clipDeepLink(clipId)
+  return `${SUPABASE_URL}/functions/v1/clip-og?id=${encodeURIComponent(clipId)}`
 }
 
 /**
@@ -53,7 +73,7 @@ export async function shareClip(clip: {
   title: string
   artistName: string
 }): Promise<void> {
-  const url = clipDeepLink(clip.id)
+  const url = clipShareLink(clip.id)
   const title = `${clip.artistName} · ${SERVICE_NAME}`
   const text = clip.title || `${clip.artistName}의 무대를 보세요`
 
