@@ -429,7 +429,13 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
           />
         </div>
 
-        {/* 밸런스 — 커튼 사진 윗단을 스캘럽 마스크로 잘라 씁니다 (화면이 넓어지면 스캘럽 개수만 늘어남) */}
+        {/* 밸런스 — 커튼 사진 윗단을 스캘럽 마스크로 잘라 씁니다 (화면이 넓어지면 스캘럽 개수만 늘어남).
+            ★ 예전엔 이 사진을 밸런스 높이(72px) 기준으로 따로 늘려 채웠습니다. 아래 커튼
+            본판은 같은 사진을 뷰포트 높이(100dvh) 기준으로 늘리기 때문에, 두 배율이 서로
+            달라 정확히 같은 위치의 사진인데도 이어지는 지점에서 색·주름이 어긋나 보였습니다
+            (경계선처럼 보이는 원인). 아래 두 <image> 는 본판(CurtainPanelSurface)과 완전히
+            같은 폭(52% 컨테이너의 200%)·높이(100dvh) 배율로 그려서, 스캘럽으로 잘라낸 윗단
+            72px 가 그 아래 본판의 윗단 72px 와 픽셀 단위로 이어지게 만듭니다. */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-40" style={{ height: VALANCE_HEIGHT }}>
           <svg width="100%" height={VALANCE_HEIGHT} preserveAspectRatio="none" style={{ display: 'block' }}>
             <defs>
@@ -443,15 +449,47 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
               <mask id="ns-valance-mask">
                 <rect width="100%" height="100%" fill="url(#ns-scallop)" />
               </mask>
-              {/* 밸런스는 조명보다 위라 커튼 본체보다 한 단계 어둡습니다 */}
+              {/* 본판도 왼쪽 폭은 컨테이너 폭(52%)에서 잘리고 오른쪽 폭이 그 위에 덮입니다
+                  (가운데 4% 는 실제 커튼처럼 겹칩니다). 밸런스도 같은 폭으로 나눠 잘라야
+                  아래 본판과 같은 그림이 이어집니다. */}
+              <clipPath id="ns-valance-left">
+                <rect x="0%" y="0" width="52%" height="100%" />
+              </clipPath>
+              <clipPath id="ns-valance-right">
+                <rect x="48%" y="0" width="52%" height="100%" />
+              </clipPath>
+              {/* 밸런스는 조명보다 위라 커튼 본체보다 한 단계 어둡습니다. 다만 아래쪽(본판과
+                  맞닿는 경계)은 0으로 — 본판이 자기 윗단에 이미 같은 종류의 그늘을 지고
+                  있어서, 여기서 한 번 더 어둡게 하면 사진이 이어져도 밝기 차이로 다시
+                  경계가 도드라집니다. */}
               <linearGradient id="ns-valance-shade" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#000" stopOpacity="0.62" />
                 <stop offset="55%" stopColor="#000" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="#000" stopOpacity="0.55" />
+                <stop offset="100%" stopColor="#000" stopOpacity="0" />
               </linearGradient>
             </defs>
             <g mask="url(#ns-valance-mask)">
-              <image href={CURTAIN_IMAGE} width="100%" height="100%" preserveAspectRatio="xMidYMin slice" />
+              {/* 왼쪽 폭 — CurtainPanelSurface(left)와 같은 배율·기준점(뷰포트 왼쪽) */}
+              <g clipPath="url(#ns-valance-left)">
+                <image
+                  href={CURTAIN_IMAGE}
+                  x="0%"
+                  y="0"
+                  preserveAspectRatio="none"
+                  style={{ width: '104%', height: '100dvh' }}
+                />
+              </g>
+              {/* 오른쪽 폭 — CurtainPanelSurface(right)와 같은 배율·기준점(뷰포트 오른쪽).
+                  뒤에 그려서 가운데 겹침 구간은 이 쪽이 덮습니다(본판 순서와 동일). */}
+              <g clipPath="url(#ns-valance-right)">
+                <image
+                  href={CURTAIN_IMAGE}
+                  x="-4%"
+                  y="0"
+                  preserveAspectRatio="none"
+                  style={{ width: '104%', height: '100dvh' }}
+                />
+              </g>
               <rect width="100%" height="100%" fill="url(#ns-valance-shade)" />
             </g>
           </svg>
