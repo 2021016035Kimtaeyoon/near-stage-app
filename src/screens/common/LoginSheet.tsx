@@ -5,7 +5,13 @@ import { BottomSheet } from '@/components/ui/BottomSheet'
 import { Button } from '@/components/ui/Button'
 import { TextInput } from '@/components/ui/Field'
 import { FREE_TRIAL_NOTICE, SERVICE_NAME } from '@/config/brand'
-import { signInWith, signInWithEmail, useAuthStore, type AuthProvider } from '@/hooks/useAuth'
+import {
+  signInWith,
+  signInWithPassword,
+  signUpWithPassword,
+  useAuthStore,
+  type AuthProvider,
+} from '@/hooks/useAuth'
 import { isKakaoConfigured, startKakaoLogin } from '@/hooks/useKakaoLogin'
 import { toast } from '@/store/useToast'
 
@@ -19,9 +25,9 @@ import { toast } from '@/store/useToast'
  * account_email 을 강제로 넣어 비즈 앱이 아닌 앱에서는 KOE205 로 막힙니다.
  * 대신 OIDC id_token 방식(useKakaoLogin.ts)으로 우리가 직접 요청합니다.
  *
- * ★ 이메일 로그인은 비밀번호가 없습니다(매직링크). 비밀번호를 잊으면 재설정
- *   메일을 받아야 하는데, SMTP 를 붙이기 전엔 그 메일이 제때 안 갈 수 있어
- *   영구 잠김 사고로 이어집니다. 매직링크는 애초에 잊을 비밀번호가 없습니다.
+ * ★ 이메일은 비밀번호 방식이고 이메일 인증이 없습니다(hooks/useAuth.ts 의
+ *   signUpWithPassword 주석 참고) — 메일을 한 통도 안 보내고 앱 안에서 바로
+ *   끝납니다. 대신 "비밀번호 찾기"가 없습니다. 잊으면 지금은 복구가 안 됩니다.
  */
 
 export function LoginSheet() {
@@ -29,10 +35,10 @@ export function LoginSheet() {
   const navigate = useNavigate()
   const closeSheet = useAuthStore((s) => s.closeSheet)
   const [busy, setBusy] = useState<AuthProvider | null>(null)
-  const [showEmail, setShowEmail] = useState(false)
+  const [emailMode, setEmailMode] = useState<'closed' | 'signin' | 'signup'>('closed')
   const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [emailBusy, setEmailBusy] = useState(false)
-  const [sentTo, setSentTo] = useState<string | null>(null)
 
   const start = async (provider: AuthProvider) => {
     setBusy(provider)
@@ -44,20 +50,31 @@ export function LoginSheet() {
     // 성공하면 provider 로 이동하므로 이 컴포넌트는 사라집니다
   }
 
-  const sendMagicLink = async () => {
+  const submitEmail = async () => {
     const trimmed = email.trim()
     if (!trimmed || !trimmed.includes('@')) {
       toast('이메일 주소를 확인해주세요', 'warn')
       return
     }
-    setEmailBusy(true)
-    const { error } = await signInWithEmail(trimmed)
-    setEmailBusy(false)
-    if (error) {
-      toast('링크를 보내지 못했어요', 'error', error)
+    if (password.length < 6) {
+      toast('비밀번호는 6자 이상으로 적어주세요', 'warn')
       return
     }
-    setSentTo(trimmed)
+    setEmailBusy(true)
+    const { error } =
+      emailMode === 'signup'
+        ? await signUpWithPassword(trimmed, password)
+        : await signInWithPassword(trimmed, password)
+    setEmailBusy(false)
+    if (error) {
+      toast(
+        emailMode === 'signup' ? '가입하지 못했어요' : '로그인하지 못했어요',
+        'error',
+        emailMode === 'signup' ? error : '이메일이나 비밀번호를 확인해주세요',
+      )
+      return
+    }
+    // 성공하면 세션이 즉시 생겨 useAuthSync 가 시트를 닫고 이어서 실행합니다
   }
 
   return (
@@ -66,9 +83,9 @@ export function LoginSheet() {
       onClose={() => {
         closeSheet()
         // 다음에 다시 열었을 때 지난번 상태가 남아 있지 않게 합니다
-        setShowEmail(false)
-        setSentTo(null)
+        setEmailMode('closed')
         setEmail('')
+        setPassword('')
       }}
       title="로그인이 필요해요"
       subtitle={`${SERVICE_NAME}는 소셜 계정으로 바로 시작할 수 있습니다`}
@@ -99,27 +116,14 @@ export function LoginSheet() {
 
         {/* ★ 소셜 계정이 없는 사람을 위한 세 번째 길입니다. 처음부터 입력창을
             보여주면 화면이 복잡해져서, 누르기 전엔 버튼 하나로만 둡니다. */}
-        {!showEmail ? (
+        {emailMode === 'closed' ? (
           <button
-            onClick={() => setShowEmail(true)}
+            onClick={() => setEmailMode('signup')}
             className="flex h-[54px] w-full items-center justify-center gap-2 rounded-2xl border border-dashed border-border-strong text-[15px] font-bold text-ink-2"
           >
             <Mail size={17} />
             이메일로 계속하기
           </button>
-        ) : sentTo ? (
-          <div className="rounded-2xl border border-border bg-surface-2 p-4 text-center">
-            <p className="text-[13px] font-bold">{sentTo}로 링크를 보냈어요</p>
-            <p className="mt-1 text-2xs leading-relaxed text-ink-3">
-              메일함(스팸함도 확인해주세요)에서 링크를 누르면 로그인됩니다.
-            </p>
-            <button
-              onClick={() => setSentTo(null)}
-              className="mt-2.5 text-2xs font-bold text-gold-text underline underline-offset-2"
-            >
-              다른 이메일로 다시 받기
-            </button>
-          </div>
         ) : (
           <div className="space-y-2">
             <TextInput
@@ -129,14 +133,45 @@ export function LoginSheet() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="이메일 주소"
-              onKeyDown={(e) => e.key === 'Enter' && void sendMagicLink()}
             />
-            <Button full variant="brand" loading={emailBusy} onClick={() => void sendMagicLink()}>
-              로그인 링크 받기
+            <TextInput
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="비밀번호 (6자 이상)"
+              onKeyDown={(e) => e.key === 'Enter' && void submitEmail()}
+            />
+            <Button full variant="brand" loading={emailBusy} onClick={() => void submitEmail()}>
+              {emailMode === 'signup' ? '가입하기' : '로그인하기'}
             </Button>
+            <p className="text-center text-2xs text-ink-3">
+              {emailMode === 'signup' ? (
+                <>
+                  이미 계정이 있으신가요?{' '}
+                  <button
+                    onClick={() => setEmailMode('signin')}
+                    className="font-bold text-gold-text underline underline-offset-2"
+                  >
+                    로그인
+                  </button>
+                </>
+              ) : (
+                <>
+                  처음이신가요?{' '}
+                  <button
+                    onClick={() => setEmailMode('signup')}
+                    className="font-bold text-gold-text underline underline-offset-2"
+                  >
+                    회원가입
+                  </button>
+                </>
+              )}
+            </p>
+            {/* ★ 없는 기능을 있는 척하지 않습니다. "비밀번호 찾기" 버튼을 만들고
+                눌렀을 때 아무 일도 안 일어나게 하느니, 처음부터 없다고 말합니다. */}
             <p className="text-2xs leading-relaxed text-ink-3">
-              비밀번호가 없습니다. 메일로 온 링크를 누르면 바로 로그인돼요 — 처음
-              쓰는 이메일이면 계정이 자동으로 만들어집니다.
+              메일 인증이 없어 비밀번호 찾기를 아직 지원하지 않아요. 비밀번호를
+              꼭 기억해두세요.
             </p>
           </div>
         )}

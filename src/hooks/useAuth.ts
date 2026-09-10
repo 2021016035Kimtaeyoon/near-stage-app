@@ -205,34 +205,48 @@ export async function signInWith(provider: AuthProvider): Promise<{ error: strin
 }
 
 /**
- * 이메일 로그인 — 매직링크(비밀번호 없음).
+ * 이메일 회원가입/로그인 — 비밀번호, 이메일 인증 없음.
  *
- * ★ 비밀번호 방식을 만들지 않았습니다. 비밀번호를 잊으면 재설정 메일을 받아야
- *   하는데, Supabase 무료 플랜의 기본 발송은 시간당 2~4통이고 발신 주소가
- *   supabase.io 라 스팸함으로 자주 빠집니다. 재설정 메일이 제때 안 가면
- *   비밀번호를 잊은 사람은 영구히 잠깁니다 — 안 만드는 것보다 나쁩니다.
- *   매직링크는 애초에 잊을 비밀번호가 없어서 이 사고 자체가 없습니다.
+ * ★ 매직링크(이메일로 온 링크를 눌러 로그인)에서 이 방식으로 바꿨습니다.
+ *   매직링크도 결국 메일 발송 인프라(SMTP)가 있어야 하는 건 같아서, "이메일
+ *   인증 자체가 걸림돌"이라는 문제를 못 피했습니다. 비밀번호 방식은 가입·로그인
+ *   둘 다 메일을 한 통도 안 보내고 앱 안에서 바로 끝납니다.
  *
- * ★ 그래도 이메일 발송 자체는 여전히 같은 인프라(Supabase 기본 발송)를 씁니다.
- *   실사용 전에 Resend 같은 SMTP 를 Supabase Auth 에 붙이지 않으면, 로그인
- *   메일이 늦게 오거나 스팸함으로 갈 수 있습니다 — 코드는 지금 완성됐지만
- *   운영 준비(SMTP 연결)는 별도입니다.
+ * ★ 그 대가로 "비밀번호 찾기"가 없습니다. 비밀번호를 잊으면 재설정 메일을
+ *   보내야 하는데, 그게 바로 우리가 피하려는 SMTP 의존입니다. 지금은 잊으면
+ *   복구가 안 된다는 뜻입니다 — 화면에도 그렇게 정직하게 적어둡니다. 나중에
+ *   SMTP 를 붙이면 그때 "비밀번호 찾기"를 추가하면 됩니다.
  *
- * ★ 가입과 로그인이 같은 동작입니다. 처음 쓰는 이메일이면 계정을 만들고,
- *   이미 있으면 그 계정으로 로그인합니다 — 화면을 나눌 이유가 없습니다.
+ * ★ Supabase 프로젝트의 "Confirm email"이 꺼져 있어야 합니다. 켜져 있으면
+ *   가입 즉시 확인 메일부터 보내려고 해서 이 함수의 목적(메일 없이 바로 가입)이
+ *   무의미해집니다. 대시보드 Authentication 설정에서 꺼야 합니다 — 코드로는
+ *   못 바꿉니다.
+ *
+ * ★ 이메일 주소 소유를 확인하지 않습니다. 남의 이메일을 타이핑해도 가입은
+ *   됩니다(그 사람에게 어떤 메일도 안 가고, 그 사람 메일함에 접근하지도
+ *   못합니다 — 그냥 로그인 아이디로만 쓰이는 문자열입니다). 이 앱은 이메일로
+ *   아무것도 보내지 않으므로 실질적 피해는 없지만, 계정이 "그 이메일의 주인"
+ *   이라는 보증은 없다는 뜻입니다.
  */
-export async function signInWithEmail(email: string): Promise<{ error: string | null }> {
+export async function signUpWithPassword(
+  email: string,
+  password: string,
+): Promise<{ error: string | null }> {
   if (!isSupabaseConfigured) {
     return { error: 'Supabase 설정이 없어 로그인할 수 없습니다.' }
   }
-  const { error } = await supabase.auth.signInWithOtp({
-    email,
-    options: {
-      // HashRouter 라 해시까지 포함해 돌려보내야 원래 보던 화면으로 복귀합니다
-      emailRedirectTo: window.location.href,
-      shouldCreateUser: true,
-    },
-  })
+  const { error } = await supabase.auth.signUp({ email, password })
+  return { error: error?.message ?? null }
+}
+
+export async function signInWithPassword(
+  email: string,
+  password: string,
+): Promise<{ error: string | null }> {
+  if (!isSupabaseConfigured) {
+    return { error: 'Supabase 설정이 없어 로그인할 수 없습니다.' }
+  }
+  const { error } = await supabase.auth.signInWithPassword({ email, password })
   return { error: error?.message ?? null }
 }
 
