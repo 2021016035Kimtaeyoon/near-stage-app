@@ -10,6 +10,21 @@ import { motion } from 'framer-motion'
 /** 실제 벨벳 커튼 사진 — public/ 에서 그대로 서빙합니다 */
 export const CURTAIN_IMAGE = `${import.meta.env.BASE_URL}curtain-velvet.jpg`
 
+/**
+ * 커튼 사진에 실제로 찍힌 바닥(빨간 카펫)을 잘라내기 위한 배율.
+ *
+ * ★ curtain-velvet.jpg 는 천만 찍은 게 아니라 바닥까지 함께 찍힌 사진입니다
+ *   (아래쪽 약 22%가 카펫). 예전엔 이 사진을 뷰포트 높이(100dvh)에 그대로 맞춰
+ *   늘렸는데, 그러면 사진 속 카펫까지 커튼 폭 안에 들어와서 커튼이 열릴 때
+ *   카펫도 함께 붙어 딸려 나가는 것처럼 보였습니다. 무대의 진짜 바닥은
+ *   StageBackdrop 이 따로 그리는 정지된 레이어입니다.
+ *
+ *   사진을 이 값만큼 키우고 위쪽 기준으로 잘라 쓰면(background-position: top),
+ *   초과분(카펫 부분)이 아래로 밀려나 보이지 않습니다. 밸런스(위 스캘럽 띠)도
+ *   같은 값을 써야 두 레이어의 사진이 이어져 보입니다 — FullCurtainHero.tsx 참고.
+ */
+export const CURTAIN_IMAGE_HEIGHT = '132dvh'
+
 export function StageBackdrop() {
   return (
     <div aria-hidden className="absolute inset-0">
@@ -118,9 +133,12 @@ export function CurtainPanelSurface({
         className="absolute inset-0"
         style={{
           backgroundImage: `url(${CURTAIN_IMAGE})`,
-          backgroundSize: '200% 100%',
-          // 왼쪽 폭은 사진 왼쪽 절반, 오른쪽 폭은 오른쪽 절반
-          backgroundPosition: side === 'left' ? 'left center' : 'right center',
+          // 높이를 뷰포트보다 키워서(CURTAIN_IMAGE_HEIGHT) 사진 아래쪽의 카펫이
+          // 컨테이너 밖(아래)으로 밀려나게 합니다 — position: top 과 함께 씁니다
+          backgroundSize: `200% ${CURTAIN_IMAGE_HEIGHT}`,
+          // 왼쪽 폭은 사진 왼쪽 절반, 오른쪽 폭은 오른쪽 절반. 세로는 위쪽 기준 —
+          // '가운데'로 두면 초과분이 위아래로 나뉘어 카펫이 덜 잘립니다
+          backgroundPosition: side === 'left' ? 'left top' : 'right top',
           backgroundRepeat: 'no-repeat',
         }}
       />

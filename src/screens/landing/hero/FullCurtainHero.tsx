@@ -11,7 +11,7 @@ import { useEffect, useRef, useState, type RefObject } from 'react'
 import { useAppNavigate } from '@/lib/appLink'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { useMediaQuery } from '@/lib/useMediaQuery'
-import { CURTAIN_IMAGE, CurtainPanelSurface, SpotLight, StageBackdrop } from './stageParts'
+import { CURTAIN_IMAGE, CURTAIN_IMAGE_HEIGHT, CurtainPanelSurface, SpotLight, StageBackdrop } from './stageParts'
 import {
   ACT1_TITLE_FADEOUT_END,
   ACT1_TITLE_FADEOUT_START,
@@ -50,6 +50,15 @@ import {
 
 const FALL_EASE = cubicBezier(0.55, 0.06, 0.68, 0.19)
 const DEBUG_STORAGE_KEY = 'ns-hero-debug'
+
+/**
+ * 밸런스(위 스캘럽 띠) 모양을 CSS mask-image 로 자르기 위한 데이터 URI.
+ * SVG <mask> + 오버사이즈 <image> 조합이 렌더링 버그를 내서(위 주석 참고) 이 방식으로
+ * 바꿨습니다 — 타일 하나(SCALLOP_TILE × VALANCE_HEIGHT)만큼만 그려서 반복(repeat-x)합니다.
+ */
+const SCALLOP_MASK_URL = `url("data:image/svg+xml,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='${SCALLOP_TILE}' height='${VALANCE_HEIGHT}'><path d='M0,0 H${SCALLOP_TILE} V${VALANCE_HEIGHT - SCALLOP_DEPTH} Q${SCALLOP_TILE / 2},${VALANCE_HEIGHT} 0,${VALANCE_HEIGHT - SCALLOP_DEPTH} Z' fill='#fff'/></svg>`,
+)}")`
 
 interface Panel {
   num: string
@@ -488,70 +497,60 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
           />
         </div>
 
-        {/* 밸런스 — 커튼 사진 윗단을 스캘럽 마스크로 잘라 씁니다 (화면이 넓어지면 스캘럽 개수만 늘어남).
-            ★ 예전엔 이 사진을 밸런스 높이(72px) 기준으로 따로 늘려 채웠습니다. 아래 커튼
-            본판은 같은 사진을 뷰포트 높이(100dvh) 기준으로 늘리기 때문에, 두 배율이 서로
-            달라 정확히 같은 위치의 사진인데도 이어지는 지점에서 색·주름이 어긋나 보였습니다
-            (경계선처럼 보이는 원인). 아래 두 <image> 는 본판(CurtainPanelSurface)과 완전히
-            같은 폭(52% 컨테이너의 200%)·높이(100dvh) 배율로 그려서, 스캘럽으로 잘라낸 윗단
-            72px 가 그 아래 본판의 윗단 72px 와 픽셀 단위로 이어지게 만듭니다. */}
+        {/* 밸런스 — 커튼 사진 윗단을 스캘럽 모양으로 잘라 씁니다 (화면이 넓어지면 스캘럽 개수만 늘어남).
+            ★ 예전엔 SVG <image> 를 밸런스 높이(72px)보다 훨씬 크게(뷰포트 배율로) 그린 뒤
+            SVG mask 로 잘라 썼는데, 그 조합(아주 큰 <image> 를 아주 작은 mask 로 자르기)이
+            일부 브라우저에서 그 레이어 전체가 흰 화면으로 그려지는 렌더링 버그를 냈습니다
+            (경계선 버그를 고치려다 새로 만든 버그입니다 — 열리는 애니메이션 중간 지점에서만
+            재현되어 뒤늦게 발견했습니다). 그래서 본판(CurtainPanelSurface)과 똑같은 방식 —
+            평범한 HTML div 에 CSS background-size 로 사진을 늘리는 방식 — 으로 바꿨습니다.
+            이 방식은 본판에서 이미 같은 배율(CURTAIN_IMAGE_HEIGHT)로 문제없이 쓰고 있습니다.
+            스캘럽 모양은 CSS mask-image(데이터 URI)로 별도로 자릅니다. */}
         <div className="pointer-events-none absolute inset-x-0 top-0 z-40" style={{ height: VALANCE_HEIGHT }}>
-          <svg width="100%" height={VALANCE_HEIGHT} preserveAspectRatio="none" style={{ display: 'block' }}>
-            <defs>
-              {/* 스캘럽 실루엣을 마스크로 쓰고, 그 안을 같은 커튼 사진의 윗단으로 채웁니다 */}
-              <pattern id="ns-scallop" width={SCALLOP_TILE} height={VALANCE_HEIGHT} patternUnits="userSpaceOnUse">
-                <path
-                  d={`M0,0 H${SCALLOP_TILE} V${VALANCE_HEIGHT - SCALLOP_DEPTH} Q${SCALLOP_TILE / 2},${VALANCE_HEIGHT} 0,${VALANCE_HEIGHT - SCALLOP_DEPTH} Z`}
-                  fill="#fff"
-                />
-              </pattern>
-              <mask id="ns-valance-mask">
-                <rect width="100%" height="100%" fill="url(#ns-scallop)" />
-              </mask>
-              {/* 본판도 왼쪽 폭은 컨테이너 폭(52%)에서 잘리고 오른쪽 폭이 그 위에 덮입니다
-                  (가운데 4% 는 실제 커튼처럼 겹칩니다). 밸런스도 같은 폭으로 나눠 잘라야
-                  아래 본판과 같은 그림이 이어집니다. */}
-              <clipPath id="ns-valance-left">
-                <rect x="0%" y="0" width="52%" height="100%" />
-              </clipPath>
-              <clipPath id="ns-valance-right">
-                <rect x="48%" y="0" width="52%" height="100%" />
-              </clipPath>
-              {/* 밸런스는 조명보다 위라 커튼 본체보다 한 단계 어둡습니다. 다만 아래쪽(본판과
-                  맞닿는 경계)은 0으로 — 본판이 자기 윗단에 이미 같은 종류의 그늘을 지고
-                  있어서, 여기서 한 번 더 어둡게 하면 사진이 이어져도 밝기 차이로 다시
-                  경계가 도드라집니다. */}
-              <linearGradient id="ns-valance-shade" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0%" stopColor="#000" stopOpacity="0.62" />
-                <stop offset="55%" stopColor="#000" stopOpacity="0.2" />
-                <stop offset="100%" stopColor="#000" stopOpacity="0" />
-              </linearGradient>
-            </defs>
-            <g mask="url(#ns-valance-mask)">
-              {/* 왼쪽 폭 — CurtainPanelSurface(left)와 같은 배율·기준점(뷰포트 왼쪽) */}
-              <g clipPath="url(#ns-valance-left)">
-                <image
-                  href={CURTAIN_IMAGE}
-                  x="0%"
-                  y="0"
-                  preserveAspectRatio="none"
-                  style={{ width: '104%', height: '100dvh' }}
-                />
-              </g>
-              {/* 오른쪽 폭 — CurtainPanelSurface(right)와 같은 배율·기준점(뷰포트 오른쪽).
-                  뒤에 그려서 가운데 겹침 구간은 이 쪽이 덮습니다(본판 순서와 동일). */}
-              <g clipPath="url(#ns-valance-right)">
-                <image
-                  href={CURTAIN_IMAGE}
-                  x="-4%"
-                  y="0"
-                  preserveAspectRatio="none"
-                  style={{ width: '104%', height: '100dvh' }}
-                />
-              </g>
-              <rect width="100%" height="100%" fill="url(#ns-valance-shade)" />
-            </g>
-          </svg>
+          {/* 사진+그늘만 스캘럽 모양으로 자릅니다. 금색 테두리·엠블럼은 이 바깥(아래)에 둬서
+              마스크의 영향을 받지 않는, 늘 깔끔한 직선/텍스트로 남습니다. */}
+          <div
+            className="absolute inset-0 overflow-hidden"
+            style={{
+              WebkitMaskImage: SCALLOP_MASK_URL,
+              maskImage: SCALLOP_MASK_URL,
+              WebkitMaskRepeat: 'repeat-x',
+              maskRepeat: 'repeat-x',
+              WebkitMaskSize: `${SCALLOP_TILE}px ${VALANCE_HEIGHT}px`,
+              maskSize: `${SCALLOP_TILE}px ${VALANCE_HEIGHT}px`,
+            }}
+          >
+            {/* 왼쪽 폭 — CurtainPanelSurface(left)와 완전히 같은 배율·기준점 */}
+            <div
+              className="absolute left-0 top-0 h-full w-[52%]"
+              style={{
+                backgroundImage: `url(${CURTAIN_IMAGE})`,
+                backgroundSize: `200% ${CURTAIN_IMAGE_HEIGHT}`,
+                backgroundPosition: 'left top',
+                backgroundRepeat: 'no-repeat',
+              }}
+            />
+            {/* 오른쪽 폭 — 뒤에 그려서 가운데 겹침 구간(4%)은 이 쪽이 덮습니다(본판과 동일) */}
+            <div
+              className="absolute right-0 top-0 h-full w-[52%]"
+              style={{
+                backgroundImage: `url(${CURTAIN_IMAGE})`,
+                backgroundSize: `200% ${CURTAIN_IMAGE_HEIGHT}`,
+                backgroundPosition: 'right top',
+                backgroundRepeat: 'no-repeat',
+              }}
+            />
+            {/* 밸런스는 조명보다 위라 커튼 본체보다 한 단계 어둡습니다. 아래쪽(본판과 맞닿는
+                경계)은 0으로 — 본판이 자기 윗단에 이미 같은 종류의 그늘을 지고 있어서, 여기서
+                한 번 더 어둡게 하면 사진이 이어져도 밝기 차이로 경계가 다시 도드라집니다. */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  'linear-gradient(180deg, rgba(0,0,0,.62) 0%, rgba(0,0,0,.2) 55%, rgba(0,0,0,0) 100%)',
+              }}
+            />
+          </div>
           <div className="absolute inset-x-0 top-0 h-[3px] bg-[#C9A227]" style={{ boxShadow: '0 6px 18px rgba(0,0,0,.5)' }} />
           <motion.div
             aria-hidden
