@@ -201,3 +201,19 @@ export async function deleteClip(clipId: string): Promise<string | null> {
   const { error } = await supabase.from('artist_clips').delete().eq('id', clipId)
   return error ? describeDbError(error) : null
 }
+
+export interface ClipPatch {
+  url: string
+  thumbUrl: string | null
+  title: string
+}
+
+/** 이미 올린 링크 클립을 고칩니다. 업로드본은 파일을 바꿀 수 없어 제목만 받습니다 */
+export async function updateClip(clipId: string, patch: Partial<ClipPatch>): Promise<string | null> {
+  const row: Record<string, string | null> = {}
+  if (patch.url !== undefined) row.url = patch.url
+  if (patch.thumbUrl !== undefined) row.thumb_url = patch.thumbUrl
+  if (patch.title !== undefined) row.title = patch.title
+  const { error } = await supabase.from('artist_clips').update(row).eq('id', clipId)
+  return error ? describeDbError(error) : null
+}

@@ -1,16 +1,20 @@
-import { ExternalLink, Play, Plus, Trash2, Video } from 'lucide-react'
+import { ExternalLink, Pencil, Play, Plus, Trash2, Video } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { Tag } from '@/components/ui/Badge'
+import { BottomSheet } from '@/components/ui/BottomSheet'
 import { Button } from '@/components/ui/Button'
+import { TextInput } from '@/components/ui/Field'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useAuthStore } from '@/hooks/useAuth'
-import { addClips, deleteClip, useArtistClips, type NewClip } from '@/hooks/useClips'
+import { addClips, deleteClip, updateClip, useArtistClips, type Clip, type NewClip } from '@/hooks/useClips'
 import { useMyArtists } from '@/hooks/useMyResources'
+import { clipThumbnail } from '@/lib/clipEmbed'
 import { MAX_CLIPS } from '@/lib/uploadClip'
 import { toast } from '@/store/useToast'
+import { validateClipUrl } from './artistDraft'
 import { ClipLinkEditor } from './ClipLinkEditor'
 
 /**
@@ -28,6 +32,7 @@ export function ArtistClipsScreen() {
 
   const [adding, setAdding] = useState<NewClip[]>([])
   const [busy, setBusy] = useState(false)
+  const [editing, setEditing] = useState<Clip | null>(null)
 
   const artist = artists.data.find((a) => a.id === artistId)
   const remaining = Math.max(0, MAX_CLIPS - clips.data.length)
@@ -124,13 +129,22 @@ export function ArtistClipsScreen() {
                 >
                   {c.kind === 'upload' ? <Play size={11} /> : <ExternalLink size={11} />}
                 </a>
-                <button
-                  onClick={() => void remove(c.id)}
-                  aria-label="지우기"
-                  className="absolute right-1 top-1 flex h-6 w-6 items-center justify-center rounded-full bg-black/45 text-white"
-                >
-                  <Trash2 size={11} />
-                </button>
+                <div className="absolute right-1 top-1 flex gap-1">
+                  <button
+                    onClick={() => setEditing(c)}
+                    aria-label="수정"
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-black/45 text-white"
+                  >
+                    <Pencil size={11} />
+                  </button>
+                  <button
+                    onClick={() => void remove(c.id)}
+                    aria-label="지우기"
+                    className="flex h-6 w-6 items-center justify-center rounded-full bg-black/45 text-white"
+                  >
+                    <Trash2 size={11} />
+                  </button>
+                </div>
                 <span className="absolute inset-x-1 bottom-1 flex justify-center">
                   <Tag>{c.kind === 'upload' ? `${c.durationSec ?? 0}초` : '링크'}</Tag>
                 </span>
@@ -174,6 +188,108 @@ export function ArtistClipsScreen() {
 
         <TabBarSpacer />
       </ScreenBody>
+
+      <ClipEditSheet
+        clip={editing}
+        onClose={() => setEditing(null)}
+        onSaved={() => {
+          setEditing(null)
+          clips.refresh()
+        }}
+      />
     </Screen>
+  )
+}
+
+/**
+ * 클립 한 개 수정 — 업로드본은 파일을 바꿀 수 없어 제목만, 링크는 주소도 받습니다.
+ *
+ * ★ 지우고 다시 올리는 것만 되던 걸(추가만, 수정 없음) 그 자리에서 고칠 수 있게
+ *   합니다. 링크를 바꾸면 썸네일도 새 주소에서 다시 뽑습니다.
+ *
+ * ★ 시트가 열려 있는 동안에는 clip 이 그대로지만, 닫히는 애니메이션 중에는 부모가
+ *   editing 을 이미 null 로 지웠을 수 있습니다. 그래서 clip 이 null 이어도 마지막
+ *   값을 기억해뒀다가 그걸로 계속 그립니다.
+ */
+function ClipEditSheet({
+  clip,
+  onClose,
+  onSaved,
+}: {
+  clip: Clip | null
+  onClose: () => void
+  onSaved: () => void
+}) {
+  const [last, setLast] = useState<Clip | null>(null)
+  const [url, setUrl] = useState('')
+  const [title, setTitle] = useState('')
+  const [error, setError] = useState<string | undefined>()
+  const [busy, setBusy] = useState(false)
+
+  if (clip && clip.id !== last?.id) {
+    setLast(clip)
+    setUrl(clip.url)
+    setTitle(clip.title)
+    setError(undefined)
+  }
+
+  const target = clip ?? last
+  if (!target) return null
+
+  const save = async () => {
+    let nextUrl = target.url
+    let nextThumb: string | null | undefined = undefined
+    if (target.kind === 'link') {
+      const trimmed = url.trim()
+      const invalid = validateClipUrl(trimmed)
+      if (invalid) {
+        setError(invalid)
+        return
+      }
+      nextUrl = trimmed
+      nextThumb = clipThumbnail(trimmed)
+    }
+    setError(undefined)
+    setBusy(true)
+    const err = await updateClip(target.id, {
+      url: nextUrl,
+      title: title.trim(),
+      ...(nextThumb !== undefined ? { thumbUrl: nextThumb } : {}),
+    })
+    setBusy(false)
+    if (err) {
+      toast('고치지 못했어요', 'error', err)
+      return
+    }
+    toast('클립을 고쳤어요')
+    onSaved()
+  }
+
+  return (
+    <BottomSheet
+      open={clip !== null}
+      onClose={onClose}
+      title="클립 수정"
+      footer={
+        <Button variant="brand" full loading={busy} onClick={() => void save()}>
+          저장하기
+        </Button>
+      }
+    >
+      {target.kind === 'link' && (
+        <div className="mb-2.5">
+          <TextInput
+            value={url}
+            onChange={(e) => {
+              setUrl(e.target.value)
+              setError(undefined)
+            }}
+            placeholder="유튜브·인스타 주소"
+          />
+        </div>
+      )}
+      <TextInput value={title} onChange={(e) => setTitle(e.target.value)} placeholder="제목 (선택)" />
+      {error && <p className="mt-1.5 text-2xs font-semibold text-danger">{error}</p>}
+    </BottomSheet>
   )
 }

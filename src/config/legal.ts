@@ -14,9 +14,9 @@ import { FEE_DISCLAIMER, SERVICE_NAME } from './brand'
  */
 export const OPERATOR = {
   /** 서비스를 운영하는 사람/팀 이름 */
-  name: '',
+  name: '김태윤',
   /** 문의·개인정보 관련 연락처 이메일 */
-  email: '',
+  email: 'nearstage39@gmail.com',
   /** 개인정보 보호책임자 (없으면 운영자 본인) */
   privacyOfficer: '',
 } as const
