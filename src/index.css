@@ -24,10 +24,11 @@
     /* 밝은 노랑은 흰 배경 위 '글자'로 쓰면 안 읽혀서, 글자·아이콘 전용 진한 금색을 따로 둡니다 */
     --color-gold-text: 138 97 0;
 
-    /* 깊이감 — 라이트에서는 밝기 차이가 거의 안 보이므로 "진짜 그림자"가 카드를 띄웁니다 */
-    --shadow-card: 0 1px 2px rgba(17, 17, 26, 0.05), 0 4px 12px -6px rgba(17, 17, 26, 0.1);
-    --shadow-card-elevated: 0 2px 4px rgba(17, 17, 26, 0.05), 0 14px 30px -12px rgba(17, 17, 26, 0.18);
-    --shadow-card-hover: 0 2px 6px rgba(17, 17, 26, 0.07), 0 16px 32px -12px rgba(17, 17, 26, 0.16);
+    /* 깊이감 — 라이트에서는 밝기 차이가 거의 안 보이므로 "진짜 그림자"가 카드를 띄웁니다.
+       기존보다 한 단계 또렷하게 — 카드가 배경 위에 살짝 떠 있는 느낌을 노립니다. */
+    --shadow-card: 0 2px 6px rgba(17, 17, 26, 0.07), 0 10px 24px -10px rgba(17, 17, 26, 0.18);
+    --shadow-card-elevated: 0 3px 8px rgba(17, 17, 26, 0.08), 0 20px 40px -16px rgba(17, 17, 26, 0.24);
+    --shadow-card-hover: 0 4px 10px rgba(17, 17, 26, 0.1), 0 22px 44px -16px rgba(17, 17, 26, 0.22);
     --shadow-float: 0 -4px 32px rgba(17, 17, 26, 0.14), 0 8px 32px rgba(17, 17, 26, 0.1);
     --color-ok: 61 190 122;
     --color-warn: 232 135 58;
@@ -54,10 +55,11 @@
     /* 밝은 노랑은 흰 배경 위 '글자'로 쓰면 안 읽혀서, 글자·아이콘 전용 진한 금색을 따로 둡니다 */
     --color-gold-text: 138 97 0;
 
-    /* 깊이감 — 라이트에서는 밝기 차이가 거의 안 보이므로 "진짜 그림자"가 카드를 띄웁니다 */
-    --shadow-card: 0 1px 2px rgba(17, 17, 26, 0.05), 0 4px 12px -6px rgba(17, 17, 26, 0.1);
-    --shadow-card-elevated: 0 2px 4px rgba(17, 17, 26, 0.05), 0 14px 30px -12px rgba(17, 17, 26, 0.18);
-    --shadow-card-hover: 0 2px 6px rgba(17, 17, 26, 0.07), 0 16px 32px -12px rgba(17, 17, 26, 0.16);
+    /* 깊이감 — 라이트에서는 밝기 차이가 거의 안 보이므로 "진짜 그림자"가 카드를 띄웁니다.
+       기존보다 한 단계 또렷하게 — 카드가 배경 위에 살짝 떠 있는 느낌을 노립니다. */
+    --shadow-card: 0 2px 6px rgba(17, 17, 26, 0.07), 0 10px 24px -10px rgba(17, 17, 26, 0.18);
+    --shadow-card-elevated: 0 3px 8px rgba(17, 17, 26, 0.08), 0 20px 40px -16px rgba(17, 17, 26, 0.24);
+    --shadow-card-hover: 0 4px 10px rgba(17, 17, 26, 0.1), 0 22px 44px -16px rgba(17, 17, 26, 0.22);
     --shadow-float: 0 -4px 32px rgba(17, 17, 26, 0.14), 0 8px 32px rgba(17, 17, 26, 0.1);
   }
 
@@ -81,10 +83,14 @@
     /* 어두운 배경에서는 밝은 노랑이 그대로 잘 읽힙니다 */
     --color-gold-text: 255 196 46;
 
-    /* 다크에서는 그림자가 거의 안 보이므로, 상단 내부 하이라이트가 카드를 띄웁니다(§3) */
-    --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-    --shadow-card-elevated: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 12px 28px -14px rgba(0, 0, 0, 0.6);
-    --shadow-card-hover: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 16px 32px -16px rgba(0, 0, 0, 0.7);
+    /* 다크에서는 그림자가 거의 안 보이므로, 위·아래 내부 하이라이트로 얇은 단면(베벨)을
+       만들어 카드를 띄웁니다 — 기존엔 위쪽 한 줄만 있어서 입체감이 약했습니다(§3) */
+    --shadow-card: inset 0 1px 0 rgba(255, 255, 255, 0.07), inset 0 -1px 0 rgba(0, 0, 0, 0.35),
+      0 6px 16px -10px rgba(0, 0, 0, 0.5);
+    --shadow-card-elevated: inset 0 1px 0 rgba(255, 255, 255, 0.09), inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+      0 14px 32px -14px rgba(0, 0, 0, 0.65);
+    --shadow-card-hover: inset 0 1px 0 rgba(255, 255, 255, 0.11), inset 0 -1px 0 rgba(0, 0, 0, 0.45),
+      0 18px 36px -16px rgba(0, 0, 0, 0.75);
     --shadow-float: 0 -8px 40px rgba(0, 0, 0, 0.5);
   }
 

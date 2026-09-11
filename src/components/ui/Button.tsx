@@ -14,7 +14,11 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  brand: 'bg-gold-500 text-gold-ink font-bold shadow-[0_6px_20px_rgb(var(--color-gold-500)/0.25)]',
+  // ★ 이 앱에서 유일하게 "누르세요"라고 말하는 버튼이라, 은은한 금색 글로우로 항상
+  //   시선이 먼저 가게 합니다. 호버 가능한 기기에서는 손을 올렸을 때 한 번 더 밝아집니다.
+  brand:
+    'bg-gold-500 text-gold-ink font-bold shadow-[0_8px_28px_rgb(var(--color-gold-500)/0.38)] ' +
+    'hover:shadow-[0_10px_34px_rgb(var(--color-gold-500)/0.5)]',
   solid: 'bg-surface-2 text-ink font-semibold border border-border-strong',
   ghost: 'bg-transparent text-ink-2 font-semibold',
   outline: 'bg-transparent text-ink font-semibold border border-border-strong',
