@@ -1,4 +1,4 @@
-import { CalendarClock, MapPinned, Users2 } from 'lucide-react'
+import { CalendarClock, MapPinned, Users2, X } from 'lucide-react'
 import { useAppNavigate } from '@/lib/appLink'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { FEE_DISCLAIMER, SERVICE_NAME, SERVICE_TAGLINE } from '@/config/brand'
@@ -42,6 +42,19 @@ export function LandingPage() {
   const go = useAppNavigate()
   return (
     <div className="min-h-screen w-full bg-bg text-ink">
+      {/* ★ 이 브라우저에서 처음 접속했을 때만 뜨는 화면이라, 굳이 다 안 봐도 바로
+          앱으로 넘어갈 수 있어야 합니다. go() 가 markLandingSeen 을 함께 하므로
+          다음 접속부터는 이 화면 자체가 안 뜹니다. */}
+      <button
+        onClick={() => go('/')}
+        aria-label="다시 보지 않기"
+        className="pointer-events-auto fixed right-3 top-3 z-50 flex items-center gap-1 rounded-full bg-black/45 px-3 py-2 text-xs font-semibold text-white backdrop-blur-sm"
+        style={{ top: 'max(0.75rem, env(safe-area-inset-top))' }}
+      >
+        <X size={13} />
+        다시 보지 않기
+      </button>
+
       {/* ★ 스크롤로 커튼이 열리는 1막을 씁니다. 2막 가로 트랙까지 605dvh 를 스크롤하게
           만들면 대부분 그전에 떠나서, 개막 연출만 남겼습니다. */}
       <CurtainHero mode="act1" />

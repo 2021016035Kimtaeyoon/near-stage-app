@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { markLandingSeen } from './landingSeen'
 import { useIsDesktop } from './useMediaQuery'
 
 /**
@@ -17,6 +18,9 @@ export function useAppNavigate(): (path: string) => void {
   const isDesktop = useIsDesktop()
   return useCallback(
     (path: string) => {
+      // 이 함수는 랜딩 화면에서만 씁니다 — 여기서 나간다는 건 랜딩을 봤다는 뜻이라,
+      // 다음 접속부터는 바로 앱으로 들어가게 여기서 한 번에 기록합니다.
+      markLandingSeen()
       const clean = path.startsWith('/') ? path : `/${path}`
       navigate(isDesktop ? `/desktop${clean === '/' ? '' : clean}` : clean)
     },

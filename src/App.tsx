@@ -6,6 +6,7 @@ import { TabBar } from '@/components/shell/TabBar'
 import { ToastHost } from '@/components/ui/Toast'
 import { useAuthSync } from '@/hooks/useAuth'
 import { useKakaoCallback } from '@/hooks/useKakaoLogin'
+import { hasSeenLanding } from '@/lib/landingSeen'
 import { isFullscreenRoute } from '@/lib/routeUtils'
 import { AppRoutes } from '@/routes'
 import { DesktopHome } from '@/screens/desktop/DesktopHome'
@@ -70,6 +71,10 @@ function pickScreen({
   fullscreen: boolean
   inDesktopShell: boolean
 }) {
+  // ★ 이 브라우저에서 랜딩을 한 번도 본 적 없는 첫 접속이면, 앱 대신 랜딩(커튼
+  //   개막)부터 보여줍니다. 공유 링크(예: /show/xyz)로 바로 들어온 경우는
+  //   해당하지 않습니다 — 오직 아무 경로 없이 맨 주소로 들어왔을 때만입니다.
+  if (pathname === '/' && !hasSeenLanding()) return <Navigate to="/landing" replace />
   if (pathname.startsWith('/landing')) return <LandingPage />
   if (pathname.startsWith('/desktop')) return <DesktopHome />
   if (inDesktopShell) return <Navigate to={`/desktop${pathname}`} replace />
