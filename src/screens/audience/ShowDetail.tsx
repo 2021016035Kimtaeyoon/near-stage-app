@@ -21,6 +21,7 @@ import { useShowReviews, type ShowReview } from '@/hooks/useReviews'
 import { usePublicShow } from '@/hooks/usePublicShows'
 import { humanDateTime, isShowOver, showPriceLabel } from '@/lib/datetime'
 import { canSendKakaoMemo, sendAttendanceMemo } from '@/lib/kakaoMemo'
+import { summarizeScheduleTimes } from '@/lib/showSchedule'
 import { useAppStore, useNow } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
 import type { Review } from '@/types'
@@ -249,9 +250,28 @@ export function ShowDetail() {
                 <CalendarClock size={13} />
                 공연 시간
               </p>
-              <p className="mt-1.5 whitespace-pre-line text-[13px] leading-relaxed">
-                {show.scheduleNote}
-              </p>
+              {/* ★ 요일 하나에 회차가 10개씩 붙은 원문을 한 줄로 그대로 보여주면 숫자만
+                  잔뜩 늘어서 못 읽습니다. 요일별로 줄을 나누고, 회차가 많으면
+                  '하루 10회(13:00~21:00)'로 접습니다 — 못 읽었을 때만 원문을 그대로 둡니다. */}
+              {(() => {
+                const lines = summarizeScheduleTimes(show.scheduleNote)
+                if (!lines) {
+                  return (
+                    <p className="mt-1.5 whitespace-pre-line text-[13px] leading-relaxed">
+                      {show.scheduleNote}
+                    </p>
+                  )
+                }
+                return (
+                  <ul className="mt-1.5 space-y-1">
+                    {lines.map((line) => (
+                      <li key={line} className="text-[13px] leading-relaxed">
+                        {line}
+                      </li>
+                    ))}
+                  </ul>
+                )
+              })()}
               <p className="mt-1.5 text-2xs leading-relaxed text-ink-3">
                 공연예술통합전산망(KOPIS) 안내 그대로입니다. 예매 전 예매처에서 다시
                 확인해 주세요.

@@ -188,6 +188,64 @@ export function scheduleSummary(schedule: ShowSchedule | null): string | null {
 }
 
 /**
+ * 공연 시간 안내 원문을 요일 그룹별 줄로 나눕니다.
+ *
+ * ★ KOPIS 원문은 '월요일 ~ 금요일(13:00,14:30,...,21:00), 토요일(...), 일요일(...)'
+ *   처럼 요일당 회차가 10개씩 붙어 있는 경우가 있습니다. 한 줄로 그대로 보여주면
+ *   숫자만 잔뜩 늘어서 못 읽습니다. 요일별로 줄을 나누고, 회차가 많으면
+ *   '하루 10회(13:00~21:00)'로 접어서 보여줍니다 — 개수와 처음·마지막 시각은
+ *   그대로 정보로 남기고, 중간 숫자만 생략합니다.
+ *
+ * ★ 시간 목록의 쉼표와 요일 구분의 쉼표가 똑같은 문자라 단순히 split(',') 하면
+ *   '13:00,14:30'이 두 조각으로 갈라집니다. 그래서 "쉼표 다음이 요일 글자나
+ *   HOL로 시작할 때"만 구분자로 봅니다 — 시각은 절대 그 글자로 시작하지 않습니다.
+ */
+export interface ScheduleTimeGroup {
+  /** '월~금', '토', '공휴일' 처럼 짧은 요일 라벨 */
+  label: string
+  /** 그 요일의 회차 시각들. 원문에 시각이 없으면 빈 배열 */
+  times: string[]
+}
+
+export function parseScheduleGroups(note: string | null | undefined): ScheduleTimeGroup[] | null {
+  if (!note) return null
+  const text = note.trim()
+  if (!text) return null
+
+  const groups = text.split(/,\s*(?=[월화수목금토일]|HOL)/i)
+  const result: ScheduleTimeGroup[] = []
+  for (const g of groups) {
+    const m = g.match(/^([^(]*)(?:\(([^)]*)\))?/)
+    if (!m) continue
+    const rawLabel = m[1].trim()
+    if (!rawLabel) continue
+    const label = /^HOL$/i.test(rawLabel)
+      ? '공휴일'
+      : rawLabel.replace(/요일/g, '').replace(/\s*~\s*/g, '~').replace(/\s+/g, '')
+    const times = (m[2] ?? '')
+      .split(',')
+      .map((t) => t.trim())
+      .filter((t) => /^\d{1,2}:\d{2}$/.test(t))
+    result.push({ label, times })
+  }
+  return result.length > 0 ? result : null
+}
+
+/** 화면에 바로 찍을 수 있는 요일별 한 줄 요약 목록. 회차가 많으면 접습니다 */
+export function summarizeScheduleTimes(
+  note: string | null | undefined,
+  maxTimesShown = 4,
+): string[] | null {
+  const groups = parseScheduleGroups(note)
+  if (!groups) return null
+  return groups.map((g) => {
+    if (g.times.length === 0) return g.label
+    if (g.times.length <= maxTimesShown) return `${g.label} ${g.times.join(', ')}`
+    return `${g.label} 하루 ${g.times.length}회 (${g.times[0]}~${g.times[g.times.length - 1]})`
+  })
+}
+
+/**
  * 같은 문장을 몇 번이고 다시 파싱하지 않도록 기억해 둡니다.
  *
  * ★ 날짜 스트립은 21일 × 공연 100건을 매 렌더마다 훑습니다. 캐시가 없으면
