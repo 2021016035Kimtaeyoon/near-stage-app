@@ -2,10 +2,11 @@ import { CalendarDays, ChevronRight, Music4, PenLine, Users } from 'lucide-react
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Tag } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
+import { BRAND_GLOW, Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { KpiCard, KpiGrid } from '@/components/ui/Kpi'
 import { useAuthStore } from '@/hooks/useAuth'
+import { cn } from '@/lib/cn'
 import { useMyVenues } from '@/hooks/useMyResources'
 import { useMyPosts } from '@/hooks/usePosts'
 import { useChatThreads } from '@/hooks/useChat'
@@ -100,7 +101,10 @@ export function DesktopOwnerHome() {
           {pendingApplicants > 0 && (
             <button
               onClick={() => navigate('/desktop/owner/recruit')}
-              className="bg-gold-500 flex shrink-0 items-center gap-1.5 rounded-full px-5 py-3 text-sm font-bold text-gold-ink"
+              className={cn(
+                BRAND_GLOW,
+                'flex shrink-0 items-center gap-1.5 rounded-full px-5 py-3 text-sm transition-all duration-base ease-standard active:scale-[0.98]',
+              )}
             >
               기다리는 지원자 {pendingApplicants}팀 확인하기
               <ChevronRight size={16} />

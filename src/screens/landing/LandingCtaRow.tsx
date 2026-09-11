@@ -1,4 +1,5 @@
 import { ArrowRight, Music4, Store } from 'lucide-react'
+import { Button } from '@/components/ui/Button'
 import { useAppNavigate } from '@/lib/appLink'
 import { cn } from '@/lib/cn'
 
@@ -18,13 +19,10 @@ export function LandingCtaRow({ className, tone = 'light' }: { className?: strin
 
   return (
     <div className={cn('mx-auto flex w-full max-w-md flex-col gap-2.5', className)}>
-      <button
-        onClick={() => go('/')}
-        className="bg-gold-500 flex h-[54px] items-center justify-center gap-2 rounded-2xl text-[15px] font-bold text-gold-ink"
-      >
+      <Button variant="brand" size="lg" full onClick={() => go('/')}>
         공연 보러가기
         <ArrowRight size={17} />
-      </button>
+      </Button>
       <div className="flex gap-2.5">
         <button
           onClick={() => go('/host/venue/new')}

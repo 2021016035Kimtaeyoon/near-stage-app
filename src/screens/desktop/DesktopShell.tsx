@@ -3,6 +3,7 @@ import { Bell, ExternalLink, Smartphone } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { LogoMark } from '@/components/shell/LogoMark'
+import { BRAND_GLOW } from '@/components/ui/Button'
 import { ROLE_DESCRIPTION, ROLE_LABEL, TABS } from '@/config/nav'
 import { cn } from '@/lib/cn'
 import { useIsDesktop } from '@/lib/useMediaQuery'
@@ -40,7 +41,10 @@ export function DesktopShell({ children }: { children: ReactNode }) {
         </p>
         <button
           onClick={() => navigate('/')}
-          className="bg-gold-500 mt-2 flex items-center gap-1.5 rounded-full px-5 py-3 text-sm font-bold text-gold-ink"
+          className={cn(
+            BRAND_GLOW,
+            'mt-2 flex items-center gap-1.5 rounded-full px-5 py-3 text-sm transition-all duration-base ease-standard active:scale-[0.98]',
+          )}
         >
           <Smartphone size={15} />
           모바일 앱으로 보기

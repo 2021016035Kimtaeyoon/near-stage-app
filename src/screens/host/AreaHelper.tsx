@@ -1,5 +1,6 @@
 import { Info } from 'lucide-react'
 import { useState } from 'react'
+import { Button } from '@/components/ui/Button'
 import { Label, TextInput } from '@/components/ui/Field'
 
 /** 1평 = 3.3058㎡ */
@@ -71,13 +72,9 @@ export function AreaHelper({ onApply }: { onApply: (capacity: number) => void })
 
       {valid && (
         <>
-          <button
-            type="button"
-            onClick={() => onApply(people)}
-            className="bg-gold-500 mt-2.5 h-11 w-full rounded-xl text-sm font-bold text-gold-ink"
-          >
+          <Button variant="brand" full className="mt-2.5" onClick={() => onApply(people)}>
             약 {people}명으로 입력
-          </button>
+          </Button>
           <p className="tnum mt-2 flex items-start gap-1.5 text-2xs leading-relaxed text-ink-3">
             <Info size={11} className="mt-0.5 shrink-0" />
             {p}평 = {m2.toFixed(1)}㎡ 중 관람석으로 쓸 수 있는 {Math.round(USABLE_RATIO * 100)}%(

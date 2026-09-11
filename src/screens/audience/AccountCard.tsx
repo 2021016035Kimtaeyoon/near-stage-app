@@ -1,8 +1,10 @@
 import { Check, LogIn, LogOut, Pencil, ShieldCheck, UserRound, X } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { BRAND_GLOW } from '@/components/ui/Button'
 import { TextInput } from '@/components/ui/Field'
 import { signOut, updateDisplayName, useAuthStore } from '@/hooks/useAuth'
+import { cn } from '@/lib/cn'
 import { toast } from '@/store/useToast'
 
 /**
@@ -91,7 +93,10 @@ export function AccountCard() {
                 onClick={() => void saveName()}
                 disabled={busy}
                 aria-label="저장"
-                className="bg-gold-500 flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-gold-ink disabled:opacity-40"
+                className={cn(
+                  BRAND_GLOW,
+                  'flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-base ease-standard active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100',
+                )}
               >
                 <Check size={15} />
               </button>

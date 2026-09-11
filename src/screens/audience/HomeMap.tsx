@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom'
 import { ShowMiniCard } from '@/components/cards/ShowCard'
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { MapView } from '@/components/map/MapView'
+import { Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Chip } from '@/components/ui/Chip'
 import { SnapSheet, type SnapIndex } from '@/components/ui/SnapSheet'
@@ -501,12 +502,9 @@ function ResultList({
             {/* ★ 빈 화면만 보여주면 "공연이 없는 서비스"로 결론 내리고 떠납니다.
                 무엇을 풀면 몇 건이 나오는지 한 번에 눌러 볼 수 있게 합니다. */}
             {relax && (
-              <button
-                onClick={() => onRelax?.(relax.patch)}
-                className="bg-gold-500 rounded-xl px-4 py-2.5 text-xs font-bold text-gold-ink"
-              >
+              <Button variant="brand" size="sm" onClick={() => onRelax?.(relax.patch)}>
                 {relax.label} ({relax.count})
-              </button>
+              </Button>
             )}
             <button
               onClick={onReset}
@@ -546,14 +544,15 @@ function NoStagesYet() {
       title="아직 우리 동네 무대가 없어요"
       description="당신의 가게가 이 동네 첫 무대가 될 수 있습니다."
       action={
-        <button
+        <Button
           // ★ 모바일 화면인데 데스크톱 경로로 보내고 있었습니다. 눌러도 아무 데도
           //   가지 않습니다.
+          variant="brand"
+          size="sm"
           onClick={() => navigate('/host/venue/new')}
-          className="bg-gold-500 rounded-xl px-4 py-2.5 text-xs font-bold text-gold-ink"
         >
           공간 등록하기
-        </button>
+        </Button>
       }
     />
   )

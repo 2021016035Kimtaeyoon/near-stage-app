@@ -4,10 +4,11 @@ import { useNavigate } from 'react-router-dom'
 import { Screen, ScreenBody, ScreenHeader, SectionTitle } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { Tag } from '@/components/ui/Badge'
-import { Button } from '@/components/ui/Button'
+import { BRAND_GLOW, Button } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
 import { KpiCard, KpiGrid } from '@/components/ui/Kpi'
+import { cn } from '@/lib/cn'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyVenues } from '@/hooks/useMyResources'
 import { useMyPosts } from '@/hooks/usePosts'
@@ -127,7 +128,10 @@ export function OwnerDashboard() {
         {pendingApplicants > 0 && (
           <button
             onClick={() => navigate('/owner/recruit')}
-            className="bg-gold-500 mb-4 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left text-gold-ink"
+            className={cn(
+              BRAND_GLOW,
+              'mb-4 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left transition-all duration-base ease-standard active:scale-[0.98]',
+            )}
           >
             <span>
               <span className="block text-[13px] font-extrabold">

@@ -2,6 +2,7 @@ import { BellPlus, Check, Search } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { MapView } from '@/components/map/MapView'
+import { Button } from '@/components/ui/Button'
 import { Chip } from '@/components/ui/Chip'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { SERVICE_NAME } from '@/config/brand'
@@ -225,12 +226,9 @@ export function DesktopAudienceHome() {
               title="아직 우리 동네 무대가 없어요"
               description="당신의 가게가 이 동네 첫 무대가 될 수 있습니다."
               action={
-                <button
-                  onClick={() => navigate('/desktop/host/venue/new')}
-                  className="bg-gold-500 rounded-xl px-4 py-2.5 text-xs font-bold text-gold-ink"
-                >
+                <Button variant="brand" size="sm" onClick={() => navigate('/desktop/host/venue/new')}>
                   공간 등록하기
-                </button>
+                </Button>
               }
             />
           ) : results.length === 0 ? (

@@ -1,5 +1,7 @@
 import { Flame, History, Sparkles, type LucideIcon } from 'lucide-react'
 import { ShowMiniCard } from '@/components/cards/ShowCard'
+import { BRAND_GLOW } from '@/components/ui/Button'
+import { cn } from '@/lib/cn'
 import type { ShowWithMeta } from '@/store/selectors'
 
 function Row({
@@ -63,7 +65,10 @@ export function OwnShowsBanner({ count, onClick }: { count: number; onClick: () 
   return (
     <button
       onClick={onClick}
-      className="bg-gold-500 mb-5 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left text-gold-ink"
+      className={cn(
+        BRAND_GLOW,
+        'mb-5 flex w-full items-center justify-between rounded-2xl px-4 py-3.5 text-left transition-all duration-base ease-standard active:scale-[0.98]',
+      )}
     >
       <div>
         <p className="text-xs font-bold opacity-90">바로 참석 예정할 수 있는</p>

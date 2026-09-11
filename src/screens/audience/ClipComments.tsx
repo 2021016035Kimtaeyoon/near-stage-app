@@ -1,10 +1,12 @@
 import { Flag, Send, Trash2, UserX } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { BottomSheet } from '@/components/ui/BottomSheet'
+import { BRAND_GLOW } from '@/components/ui/Button'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { useAuthStore } from '@/hooks/useAuth'
 import { useMyBlocks } from '@/hooks/useBlocks'
 import { addComment, deleteComment, useClipComments } from '@/hooks/useClipSocial'
+import { cn } from '@/lib/cn'
 import { relativeFromNow } from '@/lib/datetime'
 import { useNow } from '@/store/useAppStore'
 import { toast } from '@/store/useToast'
@@ -103,7 +105,10 @@ export function ClipComments({
             onClick={submit}
             disabled={!text.trim() || busy}
             aria-label="보내기"
-            className="bg-gold-500 flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full text-gold-ink disabled:opacity-40"
+            className={cn(
+              BRAND_GLOW,
+              'flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-full transition-all duration-base ease-standard active:scale-[0.98] disabled:opacity-40 disabled:active:scale-100',
+            )}
           >
             <Send size={17} />
           </button>
