@@ -11,6 +11,7 @@ import { ReviewCompose } from '@/screens/audience/ReviewCompose'
 import { ShowDetail } from '@/screens/audience/ShowDetail'
 import { ChatListScreen } from '@/screens/common/ChatListScreen'
 import { ChatThreadScreen } from '@/screens/common/ChatThreadScreen'
+import { MySettingsScreen } from '@/screens/common/MySettingsScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
 import { AdminScreen } from '@/screens/admin/AdminScreen'
 import { LegalScreen } from '@/screens/legal/LegalScreen'
@@ -272,6 +273,14 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
         />
 
         {/* 공통 */}
+        <Route
+          path="/account"
+          element={
+            <PageTransition>
+              <MySettingsScreen />
+            </PageTransition>
+          }
+        />
         <Route
           path="/notifications"
           element={

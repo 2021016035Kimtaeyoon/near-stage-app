@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { Moon, Sun } from 'lucide-react'
 import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeader'
 import { TabBarSpacer } from '@/components/shell/TabBar'
 import { Segmented } from '@/components/ui/Chip'
 import { FreeTrialNotice } from '@/components/ui/FreeTrialNotice'
+import { ThemeToggleCard } from '@/components/ui/ThemeToggleCard'
 import { useMyAttendances, useMyFollows, useMyLikes } from '@/hooks/useEngagement'
 import { useNotifications } from '@/hooks/useNotifications'
-import { useAppStore } from '@/store/useAppStore'
 import { useAuthStore } from '@/hooks/useAuth'
 import { NotificationList } from '@/screens/common/NotificationList'
 import { AccountDangerZone } from './AccountDangerZone'
@@ -26,8 +25,6 @@ export function MyPage() {
   const follows = useMyFollows()
   const { unread } = useNotifications()
   const profile = useAuthStore((s) => s.profile)
-  const theme = useAppStore((s) => s.theme)
-  const setTheme = useAppStore((s) => s.setTheme)
 
 
   return (
@@ -54,27 +51,7 @@ export function MyPage() {
         <SavedSearchPanel />
         <BlockedUsersPanel />
 
-        <div className="card mb-4 flex items-center justify-between px-4 py-3.5">
-          <div className="flex items-center gap-2.5">
-            {theme === 'light' ? (
-              <Sun size={17} className="text-gold-text" />
-            ) : (
-              <Moon size={17} className="text-gold-text" />
-            )}
-            <div>
-              <p className="text-[13px] font-bold">화면 테마</p>
-              <p className="mt-0.5 text-2xs text-ink-3">다크·라이트 배경을 바꿀 수 있어요</p>
-            </div>
-          </div>
-          <Segmented
-            value={theme}
-            onChange={setTheme}
-            options={[
-              { value: 'dark', label: '다크' },
-              { value: 'light', label: '라이트' },
-            ]}
-          />
-        </div>
+        <ThemeToggleCard />
 
         <Segmented
           value={tab}

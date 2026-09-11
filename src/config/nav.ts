@@ -62,6 +62,9 @@ export const TABS: Record<Role, TabItem[]> = {
       matches: ['/owner/recruit', '/owner/applicants'],
     },
     { to: '/chat', label: '채팅', icon: MessageSquare, matches: ['/chat'] },
+    // ★ 로그인·로그아웃·계정 삭제가 공연보기(관객) 탭바에만 있었습니다.
+    //   호스트 모드로만 쓰는 사람은 로그아웃할 방법이 없었습니다.
+    { to: '/account', label: '마이', icon: User, matches: ['/account'] },
   ],
   performer: [
     // ★ 팀을 등록하기 전에는 장소 탐색이 의미가 없습니다. 지원하려면 팀이 있어야 합니다.
@@ -90,6 +93,7 @@ export const TABS: Record<Role, TabItem[]> = {
       matches: ['/performer/activity'],
     },
     { to: '/chat', label: '채팅', icon: MessageSquare, matches: ['/chat'] },
+    { to: '/account', label: '마이', icon: User, matches: ['/account'] },
   ],
 }
 
