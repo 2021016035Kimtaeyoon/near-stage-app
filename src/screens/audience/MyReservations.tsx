@@ -77,7 +77,14 @@ export function MyReservations() {
       {rows.map(({ attendance, meta }) => {
         const show = meta.show
         const ended = showEndMs(show) < now
-        const canceled = attendance.status === 'canceled'
+        // ★ 둘은 다른 취소입니다 — attendance.status 는 "내가 참석을 취소함",
+        //   show.cancelReason 은 "공연 자체가 취소됨"(호스트·아티스트가 취소).
+        //   전에는 후자를 안 봐서, 공연이 취소돼도 목록엔 그냥 '종료'나 '참석
+        //   예정'으로 보이고 리뷰 쓰기 버튼까지 떴습니다(공연 상세 페이지만
+        //   cancelReason 을 봐서 제대로 안내했습니다).
+        const selfCanceled = attendance.status === 'canceled'
+        const showCanceled = !!show.cancelReason
+        const canceled = selfCanceled || showCanceled
         const canReview = ended && !canceled && show.source === 'own'
 
         return (
@@ -96,7 +103,13 @@ export function MyReservations() {
                 <span className="flex items-center gap-1.5">
                   <span className="truncate text-sm font-bold">{show.title}</span>
                   <Tag tone={canceled ? 'danger' : ended ? 'default' : 'ok'}>
-                    {canceled ? '취소함' : ended ? '종료' : '참석 예정'}
+                    {showCanceled
+                      ? '공연 취소됨'
+                      : selfCanceled
+                        ? '참석 취소'
+                        : ended
+                          ? '종료'
+                          : '참석 예정'}
                   </Tag>
                 </span>
                 <span className="tnum mt-0.5 block text-2xs text-ink-2">
@@ -106,6 +119,9 @@ export function MyReservations() {
                   <MapPin size={10} className="shrink-0" />
                   <span className="truncate">{meta.place.name}</span>
                 </span>
+                {showCanceled && show.cancelReason && (
+                  <span className="mt-0.5 block text-2xs text-danger">{show.cancelReason}</span>
+                )}
                 {!canceled && (
                   <span className="tnum mt-0.5 block text-2xs text-ink-3">
                     {attendance.headcount}명

@@ -26,6 +26,8 @@ interface ArtistShow {
   venueAddress: string
   goingCount: number
   visitorCount: number | null
+  /** 호스트가 이 공연을 취소하며 남긴 사유. 없으면 취소되지 않은 공연입니다 */
+  cancelReason: string | null
 }
 
 function one<T>(v: T | T[] | null | undefined): T | null {
@@ -60,7 +62,7 @@ export function PerformerActivity() {
     const { data, error: err } = await supabase
       .from('shows')
       .select(
-        'id,title,starts_at,duration_min,venues!shows_venue_id_fkey(name,address),attendances(headcount,status),show_reports(visitor_count)',
+        'id,title,starts_at,duration_min,cancel_reason,venues!shows_venue_id_fkey(name,address),attendances(headcount,status),show_reports(visitor_count)',
       )
       .in('artist_id', ids)
       .order('starts_at', { ascending: false })
@@ -84,6 +86,7 @@ export function PerformerActivity() {
           .filter((a) => a.status !== 'canceled')
           .reduce((n, a) => n + a.headcount, 0),
         visitorCount: rep?.visitor_count ?? null,
+        cancelReason: r.cancel_reason,
       }
     })
     return { rows, message: null }
@@ -303,6 +306,11 @@ function ShowRow({
   onOpen: () => void
   upcoming?: boolean
 }) {
+  // ★ 호스트가 취소한 공연은 upcoming/past 와 무관하게 취소 사실이 먼저
+  //   보여야 합니다 — 전에는 이 화면이 cancel_reason 을 아예 안 가져와서,
+  //   취소된 공연도 그냥 '참석 예정 N'으로 보였습니다.
+  const canceled = !!show.cancelReason
+
   return (
     <button onClick={onOpen} className="card flex w-full items-center gap-3 p-3 text-left">
       <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-ink-3">
@@ -317,9 +325,14 @@ function ShowRow({
           <MapPin size={10} className="shrink-0" />
           <span className="truncate">{show.venueName}</span>
         </span>
+        {canceled && (
+          <span className="mt-0.5 block text-2xs text-danger">{show.cancelReason}</span>
+        )}
       </span>
       <span className="shrink-0 text-right">
-        {upcoming ? (
+        {canceled ? (
+          <Tag tone="danger">취소됨</Tag>
+        ) : upcoming ? (
           <Tag tone="ok">참석 예정 {show.goingCount}</Tag>
         ) : show.visitorCount !== null ? (
           <span className="tnum flex items-center gap-1 text-2xs font-bold text-ink">

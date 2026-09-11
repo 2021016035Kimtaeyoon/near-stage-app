@@ -126,7 +126,14 @@ export async function addSlots(
   return { created: rows.length, skipped, error: null }
 }
 
-/** 슬롯 열기·닫기. 공연이 잡힌 슬롯은 DB 가 아니라 화면에서 먼저 막습니다 */
+/**
+ * 슬롯 열기·닫기.
+ *
+ * ★ 공연이 잡힌(잠긴) 슬롯은 화면에서 버튼을 숨겨 먼저 막고, DB 도 같은 조건을
+ *   RLS 로 다시 막습니다(0031_lock_venue_slots.sql) — 화면이 조건을 빼먹어도
+ *   잠긴 슬롯은 바뀌지 않습니다. 그래서 잠긴 슬롯에 이 함수를 호출하면 화면
+ *   버그가 아니라 DB 정책 때문에 실패합니다.
+ */
 export async function setSlotOpen(slotId: string, isOpen: boolean): Promise<string | null> {
   const { error } = await supabase.from('venue_slots').update({ is_open: isOpen }).eq('id', slotId)
   return error ? describeDbError(error) : null
