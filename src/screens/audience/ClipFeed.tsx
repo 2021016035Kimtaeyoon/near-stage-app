@@ -15,14 +15,12 @@ import type { Show } from '@/types'
 import { ClipCard } from './ClipCard'
 import { ClipComments } from './ClipComments'
 
-const WEEK_MS = 7 * 24 * 60 * 60 * 1000
-
 /**
  * 세로 스와이프 클립 피드.
  *
- * CSS 스크롤 스냅으로 한 장씩 넘깁니다(모멘텀·탄성은 브라우저가 처리). 이번 주에
- * 공연이 있는 팀은 카드 아래에 배너가 붙어 공연 상세로 바로 갑니다 — 클립을 보다가
- * "이 팀 언제 하지"가 되는 순간이 이 앱의 핵심 흐름입니다.
+ * CSS 스크롤 스냅으로 한 장씩 넘깁니다(모멘텀·탄성은 브라우저가 처리). 앞으로 예정된
+ * 공연이 있는 팀은 카드 아래에 배너가 붙어 공연 상세(참석·예매)로 바로 갑니다 —
+ * 클립을 보다가 "이 팀 예매하러 가야지"가 되는 순간이 이 앱의 핵심 흐름입니다.
  *
  * ★ 재생은 지금 보이는 카드 하나만 합니다. 전부 재생하면 데이터가 순식간에
  *   나가고 폰이 뜨거워집니다.
@@ -47,14 +45,17 @@ export function ClipFeed() {
   // 공유 링크로 들어온 클립으로 한 번만 이동합니다
   const jumped = useRef(false)
 
-  // 팀별 "가장 가까운 이번 주 공연"
+  // 팀별 "가장 가까운 공연" — 예전엔 "이번 주"로 좁혀서, 2주 뒤 공연을 홍보하려고
+  // 클립을 올려도 배너가 안 떴습니다. 클립을 보다가 "예매하러 가기"로 이어지는 게
+  // 목적이라, 얼마나 남았든 앞으로 예정된 공연이면 보여줍니다(countdownLabel이
+  // 남은 기간을 알아서 적당히 표현합니다).
   const upcomingByArtist = useMemo(() => {
     const now = new Date(nowIso).getTime()
     const map = new Map<string, Show>()
     for (const { show, performer } of shows.data) {
       if (show.source !== 'own' || !performer) continue
       const start = new Date(show.startAt).getTime()
-      if (start < now || start > now + WEEK_MS) continue
+      if (start < now) continue
       const cur = map.get(performer.id)
       if (!cur || start < new Date(cur.startAt).getTime()) map.set(performer.id, show)
     }
