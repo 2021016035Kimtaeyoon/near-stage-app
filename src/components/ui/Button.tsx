@@ -14,11 +14,15 @@ interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANTS: Record<Variant, string> = {
-  // ★ 이 앱에서 유일하게 "누르세요"라고 말하는 버튼이라, 은은한 금색 글로우로 항상
-  //   시선이 먼저 가게 합니다. 호버 가능한 기기에서는 손을 올렸을 때 한 번 더 밝아집니다.
+  // ★ 이 앱에서 유일하게 "누르세요"라고 말하는 버튼이라, 은은한 금색 글로우와
+  //   위쪽 유광 하이라이트로 눌러볼 만한 입체감을 줍니다. 손을 올리면 더 밝아지고
+  //   누르는 순간엔(active) 눌린 것처럼 하이라이트가 안으로 들어갑니다 — 바깥의
+  //   active:scale-[0.98]과 함께 눌리는 촉감을 만듭니다.
   brand:
-    'bg-gold-500 text-gold-ink font-bold shadow-[0_8px_28px_rgb(var(--color-gold-500)/0.38)] ' +
-    'hover:shadow-[0_10px_34px_rgb(var(--color-gold-500)/0.5)]',
+    'bg-gradient-to-b from-gold-400 to-gold-500 text-gold-ink font-bold ' +
+    'shadow-[inset_0_1px_0_rgba(255,255,255,.5),0_8px_28px_rgb(var(--color-gold-500)/0.4),0_2px_10px_rgb(var(--color-gold-600)/0.3)] ' +
+    'hover:shadow-[inset_0_1px_0_rgba(255,255,255,.55),0_12px_36px_rgb(var(--color-gold-500)/0.55),0_2px_12px_rgb(var(--color-gold-600)/0.35)] ' +
+    'active:shadow-[inset_0_2px_4px_rgba(0,0,0,.18),0_4px_14px_rgb(var(--color-gold-500)/0.35)]',
   solid: 'bg-surface-2 text-ink font-semibold border border-border-strong',
   ghost: 'bg-transparent text-ink-2 font-semibold',
   outline: 'bg-transparent text-ink font-semibold border border-border-strong',
