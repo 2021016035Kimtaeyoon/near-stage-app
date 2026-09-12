@@ -16,7 +16,7 @@ export function TrendingSearchPanel({
   if (keywords.length === 0) return null
 
   return (
-    <div className="mx-4 mt-1.5 overflow-hidden rounded-2xl border border-border bg-surface shadow-lg">
+    <div className="elevation-float mx-4 mt-1.5 overflow-hidden rounded-2xl border border-border bg-surface">
       <div className="flex items-center gap-1.5 border-b border-border px-4 py-2.5">
         <TrendingUp size={13} className="text-gold-text" />
         <span className="text-xs font-bold">실시간 인기 검색어</span>

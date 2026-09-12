@@ -75,7 +75,7 @@ export function MapControls({
         <button
           onClick={searchHere}
           style={{ top: topOffset }}
-          className="absolute left-1/2 z-[500] flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-border bg-surface/95 px-3.5 py-2 text-2xs font-bold shadow-lg backdrop-blur"
+          className="elevation-float absolute left-1/2 z-[500] flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-border bg-surface/95 px-3.5 py-2 text-2xs font-bold"
         >
           <Search size={12} />
           이 지역에서 찾기
@@ -86,21 +86,21 @@ export function MapControls({
         <button
           onClick={toOrigin}
           aria-label="내 위치로"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface/95 text-ink-2 shadow-md backdrop-blur active:bg-surface-2"
+          className="elevation-float flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface/95 text-ink-2 active:bg-surface-2"
         >
           <LocateFixed size={16} />
         </button>
         <button
           onClick={() => map.zoomIn()}
           aria-label="확대"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface/95 text-ink-2 shadow-md backdrop-blur active:bg-surface-2"
+          className="elevation-float flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface/95 text-ink-2 active:bg-surface-2"
         >
           <Plus size={16} />
         </button>
         <button
           onClick={() => map.zoomOut()}
           aria-label="축소"
-          className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface/95 text-ink-2 shadow-md backdrop-blur active:bg-surface-2"
+          className="elevation-float flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface/95 text-ink-2 active:bg-surface-2"
         >
           <Minus size={16} />
         </button>
@@ -108,7 +108,7 @@ export function MapControls({
           <button
             onClick={toOrigin}
             aria-label="처음 위치로"
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface/95 text-ink-3 shadow-md backdrop-blur active:bg-surface-2"
+            className="elevation-float flex h-9 w-9 items-center justify-center rounded-full border border-border bg-surface/95 text-ink-3 active:bg-surface-2"
           >
             <RotateCcw size={15} />
           </button>

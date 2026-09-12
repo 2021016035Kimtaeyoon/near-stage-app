@@ -124,7 +124,7 @@ export function DesktopShowDetailModal({
         onClick={onClose}
       />
       <motion.div
-        className="relative flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-3xl border border-border bg-surface shadow-2xl"
+        className="elevation-float relative flex max-h-full w-full max-w-md flex-col overflow-hidden rounded-3xl border border-border bg-surface"
         initial={{ opacity: 0, scale: 0.95, y: 12 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         transition={{ type: 'spring', stiffness: 400, damping: 42 }}
