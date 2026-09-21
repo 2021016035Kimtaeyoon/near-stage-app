@@ -101,7 +101,10 @@ Deno.serve(async (req) => {
   const siteUrl = Deno.env.get('SITE_URL')?.replace(/\/$/, '') ?? null
 
   // 잘못된 링크. 클립 목록으로라도 보내는 게 죽은 링크보다 낫습니다.
-  if (!clipId) {
+  // id 는 uuid 입니다. 형식이 아니면 DB 를 부르지 않고 바로 기본 미리보기로 보냅니다.
+  const isUuid = (v: string) =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v)
+  if (!clipId || !isUuid(clipId)) {
     return respond(
       page({
         title: FALLBACK_TITLE,
