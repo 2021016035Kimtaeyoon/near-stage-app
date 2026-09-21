@@ -75,8 +75,17 @@ Deno.serve(async (req) => {
   if (!code || !redirectUri) {
     return Response.json({ error: 'code 와 redirect_uri 가 필요합니다' }, { status: 400, headers: cors })
   }
-  // 임의의 주소로 code 를 흘리지 않도록 되돌아갈 곳도 제한합니다
-  if (!ALLOWED_ORIGINS.some((o) => redirectUri.startsWith(o))) {
+  // 임의의 주소로 code 를 흘리지 않도록 되돌아갈 곳도 제한합니다.
+  // ★ startsWith 로 비교하면 'https://우리주소.github.io.공격자.kr' 도 통과합니다.
+  //   출처(origin)만 떼어 정확히 대조합니다 — 뒤에 붙는 경로는 그대로 허용됩니다
+  //   (프론트는 origin + BASE_URL 을 보냅니다).
+  let redirectOrigin: string | null = null
+  try {
+    redirectOrigin = new URL(redirectUri).origin
+  } catch {
+    redirectOrigin = null
+  }
+  if (!redirectOrigin || !ALLOWED_ORIGINS.includes(redirectOrigin)) {
     return Response.json({ error: '허용되지 않은 redirect_uri' }, { status: 400, headers: cors })
   }
 
