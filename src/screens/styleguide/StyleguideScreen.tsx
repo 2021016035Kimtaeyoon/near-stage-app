@@ -143,7 +143,7 @@ function LogoSection() {
         <LogoMark variant="marquee" className="w-24" />
       </Row>
       <Row label="dark 배경 위">
-        <div className="rounded-xl bg-[#0B0B0F] p-4">
+        <div className="rounded-xl bg-stage p-4">
           <LogoMark dark variant="marquee" className="w-24" />
         </div>
       </Row>

@@ -16,7 +16,7 @@ const PIN_ICON = L.divIcon({
   html: `<div style="
     width:34px;height:34px;margin-left:-17px;margin-top:-34px;
     display:flex;align-items:center;justify-content:center;
-    background:rgb(255,196,46);border:2px solid #0A0A0D;border-radius:50% 50% 50% 0;
+    background:rgb(var(--color-gold-500));border:2px solid #0A0A0D;border-radius:50% 50% 50% 0;
     transform:rotate(-45deg);box-shadow:0 6px 14px rgba(0,0,0,.35)">
       <span style="transform:rotate(45deg);font-size:15px;line-height:1">📍</span>
   </div>`,

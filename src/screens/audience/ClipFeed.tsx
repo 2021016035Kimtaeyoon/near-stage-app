@@ -83,7 +83,7 @@ export function ClipFeed() {
 
   if (clips.loading) {
     return (
-      <div className="flex h-full w-full items-center justify-center bg-[#0B0B0F]">
+      <div className="flex h-full w-full items-center justify-center bg-stage">
         <div className="h-10 w-10 animate-pulse rounded-full bg-white/20" />
       </div>
     )
@@ -116,7 +116,7 @@ export function ClipFeed() {
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#0B0B0F]">
+    <div className="relative h-full w-full overflow-hidden bg-stage">
       <div
         ref={containerRef}
         onScroll={handleScroll}

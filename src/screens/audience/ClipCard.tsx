@@ -96,7 +96,7 @@ export function ClipCard({
   }
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[#0B0B0F]">
+    <div className="relative h-full w-full overflow-hidden bg-stage">
       {isVideo ? (
         <>
           <video
@@ -150,7 +150,7 @@ export function ClipCard({
               className="absolute inset-0 h-full w-full object-cover opacity-60"
             />
           ) : (
-            <span className="absolute inset-0 bg-gradient-to-b from-[#1A1A24] to-[#0B0B0F]" />
+            <span className="absolute inset-0 bg-gradient-to-b from-stage-2 to-stage" />
           )}
           <span className="relative flex items-center gap-1.5 rounded-full bg-black/55 px-4 py-2 text-2xs font-bold text-white backdrop-blur">
             이 플랫폼은 앱 안에서 재생할 수 없어요 · 원본 열기
