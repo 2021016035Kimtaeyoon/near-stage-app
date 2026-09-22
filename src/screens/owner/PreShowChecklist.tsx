@@ -16,7 +16,7 @@ import { soonShows, type VenueShow } from '@/hooks/useVenueStats'
  *
  * ★ 정산은 다루지 않습니다 — 개런티는 호스트와 아티스트가 직접 정하는 돈이라
  *   우리가 기록할 근거가 없습니다. 체크인(QR)은 다룹니다 — 정원까지만 선착순으로
- *   받으므로(0032_ticket_checkin.sql), 정원 안에서는 입장이 실제로 보장됩니다.
+ *   받으므로(0033_ticket_checkin.sql), 정원 안에서는 입장이 실제로 보장됩니다.
  */
 export function PreShowChecklist({
   shows,

@@ -199,7 +199,7 @@ export async function cancelShow(showId: string, reason: string): Promise<string
  * 정원·좌석 배치도 수정.
  *
  * ★ 정원을 이미 확정된 참석 예정 합계보다 줄일 수 있습니다 — DB는 앞으로의
- *   신규/증원 신청만 막고(0032_ticket_checkin.sql), 이미 받은 참석은 취소하지
+ *   신규/증원 신청만 막고(0033_ticket_checkin.sql), 이미 받은 참석은 취소하지
  *   않습니다. 정원을 줄이는 건 호스트의 판단이라 우리가 대신 막지 않습니다.
  */
 export async function saveShowCapacity(
