@@ -22,6 +22,7 @@ export interface VenueShow {
   startsAt: string
   durationMin: number
   capacity: number
+  seatMapUrl: string | null
   status: string
   artistName: string
   artistPhotos: string[]
@@ -70,7 +71,7 @@ export function useVenueShows(venueIds: string[]): Query<VenueShow[]> {
         supabase
           .from('shows')
           .select(
-            'id,venue_id,artist_id,title,starts_at,duration_min,capacity,status,artists!shows_artist_id_fkey(team_name,photos,needs),show_reports(visitor_count,note)',
+            'id,venue_id,artist_id,title,starts_at,duration_min,capacity,seat_map_url,status,artists!shows_artist_id_fkey(team_name,photos,needs),show_reports(visitor_count,note)',
           )
           .in('venue_id', ids)
           .order('starts_at', { ascending: false })
@@ -103,6 +104,7 @@ export function useVenueShows(venueIds: string[]): Query<VenueShow[]> {
             startsAt: r.starts_at,
             durationMin: r.duration_min,
             capacity: r.capacity,
+            seatMapUrl: r.seat_map_url,
             status: r.status,
             artistName: artist?.team_name ?? '',
             artistPhotos: artist?.photos ?? [],
@@ -190,6 +192,25 @@ export async function cancelShow(showId: string, reason: string): Promise<string
     p_show_id: showId,
     p_reason: reason,
   })
+  return error ? describeDbError(error) : null
+}
+
+/**
+ * 정원·좌석 배치도 수정.
+ *
+ * ★ 정원을 이미 확정된 참석 예정 합계보다 줄일 수 있습니다 — DB는 앞으로의
+ *   신규/증원 신청만 막고(0032_ticket_checkin.sql), 이미 받은 참석은 취소하지
+ *   않습니다. 정원을 줄이는 건 호스트의 판단이라 우리가 대신 막지 않습니다.
+ */
+export async function saveShowCapacity(
+  showId: string,
+  capacity: number,
+  seatMapUrl: string | null,
+): Promise<string | null> {
+  const { error } = await supabase
+    .from('shows')
+    .update({ capacity, seat_map_url: seatMapUrl })
+    .eq('id', showId)
   return error ? describeDbError(error) : null
 }
 

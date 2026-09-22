@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronRight, Music4, PenLine, Users } from 'lucide-react'
+import { CalendarDays, ChevronRight, Music4, PenLine, Settings2, Users } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Screen, ScreenBody, ScreenHeader, SectionTitle } from '@/components/shell/ScreenHeader'
@@ -24,6 +24,7 @@ import { humanDateTime, shiftWeek, weekStartKey } from '@/lib/datetime'
 import { useNow } from '@/store/useAppStore'
 import { PerformanceChart } from './PerformanceChart'
 import { PreShowChecklist } from './PreShowChecklist'
+import { ShowManageSheet } from './ShowManageSheet'
 import { ShowReportSheet } from './ShowReportSheet'
 import { WeeklyVisitors } from './WeeklyVisitors'
 
@@ -54,6 +55,7 @@ export function OwnerDashboard() {
   const weekly = useWeeklyStats(venueIds, sinceWeek)
 
   const [reporting, setReporting] = useState<VenueShow | null>(null)
+  const [managing, setManaging] = useState<VenueShow | null>(null)
 
   if (!userId) {
     return (
@@ -254,31 +256,39 @@ export function OwnerDashboard() {
           ) : (
             <div className="space-y-2">
               {upcoming.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => navigate(`/audience/show/${s.id}`)}
-                  className="card flex w-full items-center gap-3 p-3 text-left"
-                >
-                  {s.artistPhotos[0] ? (
-                    <img
-                      src={s.artistPhotos[0]}
-                      alt=""
-                      loading="lazy"
-                      className="h-12 w-12 shrink-0 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-ink-3">
-                      <Music4 size={16} />
-                    </span>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-bold">{s.title}</p>
-                    <p className="tnum mt-0.5 text-2xs text-ink-2">
-                      {humanDateTime(s.startsAt, nowIso)}
-                    </p>
-                  </div>
+                <div key={s.id} className="card flex items-center gap-3 p-3">
+                  <button
+                    onClick={() => navigate(`/audience/show/${s.id}`)}
+                    className="flex min-w-0 flex-1 items-center gap-3 text-left"
+                  >
+                    {s.artistPhotos[0] ? (
+                      <img
+                        src={s.artistPhotos[0]}
+                        alt=""
+                        loading="lazy"
+                        className="h-12 w-12 shrink-0 rounded-lg object-cover"
+                      />
+                    ) : (
+                      <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-ink-3">
+                        <Music4 size={16} />
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold">{s.title}</p>
+                      <p className="tnum mt-0.5 text-2xs text-ink-2">
+                        {humanDateTime(s.startsAt, nowIso)}
+                      </p>
+                    </div>
+                  </button>
                   <Tag tone="ok">참석 예정 {s.goingCount}</Tag>
-                </button>
+                  <button
+                    onClick={() => setManaging(s)}
+                    aria-label="공연 관리"
+                    className="tap flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-surface-2 text-ink-2"
+                  >
+                    <Settings2 size={14} />
+                  </button>
+                </div>
               ))}
             </div>
           )}
@@ -291,6 +301,12 @@ export function OwnerDashboard() {
         show={reporting}
         open={reporting !== null}
         onClose={() => setReporting(null)}
+        onDone={shows.refresh}
+      />
+      <ShowManageSheet
+        show={managing}
+        open={managing !== null}
+        onClose={() => setManaging(null)}
         onDone={shows.refresh}
       />
     </Screen>

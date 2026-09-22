@@ -1,4 +1,4 @@
-import { MapPin, Music4, Users } from 'lucide-react'
+import { MapPin, Music4, QrCode, Users } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Screen, ScreenBody, ScreenHeader } from '@/components/shell/ScreenHeader'
@@ -215,7 +215,16 @@ export function PerformerActivity() {
 
                 {upcoming.length > 0 && (
                   <div>
-                    <p className="mb-1.5 text-2xs font-bold text-ink-3">다가오는 무대</p>
+                    <div className="mb-1.5 flex items-center justify-between gap-2">
+                      <p className="text-2xs font-bold text-ink-3">다가오는 무대</p>
+                      <button
+                        onClick={() => navigate('/checkin')}
+                        className="flex items-center gap-1 text-2xs font-bold text-gold-text"
+                      >
+                        <QrCode size={12} />
+                        입장 QR 체크인
+                      </button>
+                    </div>
                     <div className="space-y-2">
                       {upcoming.map((s) => (
                         <ShowRow key={s.id} show={s} nowIso={nowIso} onOpen={() => navigate(`/audience/show/${s.id}`)} upcoming />

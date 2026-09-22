@@ -16,6 +16,8 @@ import type { Query } from './usePublicShows'
  */
 
 export interface MyAttendance {
+  /** 체크인 QR에 담기는 값(nearstage:ticket:<id>) */
+  id: string
   showId: string
   headcount: number
   status: 'going' | 'attended' | 'canceled'
@@ -160,7 +162,7 @@ export function useMyAttendances(): Query<MyAttendance[]> {
     setLoading(true)
     void supabase
       .from('attendances')
-      .select('show_id,headcount,status')
+      .select('id,show_id,headcount,status')
       .eq('user_id', userId)
       .then(({ data: rows, error: err }) => {
         if (!alive) return
@@ -172,6 +174,7 @@ export function useMyAttendances(): Query<MyAttendance[]> {
         setError(null)
         setData(
           (rows ?? []).map((r) => ({
+            id: r.id,
             showId: r.show_id,
             headcount: r.headcount,
             status: r.status,

@@ -14,3 +14,6 @@ skills-lock.json
 # 환경변수 — 실제 키가 들어갑니다
 .env.local
 .env
+
+# Supabase CLI 로컬 캐시
+supabase/.temp/

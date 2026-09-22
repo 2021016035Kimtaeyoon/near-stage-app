@@ -10,6 +10,9 @@ export const FULLSCREEN_PREFIXES = [
   // 따로 있으므로 탭을 숨겨도 길을 잃지 않습니다.
   '/audience/show/',
   '/chat/',
+  // 카메라 화면 전체를 씁니다. 결과 시트도 하단에서 올라오는데, 탭바가 떠
+  // 있으면 그 위를 덮습니다.
+  '/checkin',
 ]
 
 /**

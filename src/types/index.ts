@@ -108,6 +108,8 @@ export interface Show {
   posterUrl?: string
   /** 가격 안내 원문 (예: '전석 30,000원'). 파싱하지 않고 그대로 보여줍니다 */
   priceNote?: string
+  /** 호스트가 올린 좌석 배치도 (우리 무대만, 없으면 undefined) */
+  seatMapUrl?: string
   /** KOPIS 공연장 정보 (source==='kopis'일 때) */
   kopisVenue?: KopisVenueInfo
   /** 등록 공연의 출연진 표기 (공연자 계정이 없으므로) */

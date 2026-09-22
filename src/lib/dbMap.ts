@@ -28,6 +28,7 @@ export interface PublicShowRow {
   price_note: string | null
   genre_raw: string | null
   schedule_note: string | null
+  seat_map_url: string | null
   created_at: string
   venue_name: string | null
   venue_address: string | null
@@ -140,6 +141,7 @@ export function rowToShow(row: PublicShowRow): Show {
     ...(row.external_url ? { externalUrl: row.external_url } : {}),
     ...(normalizePosterUrl(row.poster_url) ? { posterUrl: normalizePosterUrl(row.poster_url) } : {}),
     ...(row.price_note ? { priceNote: row.price_note } : {}),
+    ...(row.seat_map_url ? { seatMapUrl: row.seat_map_url } : {}),
   }
 }
 
@@ -161,7 +163,7 @@ export function rowToPlace(row: PublicShowRow): ShowPlace | null {
 export const PUBLIC_SHOW_COLUMNS =
   'id,venue_id,artist_id,slot_id,title,description,starts_at,run_ends_at,duration_min,capacity,' +
   'status,cancel_reason,source,kopis_id,external_url,poster_url,price_note,genre_raw,' +
-  'schedule_note,created_at,' +
+  'schedule_note,seat_map_url,created_at,' +
   'venue_name,venue_address,lat,lng,' +
   'venue_category,venue_rating,artist_name,artist_genre,artist_photos,' +
   'going_count,like_count,avg_rating,review_count'

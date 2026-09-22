@@ -17,7 +17,7 @@ export const MAX_BYTES = 5 * 1024 * 1024
 export const MAX_PHOTOS = 6
 const ALLOWED = ['image/jpeg', 'image/png', 'image/webp']
 
-export type PhotoBucket = 'venue-photos' | 'artist-photos'
+export type PhotoBucket = 'venue-photos' | 'artist-photos' | 'show-seatmaps'
 
 export function validatePhotoFile(file: File): string | null {
   if (!ALLOWED.includes(file.type)) return 'JPG · PNG · WebP 만 올릴 수 있어요'

@@ -1,4 +1,5 @@
-import { MapPin, PenLine } from 'lucide-react'
+import { MapPin, PenLine, QrCode as QrCodeIcon } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Tag } from '@/components/ui/Badge'
 import { Button } from '@/components/ui/Button'
@@ -9,13 +10,14 @@ import { useMyAttendances } from '@/hooks/useEngagement'
 import { usePublicShows } from '@/hooks/usePublicShows'
 import { humanDateTime, showEndMs } from '@/lib/datetime'
 import { useNow } from '@/store/useAppStore'
+import { TicketQrSheet } from './TicketQrSheet'
 
 /**
  * 내 참석 예정 (§12).
  *
- * 예매가 아니라 "참석 예정"입니다 — 결제도 좌석 지정도 없고, QR 티켓도 없습니다.
- * 호스트가 대략 몇 명 오는지 알기 위한 숫자입니다. 그래서 화면도 티켓처럼 꾸미지
- * 않습니다. 티켓처럼 보이면 관객이 자리를 보장받았다고 오해합니다.
+ * 예매가 아니라 "참석 예정"입니다 — 결제도 좌석 지정도 없습니다. 다만 정원까지만
+ * 선착순으로 받으므로(DB가 막습니다), 정원 안에서는 입장이 실제로 보장됩니다 —
+ * 그래서 체크인용 QR은 보여줍니다. 화면을 유료 티켓처럼 꾸미지는 않습니다.
  */
 export function MyReservations() {
   const navigate = useNavigate()
@@ -23,6 +25,9 @@ export function MyReservations() {
   const userId = useAuthStore((s) => s.userId)
   const attendances = useMyAttendances()
   const shows = usePublicShows()
+  const [qrFor, setQrFor] = useState<{ id: string; title: string; headcount: number } | null>(
+    null,
+  )
 
   if (!userId) {
     return (
@@ -86,6 +91,7 @@ export function MyReservations() {
         const showCanceled = !!show.cancelReason
         const canceled = selfCanceled || showCanceled
         const canReview = ended && !canceled && show.source === 'own'
+        const canCheckIn = !ended && !canceled && show.source === 'own'
 
         return (
           <div key={show.id} className="card overflow-hidden">
@@ -130,6 +136,21 @@ export function MyReservations() {
               </span>
             </button>
 
+            {canCheckIn && (
+              <Button
+                variant="ghost"
+                full
+                size="sm"
+                leading={<QrCodeIcon size={13} />}
+                className="border-t border-border"
+                onClick={() =>
+                  setQrFor({ id: attendance.id, title: show.title, headcount: attendance.headcount })
+                }
+              >
+                입장 QR 보기
+              </Button>
+            )}
+
             {canReview && (
               <Button
                 variant="ghost"
@@ -145,6 +166,14 @@ export function MyReservations() {
           </div>
         )
       })}
+
+      <TicketQrSheet
+        open={qrFor !== null}
+        onClose={() => setQrFor(null)}
+        attendanceId={qrFor?.id ?? null}
+        showTitle={qrFor?.title ?? ''}
+        headcount={qrFor?.headcount ?? 1}
+      />
     </div>
   )
 }

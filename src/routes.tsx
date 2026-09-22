@@ -11,6 +11,7 @@ import { ReviewCompose } from '@/screens/audience/ReviewCompose'
 import { ShowDetail } from '@/screens/audience/ShowDetail'
 import { ChatListScreen } from '@/screens/common/ChatListScreen'
 import { ChatThreadScreen } from '@/screens/common/ChatThreadScreen'
+import { CheckInScanner } from '@/screens/common/CheckInScanner'
 import { MySettingsScreen } from '@/screens/common/MySettingsScreen'
 import { NotificationsScreen } from '@/screens/common/NotificationsScreen'
 import { AdminScreen } from '@/screens/admin/AdminScreen'
@@ -302,6 +303,14 @@ export function AppRoutes({ prefix = '' }: { prefix?: string } = {}) {
           element={
             <PageTransition>
               <ChatThreadScreen />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/checkin"
+          element={
+            <PageTransition>
+              <CheckInScanner />
             </PageTransition>
           }
         />

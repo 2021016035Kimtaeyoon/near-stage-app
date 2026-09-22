@@ -1,4 +1,4 @@
-import { CheckCircle2, MessageSquare, TriangleAlert, Users } from 'lucide-react'
+import { CheckCircle2, MessageSquare, QrCode, TriangleAlert, Users } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { matchNeeds } from '@/lib/needMatch'
 import { humanDateTime } from '@/lib/datetime'
@@ -9,13 +9,14 @@ import { soonShows, type VenueShow } from '@/hooks/useVenueStats'
  * 공연 전 확인 목록 (§14).
  *
  * ★ 체크리스트 항목을 지어내지 않습니다. "당일 준비물 챙기기"처럼 앱이 확인할 수
- *   없는 일반론을 나열하면 그건 조언이 아니라 소음입니다. 여기 있는 세 줄은
+ *   없는 일반론을 나열하면 그건 조언이 아니라 소음입니다. 여기 있는 항목은
  *   전부 이 서비스가 실제로 아는 사실입니다 — 참석 예정 인원(attendances),
  *   팀이 등록 시 적어둔 필요 장비 대 우리 공간 장비(matchNeeds), 그리고 대화방
  *   존재 여부(공연이 확정되면 fn_accept_application 이 항상 만듭니다).
  *
- * ★ 결제·QR·정산 같은 항목은 없습니다. 이 서비스가 다루지 않는 일이라 체크리스트에
- *   넣으면 우리가 그걸 책임진다는 오해를 만듭니다.
+ * ★ 정산은 다루지 않습니다 — 개런티는 호스트와 아티스트가 직접 정하는 돈이라
+ *   우리가 기록할 근거가 없습니다. 체크인(QR)은 다룹니다 — 정원까지만 선착순으로
+ *   받으므로(0032_ticket_checkin.sql), 정원 안에서는 입장이 실제로 보장됩니다.
  */
 export function PreShowChecklist({
   shows,
@@ -89,15 +90,24 @@ export function PreShowChecklist({
               )}
             </div>
 
-            {threadId && (
+            <div className="mt-3 flex items-center gap-4">
+              {threadId && (
+                <button
+                  onClick={() => navigate(`/chat/${threadId}`)}
+                  className="flex items-center gap-1.5 text-2xs font-bold text-gold-text"
+                >
+                  <MessageSquare size={13} />
+                  도착 시간·리허설 대화로 확인하기
+                </button>
+              )}
               <button
-                onClick={() => navigate(`/chat/${threadId}`)}
-                className="mt-3 flex items-center gap-1.5 text-2xs font-bold text-gold-text"
+                onClick={() => navigate('/checkin')}
+                className="flex items-center gap-1.5 text-2xs font-bold text-gold-text"
               >
-                <MessageSquare size={13} />
-                도착 시간·리허설 대화로 확인하기
+                <QrCode size={13} />
+                입장 QR 체크인
               </button>
-            )}
+            </div>
           </div>
         )
       })}

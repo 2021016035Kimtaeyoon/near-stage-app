@@ -282,6 +282,20 @@ export function ShowDetail() {
 
         <VenueBlock place={place} genre={show.genre} distanceKm={meta?.distanceKm ?? 0} />
 
+        {show.seatMapUrl && (
+          <section className="px-4 pt-1">
+            <div className="card p-3.5">
+              <p className="text-2xs font-bold text-ink-2">좌석 배치도</p>
+              <img
+                src={show.seatMapUrl}
+                alt="좌석 배치도"
+                loading="lazy"
+                className="mt-2 w-full rounded-xl object-contain"
+              />
+            </div>
+          </section>
+        )}
+
         <section className="px-4 py-5">
           <div className="mb-3 flex items-center justify-between gap-2">
             <h2 className="text-[15px] font-bold">리뷰</h2>
@@ -404,6 +418,11 @@ export function ShowDetail() {
             </Button>
           )}
         </div>
+        {!isKopis && !ended && !going && !soldOut && (
+          <p className="mt-2 text-2xs leading-relaxed text-ink-3">
+            노쇼 3회가 쌓이면 참석 예정 등록이 제한돼요. 못 오게 되면 미리 취소해 주세요.
+          </p>
+        )}
       </div>
       <ShowCancelModal
         open={cancelOpen}
