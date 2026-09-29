@@ -130,6 +130,9 @@ export function sortShows(
     case 'likes':
       arr.sort((a, b) => b.show.likes - a.show.likes)
       break
+    case 'newest':
+      arr.sort((a, b) => new Date(b.show.createdAt).getTime() - new Date(a.show.createdAt).getTime())
+      break
     case 'recommend':
       // 우리 무대 가산 + 임박 + 가까움 + 좋아요를 섞은 점수
       arr.sort((a, b) => recommendScore(b, now) - recommendScore(a, now))

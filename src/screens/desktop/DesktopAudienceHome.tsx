@@ -27,6 +27,7 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: 'near', label: '거리순' },
   { value: 'rating', label: '별점순' },
   { value: 'likes', label: '인기순' },
+  { value: 'newest', label: '최신순' },
   { value: 'recommend', label: '추천순' },
 ]
 

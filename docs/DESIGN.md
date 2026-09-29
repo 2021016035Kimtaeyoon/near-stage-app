@@ -4,7 +4,11 @@
 
 ## 색 토큰 (`tailwind.config.js` → `theme.extend.colors`)
 
-| 토큰 | 값 | 용도 |
+값은 다크 기준이다. 라이트(기본 테마)는 같은 역할을 `gold-500`을 아주 옅게 우린 웜뉴트럴로
+낸다 — 예전엔 다크를 그대로 뒤집은 순백+회색이라 브랜드가 라이트에서 사라졌다. 실제 값은
+`src/index.css`의 `:root` / `[data-theme='light']`에 있다(`bg #FAF7F1`, `surface-1 #F4EFE4` 등).
+
+| 토큰 | 값(다크) | 용도 |
 |---|---|---|
 | `bg` | `#0B0B0F` | 최하단 배경 |
 | `surface` / `surface-1` | `#14141A` | 카드 표면 |

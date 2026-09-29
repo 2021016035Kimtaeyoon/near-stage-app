@@ -67,6 +67,8 @@ export interface Show {
   performerId: string | null
   /** ISO 8601 (KST 오프셋 포함) */
   startAt: string
+  /** 이 공연 행이 DB에 만들어진 시각. 최신순 정렬에만 씁니다 */
+  createdAt: string
   /**
    * 등록 공연의 공연 마지막 날(23:59). 대학로 연극처럼 두 달을 공연하는 경우가 있어서,
    * 시작 시각 하나로는 "끝난 공연"으로 잘못 걸러집니다. 우리 무대는 없습니다(null).
@@ -155,7 +157,7 @@ export interface Review {
 export type WhenFilter = 'tonight' | 'weekend' | 'all'
 /** 0 = 전체(거리 무제한) */
 export type DistanceFilter = 1 | 2 | 5 | 0
-export type SortKey = 'soon' | 'near' | 'rating' | 'likes' | 'recommend'
+export type SortKey = 'soon' | 'near' | 'rating' | 'likes' | 'recommend' | 'newest'
 
 export interface AudienceFilter {
   when: WhenFilter

@@ -118,6 +118,7 @@ export function rowToShow(row: PublicShowRow): Show {
     venueId: row.venue_id,
     performerId: row.artist_id,
     startAt: row.starts_at,
+    createdAt: row.created_at,
     durationMin: row.duration_min,
     title: row.title,
     // 이 서비스는 대금에 관여하지 않습니다. 우리 무대는 참가비가 없고(현장에서 호스트가

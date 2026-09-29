@@ -41,7 +41,13 @@ const ROLES = [
 export function LandingPage() {
   const go = useAppNavigate()
   return (
-    <div className="min-h-screen w-full bg-bg text-ink">
+    // ★ data-theme="dark" 를 여기 통째로 겁니다. 커튼 히어로(크림슨·금색)가 만든
+    //   "무대의 어둠" 무드를 스크롤 이후 섹션들이 흰 배경으로 깨고 있었습니다 —
+    //   사용자의 라이트/다크 설정과 무관하게, 랜딩은 항상 극장 다크로 통일합니다
+    //   (index.css의 [data-theme='dark'] 주석이 이미 이 용도를 예정해뒀습니다).
+    //   아래 섹션들은 전부 토큰 클래스만 쓰고 있어서 하드코딩된 흰색이 없고,
+    //   이 한 줄만으로 전체가 자동으로 다크 팔레트를 입습니다.
+    <div data-theme="dark" className="min-h-screen w-full bg-bg text-ink">
       {/* ★ 이 브라우저에서 처음 접속했을 때만 뜨는 화면이라, 굳이 다 안 봐도 바로
           앱으로 넘어갈 수 있어야 합니다. go() 가 markLandingSeen 을 함께 하므로
           다음 접속부터는 이 화면 자체가 안 뜹니다. */}

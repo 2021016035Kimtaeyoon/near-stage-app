@@ -7,16 +7,18 @@
     color-scheme: light;
     --safe-bottom: env(safe-area-inset-bottom, 0px);
 
-    /* 라이트 테마(기본값) — rgb 삼중값. tailwind.config.js의 withOpacity()가 읽어갑니다. */
-    --color-bg: 255 255 255;
-    --color-surface-1: 247 247 249;
-    --color-surface-2: 240 240 243;
-    --color-surface-3: 231 231 236;
-    --color-border: 229 229 234;
-    --color-border-strong: 209 209 217;
-    --color-text: 23 23 28;
-    --color-text-muted: 91 91 102;
-    --color-text-dim: 139 139 150;
+    /* 라이트 테마(기본값) — rgb 삼중값. tailwind.config.js의 withOpacity()가 읽어갑니다.
+       ★ 예전엔 순백+회색(다크를 그대로 뒤집은 값)이라 브랜드가 안 보였습니다. gold-500을
+       아주 옅게 우린 웜뉴트럴로 바꿔서, 라이트에서도 "이 서비스"라는 게 남게 했습니다. */
+    --color-bg: 250 247 241;
+    --color-surface-1: 244 239 228;
+    --color-surface-2: 237 229 211;
+    --color-surface-3: 226 215 189;
+    --color-border: 224 213 190;
+    --color-border-strong: 201 183 142;
+    --color-text: 27 22 16;
+    --color-text-muted: 107 97 82;
+    --color-text-dim: 148 136 116;
     --color-gold-400: 255 218 107;
     --color-gold-500: 255 196 46;
     --color-gold-600: 233 166 0;
@@ -25,11 +27,12 @@
     --color-gold-text: 138 97 0;
 
     /* 깊이감 — 라이트에서는 밝기 차이가 거의 안 보이므로 "진짜 그림자"가 카드를 띄웁니다.
-       기존보다 한 단계 또렷하게 — 카드가 배경 위에 살짝 떠 있는 느낌을 노립니다. */
-    --shadow-card: 0 2px 6px rgba(17, 17, 26, 0.07), 0 10px 24px -10px rgba(17, 17, 26, 0.18);
-    --shadow-card-elevated: 0 3px 8px rgba(17, 17, 26, 0.08), 0 20px 40px -16px rgba(17, 17, 26, 0.24);
-    --shadow-card-hover: 0 4px 10px rgba(17, 17, 26, 0.1), 0 22px 44px -16px rgba(17, 17, 26, 0.22);
-    --shadow-float: 0 -4px 32px rgba(17, 17, 26, 0.14), 0 8px 32px rgba(17, 17, 26, 0.1);
+       기존보다 한 단계 또렷하게 — 카드가 배경 위에 살짝 떠 있는 느낌을 노립니다.
+       그림자 색도 순검정 대신 텍스트와 같은 웜톤(27,22,16)으로 맞췄습니다. */
+    --shadow-card: 0 2px 6px rgba(27, 22, 16, 0.08), 0 10px 24px -10px rgba(27, 22, 16, 0.2);
+    --shadow-card-elevated: 0 3px 8px rgba(27, 22, 16, 0.09), 0 20px 40px -16px rgba(27, 22, 16, 0.26);
+    --shadow-card-hover: 0 4px 10px rgba(27, 22, 16, 0.11), 0 22px 44px -16px rgba(27, 22, 16, 0.24);
+    --shadow-float: 0 -4px 32px rgba(27, 22, 16, 0.16), 0 8px 32px rgba(27, 22, 16, 0.11);
     --color-ok: 61 190 122;
     --color-warn: 232 135 58;
     --color-danger: 229 72 77;
@@ -39,15 +42,15 @@
   /* 라이트 테마를 다크로 강제된 조상(랜딩 히어로 등) 안에서도 다시 켤 수 있도록 명시 규칙도 둡니다 */
   [data-theme='light'] {
     color-scheme: light;
-    --color-bg: 255 255 255;
-    --color-surface-1: 247 247 249;
-    --color-surface-2: 240 240 243;
-    --color-surface-3: 231 231 236;
-    --color-border: 229 229 234;
-    --color-border-strong: 209 209 217;
-    --color-text: 23 23 28;
-    --color-text-muted: 91 91 102;
-    --color-text-dim: 139 139 150;
+    --color-bg: 250 247 241;
+    --color-surface-1: 244 239 228;
+    --color-surface-2: 237 229 211;
+    --color-surface-3: 226 215 189;
+    --color-border: 224 213 190;
+    --color-border-strong: 201 183 142;
+    --color-text: 27 22 16;
+    --color-text-muted: 107 97 82;
+    --color-text-dim: 148 136 116;
     --color-gold-400: 255 218 107;
     --color-gold-500: 255 196 46;
     --color-gold-600: 233 166 0;
@@ -57,10 +60,10 @@
 
     /* 깊이감 — 라이트에서는 밝기 차이가 거의 안 보이므로 "진짜 그림자"가 카드를 띄웁니다.
        기존보다 한 단계 또렷하게 — 카드가 배경 위에 살짝 떠 있는 느낌을 노립니다. */
-    --shadow-card: 0 2px 6px rgba(17, 17, 26, 0.07), 0 10px 24px -10px rgba(17, 17, 26, 0.18);
-    --shadow-card-elevated: 0 3px 8px rgba(17, 17, 26, 0.08), 0 20px 40px -16px rgba(17, 17, 26, 0.24);
-    --shadow-card-hover: 0 4px 10px rgba(17, 17, 26, 0.1), 0 22px 44px -16px rgba(17, 17, 26, 0.22);
-    --shadow-float: 0 -4px 32px rgba(17, 17, 26, 0.14), 0 8px 32px rgba(17, 17, 26, 0.1);
+    --shadow-card: 0 2px 6px rgba(27, 22, 16, 0.08), 0 10px 24px -10px rgba(27, 22, 16, 0.2);
+    --shadow-card-elevated: 0 3px 8px rgba(27, 22, 16, 0.09), 0 20px 40px -16px rgba(27, 22, 16, 0.26);
+    --shadow-card-hover: 0 4px 10px rgba(27, 22, 16, 0.11), 0 22px 44px -16px rgba(27, 22, 16, 0.24);
+    --shadow-float: 0 -4px 32px rgba(27, 22, 16, 0.16), 0 8px 32px rgba(27, 22, 16, 0.11);
   }
 
   /* 다크 테마 — 마이페이지의 테마 토글에서 <html data-theme="dark">로 켜거나,

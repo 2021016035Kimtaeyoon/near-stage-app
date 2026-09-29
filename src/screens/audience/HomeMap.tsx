@@ -43,6 +43,7 @@ const SORT_OPTIONS: Array<{ value: SortKey; label: string }> = [
   { value: 'near', label: '거리순' },
   { value: 'rating', label: '별점순' },
   { value: 'likes', label: '인기순' },
+  { value: 'newest', label: '최신순' },
   { value: 'recommend', label: '추천순' },
 ]
 
@@ -217,6 +218,19 @@ export function HomeMap() {
                   날 공연이 있는지 예매처에서 확인해 주세요.
                 </p>
               )}
+            </div>
+          )}
+          {results.length > 0 && (
+            <div className="no-scrollbar mb-2.5 flex gap-1.5 overflow-x-auto">
+              {SORT_OPTIONS.map((o) => (
+                <Chip
+                  key={o.value}
+                  active={filter.sort === o.value}
+                  onClick={() => setFilter({ sort: o.value })}
+                >
+                  {o.label}
+                </Chip>
+              ))}
             </div>
           )}
           <ResultList
