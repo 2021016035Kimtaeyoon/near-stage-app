@@ -26,7 +26,12 @@ if (!isSupabaseConfigured && import.meta.env.DEV) {
   )
 }
 
-export const supabase: SupabaseClient = createClient(url ?? 'http://localhost', key ?? 'missing', {
+// ★ ?? 가 아니라 || 입니다. ?? 는 null/undefined 만 거르는데, 빌드 환경에서 환경변수가
+//   "없는" 것은 보통 **빈 문자열**로 들어옵니다(예: GitHub Actions 가 없는 secret 을
+//   빈 값으로 주입). 그러면 createClient('') 가 "supabaseUrl is required" 로 던지고,
+//   모듈 로드 단계라 앱 전체가 흰 화면이 됩니다 — 실제로 Pages 배포에서 그렇게 됐습니다.
+//   위 주석대로 "환경변수가 없으면 화면만 도는 상태"가 되려면 빈 값도 같이 걸러야 합니다.
+export const supabase: SupabaseClient = createClient(url || 'http://localhost', key || 'missing', {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
