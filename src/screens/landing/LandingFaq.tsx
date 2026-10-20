@@ -35,8 +35,12 @@ export function LandingFaq() {
   const [open, setOpen] = useState<number | null>(0)
 
   return (
-    <section className="mx-auto max-w-3xl px-6 py-14 md:py-20">
-      <h2 className="text-center text-2xl font-extrabold tracking-tight md:text-3xl">
+    // 회전무대 안에서는 한 화면에 들어가야 해서 섹션 세로 여백을 두지 않습니다
+    <section className="mx-auto max-w-3xl">
+      <h2
+        className="text-center text-2xl font-extrabold tracking-tight md:text-3xl"
+        style={{ textShadow: '0 2px 24px rgba(0,0,0,.65)' }}
+      >
         자주 묻는 질문
       </h2>
 
@@ -44,7 +48,12 @@ export function LandingFaq() {
         {FAQS.map((f, i) => {
           const expanded = open === i
           return (
-            <li key={f.q} className="card overflow-hidden">
+            // ★ 랜딩은 전 구간이 무대 위라(StageLayer), 불투명 카드를 쓰면 그 자리만
+            //   무대가 사라져 "무대 위에 놓인 판"이 아니라 "무대를 가린 판"이 됩니다.
+            <li
+              key={f.q}
+              className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] backdrop-blur-sm"
+            >
               <button
                 onClick={() => setOpen(expanded ? null : i)}
                 aria-expanded={expanded}
@@ -60,7 +69,7 @@ export function LandingFaq() {
                 />
               </button>
               {expanded && (
-                <p className="border-t border-border px-5 py-4 text-sm leading-relaxed text-ink-2">
+                <p className="border-t border-white/10 px-5 py-4 text-sm leading-relaxed text-ink-2">
                   {f.a}
                 </p>
               )}

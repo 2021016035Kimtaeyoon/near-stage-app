@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react'
 import { CompactHero } from './CompactHero'
 import { FullCurtainHero } from './FullCurtainHero'
 
@@ -10,7 +11,14 @@ import { FullCurtainHero } from './FullCurtainHero'
  *
  * 두 모드가 같은 무대 부품(stageParts.tsx)을 쓰기 때문에, 색·질감·로고는 항상 같습니다.
  */
-export function CurtainHero({ mode }: { mode: 'full' | 'act1' | 'compact' }) {
+export function CurtainHero({
+  mode,
+  panels,
+}: {
+  mode: 'full' | 'act1' | 'compact'
+  /** 1막 뒤에 같은 고정 구간에서 돌릴 설명 판들 (랜딩 전용) */
+  panels?: ReactNode[]
+}) {
   if (mode === 'compact') return <CompactHero />
-  return <FullCurtainHero act1Only={mode === 'act1'} />
+  return <FullCurtainHero act1Only={mode === 'act1'} panels={panels} />
 }

@@ -5,13 +5,16 @@ import {
   useMotionValueEvent,
   useReducedMotion,
   useScroll,
+  useSpring,
   useTransform,
+  type MotionValue,
 } from 'framer-motion'
-import { useEffect, useRef, useState, type RefObject } from 'react'
+import { useEffect, useRef, useState, type ReactNode, type RefObject } from 'react'
 import { useAppNavigate } from '@/lib/appLink'
 import { LogoMark } from '@/components/shell/LogoMark'
 import { useMediaQuery } from '@/lib/useMediaQuery'
 import { CURTAIN_IMAGE, CURTAIN_IMAGE_HEIGHT, CurtainPanelSurface, SpotLight, StageBackdrop } from './stageParts'
+import { TURN_SLICE_DVH, TurnPanel } from '../StageTurntable'
 import {
   ACT1_TITLE_FADEOUT_END,
   ACT1_TITLE_FADEOUT_START,
@@ -37,9 +40,15 @@ import {
   LOGO_FADE_IN_END,
   LOGO_FALL_END,
   LOGO_FALL_START,
+  LOGO_ROTATE_X_START,
+  LOGO_Z_START,
   PANEL_CONTENT_WINDOWS,
+  PANEL_ROTATE_Y_END,
+  PANEL_ROTATE_Y_END_MOBILE,
   PANEL_SCALE_END,
+  PANEL_TURN_SHADE,
   PANEL_X_END,
+  PANEL_Z_END,
   SCALLOP_DEPTH,
   SCALLOP_TILE,
   STAGE_BRIGHTNESS_END,
@@ -119,7 +128,10 @@ function lightFlicker(range: [number, number]): [number[], number[]] {
  *   섹션 높이만 줄이면 커튼이 순식간에 열려버리고, 상수를 나누면 ANIMATION.md 의
  *   설명과 코드가 어긋납니다. 이 방식은 1막 계산이 한 줄도 바뀌지 않습니다.
  */
-export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {}) {
+export function FullCurtainHero({
+  act1Only = false,
+  panels,
+}: { act1Only?: boolean; panels?: ReactNode[] } = {}) {
   const go = useAppNavigate()
   const ref = useRef<HTMLElement>(null)
   const prefersReducedMotion = useReducedMotion()
@@ -128,6 +140,19 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
 
   const [devProgress, setDevProgress] = useState(0)
   const [debugOpen, setDebugOpen] = useState(false)
+  const [activeSlot, setActiveSlot] = useState(0)
+
+  // ★ 회전무대를 이 **하나의 고정 구간 안에서** 같이 돌립니다.
+  //   예전엔 히어로(고정) → 회전무대(또 고정) 두 구간을 이어 붙였는데, sticky 는
+  //   섹션이 끝나기 한 화면 전에 풀려서 그 사이에 화면이 위로 밀리고(버벅임),
+  //   로고가 두 개로 겹쳤습니다. 구간이 하나면 이어 붙일 자리 자체가 없습니다.
+  const turnPanels = act1Only && panels && panels.length > 0 ? panels : null
+  //   로고도 회전무대의 첫 판입니다 — 별도로 로고를 한 번 더 그리지 않습니다.
+  const slotCount = turnPanels ? turnPanels.length + 1 : 0
+  const act1Dvh = isMobile ? 272 : 381
+  const totalDvh = turnPanels ? act1Dvh + slotCount * TURN_SLICE_DVH : act1Dvh
+  /** 전체 스크롤 중 1막(커튼~로고 착지~숨 고르기)이 차지하는 비율 */
+  const act1Share = turnPanels ? act1Dvh / totalDvh : 1
 
   // 'end end' — pin이 실제로 풀리는 지점(섹션 바닥이 뷰포트 바닥에 닿는 순간)에서
   // 정확히 progress=1이 되도록 맞춘다. 'end start'를 쓰면 뷰포트 높이만큼 더
@@ -139,7 +164,27 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
   })
   // 1막만 쓸 때는 스크롤 0~1 을 0~ACT1_HOLD_END 로 압축합니다. 아래 모든 1막
   // 계산이 원래 값 그대로 동작하고, 2막 구간은 도달하지 않습니다.
-  const p = useTransform(rawP, [0, 1], [0, act1Only ? ACT1_HOLD_END : 1])
+  //   1막 계산은 한 줄도 바뀌지 않습니다 — 전체 진행률의 앞부분(act1Share)만
+  //   예전 1막 스케일(0~ACT1_HOLD_END)로 다시 매핑해 넘겨줍니다.
+  const pRaw = useTransform(rawP, [0, act1Share], [0, act1Only ? ACT1_HOLD_END : 1])
+  // ★ 스크롤 값을 그대로 쓰면 휠 한 칸마다 각 레이어가 똑같이 "툭툭" 끊어져
+  //   움직입니다(특히 트랙패드·저주사율 화면). 스프링을 한 겹 끼우면 모든
+  //   레이어가 같은 관성으로 따라와서, 커튼·조명·로고가 한 덩어리로 부드럽게
+  //   움직입니다. restDelta 를 작게 둬야 정지 직전에 미세하게 떨지 않습니다.
+  //   ★ 너무 물렁하면(낮은 stiffness) 스크롤을 멈춘 뒤에도 커튼이 한참 따라와서
+  //     "내 손과 화면이 따로 논다"는 느낌이 납니다. 떨림만 걷어내고 지연은 거의
+  //     느껴지지 않는 값으로 맞췄습니다(정착 ≈0.2초).
+  const p = useSpring(pRaw, { stiffness: 380, damping: 44, mass: 0.35, restDelta: 0.0002 })
+
+  // 회전무대 구간의 진행률(0~1) — 1막이 끝난 지점부터 시작합니다
+  const pTurnRaw = useTransform(rawP, [act1Share, 1], [0, 1])
+  const pTurn = useSpring(pTurnRaw, { stiffness: 380, damping: 44, mass: 0.35, restDelta: 0.0002 })
+
+  useMotionValueEvent(pTurn, 'change', (v) => {
+    if (!slotCount) return
+    const i = Math.min(slotCount - 1, Math.max(0, Math.floor(v * slotCount)))
+    setActiveSlot((prev) => (prev === i ? prev : i))
+  })
 
   useMotionValueEvent(p, 'change', (v) => {
     if (import.meta.env.DEV) setDevProgress(v)
@@ -186,6 +231,32 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
   const panelScaleX = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], [1, PANEL_SCALE_END], {
     ease: CURTAIN_WEIGHT_EASE,
   })
+
+  // 바깥쪽 끝(벽 쪽)을 경첩 삼아 무대 뒤로 젖혀지는 3D 회전. scaleX(오그라듦)와 같은
+  // 구간·이징을 써서 "얇아지며 동시에 뒤로 젖혀진다"는 한 동작처럼 보이게 맞춥니다.
+  // perspective 는 이 컴포넌트 아래 커튼 레이어 컨테이너에서 겁니다.
+  const rotateYMagnitude = useTransform(
+    p,
+    [CURTAIN_OPEN_START, CURTAIN_OPEN_END],
+    [0, isMobile ? PANEL_ROTATE_Y_END_MOBILE : PANEL_ROTATE_Y_END],
+    { ease: CURTAIN_WEIGHT_EASE },
+  )
+  const leftPanelRotateY = useTransform(rotateYMagnitude, (v) => -v)
+  const rightPanelRotateY = rotateYMagnitude
+
+  // 회전만 하면 제자리에서 도는 문처럼 보입니다. 같이 뒤로 물러나야 "무대 안쪽
+  // 옆구리로 젖혀 넣는" 실제 커튼 동선이 됩니다.
+  const panelZ = useTransform(p, [CURTAIN_OPEN_START, CURTAIN_OPEN_END], [0, PANEL_Z_END], {
+    ease: CURTAIN_WEIGHT_EASE,
+  })
+
+  // 천이 조명에 등을 돌리는 만큼 어두워집니다 — 회전각에 그대로 비례시켜서
+  // 각도와 밝기가 절대 어긋나지 않게 합니다(따로 타이밍을 주면 반드시 어긋납니다).
+  const panelShade = useTransform(
+    rotateYMagnitude,
+    [0, isMobile ? PANEL_ROTATE_Y_END_MOBILE : PANEL_ROTATE_Y_END],
+    [0, PANEL_TURN_SHADE],
+  )
 
   // 진행률(0~1)만 따로 뽑아둡니다 — 흔들림·기울기가 "열리는 구간 안에서 몇 %"인지로
   // 계산되어야, 다른 구간(숨 고르기 등)에는 전혀 새어나가지 않습니다.
@@ -247,6 +318,14 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
   const logoFallY = useTransform(p, [LOGO_FALL_START, LOGO_FALL_END], ['-118vh', '0vh'], { ease: FALL_EASE })
   const logoRotate = useTransform(p, [LOGO_FALL_START, LOGO_FALL_END], [-3, 0], { ease: FALL_EASE })
   const logoFallOpacity = useTransform(p, [LOGO_FALL_START, LOGO_FADE_IN_END], [0, 1])
+  // ★ 평면으로 떨어지면 "위에서 아래로 움직이는 그림"일 뿐입니다. 무대 안쪽 깊이에서
+  //   앞으로 나오며(z) 위에서 내려다보던 각이 펴지면(rotateX) 실제로 공간 안에서
+  //   떨어진 것처럼 보입니다. 착지(LOGO_FALL_END)에서 정확히 0/0 이 되어, 이어지는
+  //   스쿼시가 평면 기준으로 그대로 동작합니다.
+  const logoZ = useTransform(p, [LOGO_FALL_START, LOGO_FALL_END], [LOGO_Z_START, 0], { ease: FALL_EASE })
+  const logoRotateX = useTransform(p, [LOGO_FALL_START, LOGO_FALL_END], [LOGO_ROTATE_X_START, 0], {
+    ease: FALL_EASE,
+  })
 
   // ── 착지 스쿼시 ────────────────────────────────────────────────
   const sq = LANDING_SQUASH_END - LANDING_AT
@@ -321,17 +400,26 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
     return <StaticHeroFallback onNavigate={go} />
   }
 
-  const logoWidthClass = isMobile ? 'w-[220px]' : shortViewport ? 'w-[260px]' : 'w-[330px]'
+  const logoWidthClass = isMobile ? 'w-[270px]' : shortViewport ? 'w-[320px]' : 'w-[420px]'
   const gapClass = shortViewport ? 'gap-6' : 'gap-10'
   const ctaGapClass = shortViewport ? 'mt-4' : 'mt-7'
 
   return (
-    <section ref={ref} className={`relative ${heroHeightClass} bg-[#0A0A0D]`}>
+    <section
+      ref={ref}
+      className={turnPanels ? 'relative bg-[#0A0A0D]' : `relative ${heroHeightClass} bg-[#0A0A0D]`}
+      style={turnPanels ? { height: `${totalDvh}dvh` } : undefined}
+    >
       <div className="sticky top-0 h-dvh w-full overflow-hidden">
-        {/* 무대 (배경벽 + 바닥 + 사이드 커튼 + 조명 리그) */}
+        {/* 무대 (배경벽 + 바닥 + 사이드 커튼 + 조명 리그) — 처음부터 끝까지 고정입니다.
+            움직이는 건 이 위의 로고와 설명 판뿐입니다. */}
         <motion.div
           className="absolute inset-0"
-          style={{ filter: stageFilter, y: stageShakeY, willChange: 'filter, transform' }}
+          style={{
+            filter: stageFilter,
+            y: stageShakeY,
+            willChange: 'filter, transform',
+          }}
         >
           <StageBackdrop />
           <SpotLight xPercent={27} opacity={leftLight} size={1} />
@@ -351,8 +439,41 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
           }}
         />
 
-        {/* 1막: 로고 + 태그라인 + CTA — 하나의 flex 세로 스택, 겹칠 수 없는 구조 */}
-        <div className={`absolute inset-0 flex flex-col items-center justify-center ${gapClass} px-6`}>
+        {/* 회전무대 — 로고(첫 판) 뒤로 설명 판들이 우측에서 돌아 들어옵니다.
+            ★ 히어로와 같은 고정 구간 안에 있으므로 이어 붙이는 지점이 없습니다. */}
+        {turnPanels && (
+          <div className="absolute inset-0 z-10" style={{ perspective: 1500, perspectiveOrigin: '50% 45%' }}>
+            {turnPanels.map((panel, i) => (
+              <TurnPanel
+                key={i}
+                p={pTurn}
+                index={i + 1}
+                total={slotCount}
+                isMobile={isMobile}
+                interactive={activeSlot === i + 1}
+                isLast={i === turnPanels.length - 1}
+              >
+                {panel}
+              </TurnPanel>
+            ))}
+          </div>
+        )}
+
+        {/* 1막: 로고 + 태그라인 + CTA — 하나의 flex 세로 스택, 겹칠 수 없는 구조.
+            perspective 는 로고가 깊이(z)에서 날아오는 걸 실제 원근으로 보이게 합니다.
+            ★ 회전무대가 있을 때는 이 블록이 **회전무대의 첫 판**입니다 — 로고를 따로
+              한 번 더 그리지 않으므로 로고가 두 개로 겹칠 수가 없습니다. */}
+        <TurnSlotZero
+          enabled={!!turnPanels}
+          p={pTurn}
+          total={slotCount}
+          isMobile={isMobile}
+          interactive={activeSlot === 0}
+        >
+        <div
+          className={`absolute inset-0 flex flex-col items-center justify-center ${gapClass} px-6`}
+          style={{ perspective: 1100, perspectiveOrigin: '50% 38%' }}
+        >
           <motion.div
             className="relative"
             style={{ x: act2LogoX, y: act2LogoY, scale: act2LogoScale, willChange: 'transform' }}
@@ -390,7 +511,17 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
             </motion.div>
 
             {/* 로고 본체 */}
-            <motion.div style={{ y: logoFallY, rotate: logoRotate, opacity: logoOpacity, willChange: 'transform, opacity' }}>
+            <motion.div
+              style={{
+                y: logoFallY,
+                z: logoZ,
+                rotateX: logoRotateX,
+                rotate: logoRotate,
+                opacity: logoOpacity,
+                transformStyle: 'preserve-3d',
+                willChange: 'transform, opacity',
+              }}
+            >
               <motion.div
                 style={{ scaleY: squashScaleY, scaleX: squashScaleX, transformOrigin: 'center bottom', willChange: 'transform' }}
               >
@@ -415,6 +546,7 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
             </div>
           </motion.div>
         </div>
+        </TurnSlotZero>
 
         {/* 2막: 가로 트랙 (반드시 sticky 컨테이너 안, pointer-events 살아있음).
             ★ act1Only 에서는 아예 렌더하지 않습니다 — 투명해도 포인터를 먹어서
@@ -456,20 +588,33 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
           ))}
         </motion.div>
 
-        {/* 커튼 — 좌우 두 폭이 바깥쪽으로 오그라들며 갈라짐 */}
-        <div className="pointer-events-none absolute inset-0 z-40">
+        {/* 커튼 — 좌우 두 폭이 바깥쪽 끝(벽 쪽)을 경첩 삼아 3D로 젖혀지며 갈라짐.
+            perspective 는 무대 안쪽(중앙, 약간 위)을 소실점으로 둬서 두 폭이 좌우
+            대칭으로 뒤로 물러나는 것처럼 보이게 합니다. */}
+        <div
+          className="pointer-events-none absolute inset-0 z-40"
+          style={{ perspective: 1400, perspectiveOrigin: '50% 42%' }}
+        >
           <motion.div
             aria-hidden
             className="absolute left-0 top-0 h-full w-[52%]"
             style={{
               scaleX: panelScaleX,
               x: leftPanelX,
+              z: panelZ,
               skewX: skewLeft,
+              rotateY: leftPanelRotateY,
               transformOrigin: 'left top',
+              transformStyle: 'preserve-3d',
               willChange: 'transform',
             }}
           >
             <CurtainPanelSurface side="left" showVignette={!isMobile} />
+            {/* 조명에 등을 돌린 만큼 덮이는 암부 — 패널과 함께 3D로 눕습니다 */}
+            <motion.div
+              className="pointer-events-none absolute inset-0 bg-black"
+              style={{ opacity: panelShade }}
+            />
           </motion.div>
           <motion.div
             aria-hidden
@@ -477,12 +622,19 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
             style={{
               scaleX: panelScaleX,
               x: rightPanelX,
+              z: panelZ,
               skewX: skewRight,
+              rotateY: rightPanelRotateY,
               transformOrigin: 'right top',
+              transformStyle: 'preserve-3d',
               willChange: 'transform',
             }}
           >
             <CurtainPanelSurface side="right" showVignette={!isMobile} />
+            <motion.div
+              className="pointer-events-none absolute inset-0 bg-black"
+              style={{ opacity: panelShade }}
+            />
           </motion.div>
           {/* 중앙 이음새 — 닫혔을 때 두 폭이 맞물린 것처럼 보이게, 열리며 함께 사라짐 */}
           <motion.div
@@ -605,6 +757,35 @@ export function FullCurtainHero({ act1Only = false }: { act1Only?: boolean } = {
   )
 }
 
+/**
+ * 1막 블록(로고·태그라인·CTA)을 회전무대의 **첫 판**으로 감쌉니다.
+ *
+ * ★ 회전무대가 없을 때(/#/pitch)는 아무것도 감싸지 않고 그대로 통과시킵니다.
+ *   hooks 규칙 때문에 조건부로 TurnPanel 을 쓰는 대신 래퍼를 하나 둡니다.
+ */
+function TurnSlotZero({
+  enabled,
+  p,
+  total,
+  isMobile,
+  interactive,
+  children,
+}: {
+  enabled: boolean
+  p: MotionValue<number>
+  total: number
+  isMobile: boolean
+  interactive: boolean
+  children: ReactNode
+}) {
+  if (!enabled) return <>{children}</>
+  return (
+    <TurnPanel p={p} index={0} total={total} isMobile={isMobile} interactive={interactive} isFirst>
+      {children}
+    </TurnPanel>
+  )
+}
+
 function DebugPanel({
   open,
   onClose,
@@ -655,7 +836,7 @@ function StaticHeroFallback({ onNavigate }: { onNavigate: (path: string) => void
         style={{ background: 'radial-gradient(ellipse 40% 50% at 50% 0%, rgba(255,247,225,.16) 0%, transparent 70%)' }}
       />
       <div className="relative mx-auto flex max-w-lg flex-col items-center text-center">
-        <LogoMark dark className="w-[260px] sm:w-[320px]" />
+        <LogoMark dark className="w-[280px] sm:w-[380px]" />
         <p className="mt-6 text-[15px] font-semibold text-white/80">{HERO_TAGLINE}</p>
         <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
           {/* 예전에는 '웹으로 둘러보기'와 '모바일 앱 체험하기'가 따로였습니다. 이제는

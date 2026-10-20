@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useTransform } from 'framer-motion'
 
 /**
  * 무대 구성 요소 — 배경벽·바닥·조명·커튼 한 폭.
@@ -78,10 +78,18 @@ export function SpotLight({
   opacity: import('framer-motion').MotionValue<number>
   size: number
 }) {
+  // ★ 점등이 opacity 만이면 "불이 켜진다"가 아니라 "그림이 서서히 나타난다"로 보입니다.
+  //   실제 조명은 켜지는 순간 빛 기둥이 폭을 얻으며 열리고, 바닥 웅덩이가 함께 번집니다.
+  //   같은 opacity 값에서 파생시켜 둘이 어긋날 수 없게 만듭니다.
+  const beamScaleX = useTransform(opacity, [0, 1], [0.7, 1])
+  const poolScale = useTransform(opacity, [0, 1], [0.55, 1])
+
   return (
     <motion.div aria-hidden className="pointer-events-none absolute top-0" style={{ left: `${xPercent}%`, opacity, willChange: 'opacity' }}>
-      <div
-        className="absolute top-0 -translate-x-1/2"
+      {/* ★ -translate-x-1/2(클래스)와 framer 의 scale 을 같이 쓰면, framer 가 transform 을
+          통째로 덮어써서 가운데 정렬이 사라집니다. 중앙 정렬도 framer 의 x 로 넘깁니다. */}
+      <motion.div
+        className="absolute top-0"
         style={{
           width: 280 * size,
           height: 620 * size,
@@ -89,10 +97,14 @@ export function SpotLight({
           background: 'linear-gradient(180deg, rgba(255,247,225,.5) 0%, rgba(255,247,225,.08) 70%, transparent 100%)',
           filter: 'blur(18px)',
           mixBlendMode: 'screen',
+          x: '-50%',
+          scaleX: beamScaleX,
+          transformOrigin: 'top center',
+          willChange: 'transform',
         }}
       />
-      <div
-        className="absolute rounded-[100%] -translate-x-1/2"
+      <motion.div
+        className="absolute rounded-[100%]"
         style={{
           top: 560 * size,
           width: 260 * size,
@@ -100,6 +112,9 @@ export function SpotLight({
           background: 'radial-gradient(ellipse, rgba(255,247,225,.85) 0%, transparent 72%)',
           filter: 'blur(10px)',
           mixBlendMode: 'screen',
+          x: '-50%',
+          scale: poolScale,
+          willChange: 'transform',
         }}
       />
     </motion.div>

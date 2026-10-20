@@ -1,0 +1,60 @@
+name: Deploy to GitHub Pages
+
+# 제출용 공개 링크를 위한 배포입니다.
+#  - 저장소 하위 경로(/near-stage-app/)로 서빙되므로 VITE_BASE 를 넘깁니다
+#    (vite.config.ts 가 base 를 이 환경변수에서 읽습니다).
+#  - 키는 저장소에 적지 않고 GitHub Secrets 에서 주입합니다. Supabase publishable
+#    key 는 원래 브라우저에 노출되는 값이지만(접근 제어는 RLS 가 합니다), 그래도
+#    코드에 박아두면 교체할 때 커밋을 다시 만져야 해서 Secrets 로 둡니다.
+
+on:
+  push:
+    branches: [real-service]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# 배포는 한 번에 하나만. 연속 푸시 시 이전 배포는 취소합니다.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      # npm run build = tsc --noEmit && vite build (타입 오류가 있으면 여기서 멈춥니다)
+      - run: npm run build
+        env:
+          VITE_BASE: /near-stage-app/
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_KAKAO_REST_API_KEY: ${{ secrets.VITE_KAKAO_REST_API_KEY }}
+          VITE_KAKAO_JS_KEY: ${{ secrets.VITE_KAKAO_JS_KEY }}
+          VITE_SITE_URL: https://2021016035kimtaeyoon.github.io/near-stage-app
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

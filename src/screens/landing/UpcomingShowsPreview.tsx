@@ -29,19 +29,27 @@ export function UpcomingShowsPreview() {
   if (loading || upcoming.length === 0) return null
 
   return (
-    <section className="mx-auto max-w-5xl px-6 py-20">
+    // ★ 회전무대(StageTurntable) 안에서는 한 화면에 들어가야 하므로 섹션 자체의
+    //   세로 여백을 두지 않습니다. 바깥 판이 가운데 정렬과 좌우 여백을 맡습니다.
+    <section className="mx-auto max-w-5xl">
       <ScrollReveal className="text-center">
-        <h2 className="text-2xl font-extrabold tracking-tight md:text-3xl">곧 열리는 무대</h2>
+        <h2
+          className="text-2xl font-extrabold tracking-tight md:text-3xl"
+          style={{ textShadow: '0 2px 24px rgba(0,0,0,.65)' }}
+        >
+          곧 열리는 무대
+        </h2>
         <p className="mt-3 text-sm text-ink-2">지금 지도에 올라와 있는 공연입니다.</p>
       </ScrollReveal>
 
-      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* 모바일도 2열 — 1열로 쌓으면 4장이 고정 화면을 넘칩니다 */}
+      <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
         {upcoming.map(({ show, place, performer }) => {
           return (
             <button
               key={show.id}
               onClick={() => go(`/audience/show/${show.id}`)}
-              className="card overflow-hidden text-left"
+              className="overflow-hidden rounded-2xl border border-white/10 bg-white/[0.045] text-left backdrop-blur-sm"
             >
               <ShowPoster
                 posterUrl={show.posterUrl}

@@ -20,6 +20,25 @@ export const CURTAIN_EMBLEM_FADE_END = 0.1111
 export const PANEL_SCALE_END = 0.34
 /** 오그라드는 동안 함께 바깥으로 밀려나는 x 이동량(%) */
 export const PANEL_X_END = 6
+/**
+ * 좌우 패널이 바깥쪽 끝(벽 쪽)을 경첩 삼아 무대 뒤로 젖혀지는 3D 회전각(도).
+ * perspective와 함께 써야 실제로 깊이가 생깁니다 — 없으면 그냥 눌린 것처럼 보입니다.
+ * 모바일은 화면이 좁아 왜곡이 과해 보여서 더 작은 값을 씁니다(FullCurtainHero.tsx).
+ */
+export const PANEL_ROTATE_Y_END = 34
+export const PANEL_ROTATE_Y_END_MOBILE = 20
+/**
+ * 열리면서 무대 안쪽(뒤)으로 물러나는 깊이(px). rotateY 와 함께 써야 "젖혀지며
+ * 뒤로 밀려난다"가 되고, 없으면 제자리에서 회전만 하는 문처럼 보입니다.
+ */
+export const PANEL_Z_END = -180
+/** 천이 조명에서 등을 돌리며 어두워지는 최대 농도 (0~1) */
+export const PANEL_TURN_SHADE = 0.55
+
+/** 로고가 뒤(깊이)에서 앞으로 날아오는 시작 z(px) — 낙하와 함께 적용 */
+export const LOGO_Z_START = -620
+/** 낙하 중 살짝 앞으로 기울었다가(위에서 내려다보는 각) 펴지는 각도 */
+export const LOGO_ROTATE_X_START = 26
 
 /** 밸런스(상단 장식 천) — 절대 px 단위. 화면이 넓어지면 개수만 늘어남 */
 export const VALANCE_HEIGHT = 72
